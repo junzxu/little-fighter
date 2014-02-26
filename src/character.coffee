@@ -122,7 +122,7 @@ class window.Character
 
 
     checkState: ->
-        if @character.currentAnimation == "hurt" or @character.currentAnimation == "attack"
+        if @character.currentAnimation == "hurt"
             false
         else
             true
