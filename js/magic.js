@@ -67,22 +67,24 @@
     Magic.prototype.hit = function(event) {
       var magic, player, rect1, rect2, _i, _len, _ref, _results;
       magic = event.target;
+      if (magic === null) {
+        return;
+      }
       rect1 = {
         "x1": magic.getBounds().x + magic.x,
         "y1": magic.getBounds().y + magic.y,
         "x2": magic.getBounds().x + magic.x + magic.getBounds().width,
         "y2": magic.getBounds().y + magic.y + magic.getBounds().height
       };
-      console.log('magic at x1:' + rect1.x1 + ' y1:' + rect1.y1 + ' x2:' + rect1.x2 + ' y2:' + rect1.y2);
       _ref = this.arena.getPlayers();
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         player = _ref[_i];
         rect2 = player.getRect();
-        console.log(player.id + 'at x1:' + rect2.x1 + ' y1:' + rect2.y1 + ' x2:' + rect2.x2 + ' y2:' + rect2.y2);
         if (!((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2) || (rect2.y1 > rect1.y2) || (rect2.y2 < rect1.y1))) {
           player.gotHit(this.direction);
           console.log('hit player' + player.id);
+          magic.removeAllEventListeners();
           _results.push(this.arena.container.removeChild(magic));
         } else {
           _results.push(void 0);

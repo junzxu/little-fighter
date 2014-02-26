@@ -18,6 +18,10 @@ player_schema = {
           hurt: {
             frames: [53, 54, 55],
             frequency: 10
+          },
+          die: {
+            frames: [30,31,32,33,34,35,34],
+            frequency:10
           }
         },
         images: ["assets/spritesheets/firzen.png"],

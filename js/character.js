@@ -12,6 +12,7 @@
       this.id;
       this.type;
       this.hp = 100;
+      this.cd = 300;
       this.spriteSheetInfo;
       this.character;
       this.characterSpriteSheet;
@@ -19,6 +20,7 @@
       this.stage;
       this.arena;
       this.state = "idle";
+      this.magicState = "ready";
       this.init();
     }
 
@@ -38,8 +40,14 @@
       this.character.y = this.y;
       this.character.gotoAndPlay("idle");
       return this.character.addEventListener("animationend", (function(evt) {
-        if ((this.state === 'idle') || (this.state === 'hurt')) {
-          return this.idle();
+        switch (this.state) {
+          case 'die':
+            this.setState('idle');
+            return this.rebirth();
+          case 'hurt':
+            return this.idle();
+          default:
+            return this.idle();
         }
       }).bind(this));
     };
@@ -111,13 +119,40 @@
 
     Character.prototype.cast = function() {
       var bound, m, width, x;
-      if (this.character.currentAnimation === "idle") {
+      if (this.character.currentAnimation === "idle" && this.magicState === 'ready') {
         bound = this.getRect();
         width = bound.x2 - bound.x1;
         x = this.direction === 'right' ? this.x + width : this.x - width;
         m = new Magic(this.character, this.magicSheetInfo, this.direction, x, this.y, this.stage, this.arena);
-        return m.cast();
+        m.cast();
+        this.magicState = 'preparing';
+        return createjs.Tween.get(this.character, {
+          loop: false
+        }).wait(this.cd).call(((function(_this) {
+          return function() {
+            return _this.magicState = "ready";
+          };
+        })(this)));
       }
+    };
+
+    Character.prototype.rebirth = function() {
+      var bound, x, y;
+      this.arena.container.removeChild(this.character);
+      bound = this.arena.getBound();
+      x = Math.floor(Math.random() * bound.x2);
+      y = Math.floor(Math.random() * bound.y2);
+      this.character.x = x;
+      this.character.y = y;
+      this.hp = 100;
+      return createjs.Tween.get(this.character, {
+        loop: false
+      }).wait(3000).call(((function(_this) {
+        return function() {
+          _this.arena.container.addChild(_this.character);
+          return _this.character.gotoAndPlay("idle");
+        };
+      })(this)));
     };
 
     Character.prototype.getRect = function() {
@@ -148,12 +183,17 @@
 
     Character.prototype.gotHit = function(direction) {
       var bound;
-      if (this.checkState()) {
+      console.log('current hp: ' + this.hp);
+      this.hp -= 10;
+      if (this.hp <= 0) {
+        this.character.gotoAndPlay("die");
+        return this.setState('die');
+      } else {
         this.setState('hurt');
+        this.character.gotoAndPlay("hurt");
+        bound = this.arena.getBound();
+        return this.moveStep(direction);
       }
-      this.character.gotoAndPlay("hurt");
-      bound = this.arena.getBound();
-      return this.moveStep(direction);
     };
 
     Character.prototype.setState = function(state) {

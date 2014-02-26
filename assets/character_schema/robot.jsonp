@@ -18,6 +18,9 @@ robot_schema = {
           hurt: {
             frames: [41,42,43,44],
             frequency: 10
+          },
+          die: {
+            frames: [16,15,14]
           }
         },
         images: ["assets/spritesheets/julian.png"],
