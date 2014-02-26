@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Little Fighter Online</title>
+	<script src="lib/jquery-1.10.2.min.js"></script>
+    <script src="socket.io.min.js"></script>
+	<script type="text/javascript" src="lib/easeljs-0.6.1.min.js"></script>
+	<script type="text/javascript" src="js/arena.js"></script>
+	<script type="text/javascript" src="js/hud.js"></script>
+	<script type="text/javascript" src="js/constants.js"></script>
+	<script type="text/javascript" src="js/character.js"></script>
+	<script type="text/javascript" src="js/game.js"></script>
+	<script type="text/javascript" src="js/magic.js"></script>
+	<script type="text/javascript" language="javascript" src="assets/character_schema/robot.jsonp"></script>
+	<script type="text/javascript" language="javascript" src="assets/character_schema/player.jsonp"></script>  
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+	<!-- We also provide hosted minified versions of all CreateJS libraries.
+	  http://code.createjs.com -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+
+
+	<script type="text/javascript">
+        var stage;
+		function init() {
+			var game = new Game();
+			game.init();
+		}
+
+	</script>
+</head>
+<body onload="init();">
+	<h1 class="text-center">Little Fighter Online</h1>
+    
+    <div class="progress">
+        <div id="hp" class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" style="width: 80%">
+        </div>
+    </div>
+    <div id="hud">
+    </div>
+    <div class="text-center">
+		<canvas id="gameCanvas" width="960" height="400">
+			<h1>Sorry your browser does not support html5 canvas</h1>
+		</canvas>
+	</div>
+</body>
+</html>
