@@ -46,11 +46,10 @@ class window.Magic
           "x2": magic.getBounds().x + magic.x + magic.getBounds().width
           "y2": magic.getBounds().y + magic.y + magic.getBounds().height
         }
-        console.log('magic at x1:'+rect1.x1 + ' y1:'+rect1.y1 + ' x2:'+rect1.x2+ ' y2:'+rect1.y2)
         for player in @arena.getPlayers()
           rect2 = player.getRect()
-          console.log(player.id + 'at x1:'+rect2.x1 + ' y1:'+rect2.y1 + ' x2:'+rect2.x2+ ' y2:'+rect2.y2)
           if !((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2 ) || (rect2.y1 > rect1.y2 ) || (rect2.y2 < rect1.y1))
             player.gotHit(@direction)
             console.log('hit player'+player.id)
+            magic.removeAllEventListeners();
             @arena.container.removeChild magic

@@ -38,8 +38,14 @@
       this.character.y = this.y;
       this.character.gotoAndPlay("idle");
       return this.character.addEventListener("animationend", (function(evt) {
-        if ((this.state === 'idle') || (this.state === 'hurt')) {
-          return this.idle();
+        switch (this.state) {
+          case 'die':
+            this.setState('idle');
+            return this.rebirth();
+          case 'hurt':
+            return this.idle();
+          default:
+            return this.idle();
         }
       }).bind(this));
     };
@@ -120,6 +126,25 @@
       }
     };
 
+    Character.prototype.rebirth = function() {
+      var bound, x, y;
+      this.arena.container.removeChild(this.character);
+      bound = this.arena.getBound();
+      x = Math.floor(Math.random() * bound.x2);
+      y = Math.floor(Math.random() * bound.y2);
+      this.character.x = x;
+      this.character.y = y;
+      this.hp = 100;
+      return createjs.Tween.get(this.character, {
+        loop: false
+      }).wait(3000).call(((function(_this) {
+        return function() {
+          _this.arena.container.addChild(_this.character);
+          return _this.character.gotoAndPlay("idle");
+        };
+      })(this)));
+    };
+
     Character.prototype.getRect = function() {
       var x1, x2, y1, y2;
       x1 = this.character.getBounds().x + this.character.x;
@@ -148,12 +173,17 @@
 
     Character.prototype.gotHit = function(direction) {
       var bound;
-      if (this.checkState()) {
+      console.log('current hp: ' + this.hp);
+      this.hp -= 10;
+      if (this.hp <= 0) {
+        this.character.gotoAndPlay("die");
+        return this.setState('die');
+      } else {
         this.setState('hurt');
+        this.character.gotoAndPlay("hurt");
+        bound = this.arena.getBound();
+        return this.moveStep(direction);
       }
-      this.character.gotoAndPlay("hurt");
-      bound = this.arena.getBound();
-      return this.moveStep(direction);
     };
 
     Character.prototype.setState = function(state) {

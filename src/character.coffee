@@ -30,9 +30,14 @@ class window.Character
         @character.gotoAndPlay "idle"
 
         @character.addEventListener "animationend", ((evt) ->
-            if ((@state == 'idle') || (@state == 'hurt'))
-                @idle()
-
+            switch @state
+                when 'die'
+                    @setState 'idle'
+                    @rebirth()
+                when 'hurt'
+                    @idle()
+                else
+                    @idle()
         ).bind this
 
 
@@ -93,6 +98,24 @@ class window.Character
             m = new Magic @character, @magicSheetInfo, @direction, x, @y, @stage, @arena
             m.cast()
 
+    rebirth: ->
+        @arena.container.removeChild @character
+        bound = @arena.getBound()
+        x = Math.floor(Math.random() * bound.x2)
+        y = Math.floor(Math.random() * bound.y2)
+        @character.x = x
+        @character.y = y
+        @hp = 100
+        createjs.Tween.get @character, {loop:false} 
+        .wait(3000) 
+        .call(
+            (=> 
+                @arena.container.addChild @character
+                @character.gotoAndPlay "idle")
+            )
+
+
+
     getRect: ->
         x1 = @character.getBounds().x + @character.x
         y1 = @character.getBounds().y + @character.y
@@ -110,11 +133,16 @@ class window.Character
             @character.gotoAndPlay "idle"
 
     gotHit: (direction) ->
-        if @checkState()
+        console.log('current hp: ' + @hp)
+        @hp -= 10
+        if @hp <= 0
+            @character.gotoAndPlay "die"
+            @setState 'die'
+        else
             @setState 'hurt'
-        @character.gotoAndPlay "hurt"
-        bound = @arena.getBound()
-        @moveStep(direction)
+            @character.gotoAndPlay "hurt"
+            bound = @arena.getBound()
+            @moveStep(direction)
 
 
     setState: (state) ->
@@ -122,7 +150,7 @@ class window.Character
 
 
     checkState: ->
-        if @character.currentAnimation == "hurt"
+        if @character.currentAnimation == "hurt" or @character.currentAnimation == "attack"
             false
         else
             true
