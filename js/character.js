@@ -12,6 +12,7 @@
       this.id;
       this.type;
       this.hp = 100;
+      this.cd = 300;
       this.spriteSheetInfo;
       this.character;
       this.characterSpriteSheet;
@@ -19,6 +20,7 @@
       this.stage;
       this.arena;
       this.state = "idle";
+      this.magicState = "ready";
       this.init();
     }
 
@@ -117,12 +119,20 @@
 
     Character.prototype.cast = function() {
       var bound, m, width, x;
-      if (this.character.currentAnimation === "idle") {
+      if (this.character.currentAnimation === "idle" && this.magicState === 'ready') {
         bound = this.getRect();
         width = bound.x2 - bound.x1;
         x = this.direction === 'right' ? this.x + width : this.x - width;
         m = new Magic(this.character, this.magicSheetInfo, this.direction, x, this.y, this.stage, this.arena);
-        return m.cast();
+        m.cast();
+        this.magicState = 'preparing';
+        return createjs.Tween.get(this.character, {
+          loop: false
+        }).wait(this.cd).call(((function(_this) {
+          return function() {
+            return _this.magicState = "ready";
+          };
+        })(this)));
       }
     };
 

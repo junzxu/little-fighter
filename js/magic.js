@@ -67,6 +67,9 @@
     Magic.prototype.hit = function(event) {
       var magic, player, rect1, rect2, _i, _len, _ref, _results;
       magic = event.target;
+      if (magic === null) {
+        return;
+      }
       rect1 = {
         "x1": magic.getBounds().x + magic.x,
         "y1": magic.getBounds().y + magic.y,

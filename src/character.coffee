@@ -3,6 +3,7 @@ class window.Character
         @id
         @type
         @hp = 100
+        @cd = 300
         @spriteSheetInfo
         @character
         @characterSpriteSheet
@@ -10,6 +11,7 @@ class window.Character
         @stage
         @arena
         @state = "idle"
+        @magicState = "ready"
         @init()
 
 
@@ -91,12 +93,19 @@ class window.Character
             @character.gotoAndPlay "attack"
 
     cast: ->
-        if @character.currentAnimation == "idle"
+        if @character.currentAnimation == "idle" and @magicState == 'ready'
             bound = @getRect()
             width = bound.x2-bound.x1
             x  = if (@direction == 'right') then @x+width  else @x-width
             m = new Magic @character, @magicSheetInfo, @direction, x, @y, @stage, @arena
             m.cast()
+            @magicState = 'preparing'
+            createjs.Tween.get @character, {loop:false} 
+            .wait(@cd) 
+            .call(
+                (=> 
+                    @magicState = "ready"
+                ))
 
     rebirth: ->
         @arena.container.removeChild @character

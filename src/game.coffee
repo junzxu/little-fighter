@@ -135,6 +135,8 @@ class window.Game
 
         if (@keysDown[Constant.KEYCODE_K])
             @localPlayer.cast()
+            # createjs.Tween.get @localPlayer, {loop:false} 
+            # .wait(500) 
             @socket.emit "magic", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y}
 
 

@@ -40,6 +40,8 @@ class window.Magic
 
     hit: (event) =>
         magic = event.target
+        if magic is null
+            return
         rect1 = {
           "x1": magic.getBounds().x + magic.x
           "y1": magic.getBounds().y + magic.y
