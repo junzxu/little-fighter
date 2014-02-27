@@ -201,14 +201,15 @@
     };
 
     Character.prototype.checkState = function() {
-      if (this.character.currentAnimation === "hurt" || this.character.currentAnimation === "attack") {
+      var _ref;
+      if ((_ref = this.character.currentAnimation) === "hurt" || _ref === "attack" || _ref === "disabled") {
         return false;
       } else {
         return true;
       }
     };
 
-    Character.prototype.getPlayer = function() {
+    Character.prototype.get = function() {
       return this.character;
     };
 

@@ -10,6 +10,7 @@
       this.container.y = 0;
       this.background = new createjs.Bitmap("assets/background/1.png");
       this.container.addChild(this.background);
+      this.objects = {};
       this.init();
     }
 
@@ -20,7 +21,7 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         p = _ref[_i];
         console.log('add');
-        _results.push(this.container.addChild(p.getPlayer()));
+        _results.push(this.container.addChild(p.get()));
       }
       return _results;
     };
@@ -31,8 +32,13 @@
     };
 
     Arena.prototype.addPlayer = function(player) {
-      this.container.addChild(player.getPlayer());
+      this.container.addChild(player.get());
       return this.players.push(player);
+    };
+
+    Arena.prototype.addObject = function(object) {
+      this.container.addChild(object.get());
+      return this.objects.push(object);
     };
 
     Arena.prototype.addToStage = function(stage) {
@@ -41,6 +47,10 @@
 
     Arena.prototype.getPlayers = function() {
       return this.players;
+    };
+
+    Arena.prototype.getObjects = function() {
+      return this.objects;
     };
 
     Arena.prototype.getBound = function() {
