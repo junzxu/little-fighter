@@ -1,21 +1,16 @@
-class window.Character
-    constructor: (@name, @type, @speed, @x, @y, @stage,@arena) ->
-        @id
-        @type
+class window.Character extends Object
+    constructor: (@name, @type, @x, @y, @stage, @arena) ->
+        super
         @hp = 100
         @cd = 300
-        @spriteSheetInfo
         @character
-        @characterSpriteSheet
-        @direction = "right"
-        @stage
-        @arena
-        @state = "idle"
-        @magicState = "ready"
-        @init()
-
+        @faceDirection = "right"
 
     init:() ->
+        super
+        #should load schema from database
+        @state = "idle"
+        @direction = "No"
         if @type == "robot"
             data = eval(robot_schema)
         else
@@ -25,8 +20,8 @@ class window.Character
         @magicSheetInfo = data.magicSheetInfo
 
         console.log 'init'
-        @characterSpriteSheet = new createjs.SpriteSheet @spriteSheetInfo
-        @character = new createjs.BitmapAnimation @characterSpriteSheet
+        @SpriteSheet = new createjs.SpriteSheet @spriteSheetInfo
+        @character = new createjs.BitmapAnimation @SpriteSheet
         @character.x = @x
         @character.y = @y
         @character.gotoAndPlay "idle"
@@ -36,8 +31,9 @@ class window.Character
                 when 'die'
                     @setState 'idle'
                     @rebirth()
-                when 'hurt'
-                    @idle()
+                    break
+                when 'disabled'
+                    break
                 else
                     @idle()
         ).bind this
@@ -47,57 +43,39 @@ class window.Character
         stage.addChild(@character)
         @stage = stage
 
+    get: ->
+        return @character
 
-    moveStep: (direction)->
-        bound = @arena.getBound()
-        switch direction
-            when "left"
-                if (@direction != "left")
-                    @changeDirection "left"
-                if(@character.x - @speed > bound['x1'])
-                    @character.x -= @speed
-                else
-                    @character.x += @speed
-            when "right"
-                if (@direction != "right")
-                    @changeDirection "right"
-                if(@character.x + @speed < bound['x2'])
-                    @character.x += @speed
-                else
-                    @character.x -= @speed
-            when "down"
-                if(@character.y + @speed < bound['y2'])
-                    @character.y += @speed
-                else
-                    @character.y -= @speed
-            when "up"
-                if(@character.y - @speed > bound['y1'])
-                    @character.y -= @speed
-                else
-                    @character.y += @speed
+    changeFaceDirection: (direction) ->
+        if @faceDirection == direction
+            return
+        else
+            @faceDirection = direction
+            @get().scaleX = -@get().scaleX
 
     run: (direction) ->
         if not @checkState()
             return
         if (@character.currentAnimation != "run")
             @character.gotoAndPlay "run"
-        @state = "run"
+        @setState "run"
+        @speed = @originSpeed
         @moveStep(direction)
-        @character.localToGlobal @x, @y
-        @x = @character.x
-        @y = @character.y
+        if direction in ["left","right"]
+            @changeFaceDirection(direction)
+        @detectCollision()
 
 
     attack: ->
-        if @character.currentAnimation == "idle"
+        if @checkState()
             @character.gotoAndPlay "attack"
 
     cast: ->
-        if @character.currentAnimation == "idle" and @magicState == 'ready'
+        if @checkState() and @magicState == 'ready'
             bound = @getRect()
             width = bound.x2-bound.x1
-            x  = if (@direction == 'right') then @x+width  else @x-width
-            m = new Magic @character, @magicSheetInfo, @direction, x, @y, @stage, @arena
+            x  = if (@faceDirection == 'right') then @x+width  else @x-width
+            m = new Magic 'blue','magic', x, @y, @stage, @arena,@character, @magicSheetInfo, @faceDirection
             m.cast()
             @magicState = 'preparing'
             createjs.Tween.get @character, {loop:false} 
@@ -114,6 +92,7 @@ class window.Character
         y = Math.floor(Math.random() * bound.y2)
         @character.x = x
         @character.y = y
+        @updateCoords()
         @hp = 100
         createjs.Tween.get @character, {loop:false} 
         .wait(3000) 
@@ -124,26 +103,16 @@ class window.Character
             )
 
 
-
-    getRect: ->
-        x1 = @character.getBounds().x + @character.x
-        y1 = @character.getBounds().y + @character.y
-        x2 = @character.getBounds().x + @character.x + @character.getBounds().width
-        y2 = @character.getBounds().y + @character.y + @character.getBounds().height
-        return {"x1":x1, "x2":x2, "y1":y1, "y2":y2}
-
-    changeDirection: (direction) ->
-            @direction = direction
-            @character.scaleX = -@character.scaleX
-
     idle: ->
         @setState 'idle'
+        @speed = 0
+        @direction = "No"
         if (@character.currentAnimation != "idle")
             @character.gotoAndPlay "idle"
 
-    gotHit: (direction) ->
+    gotHit: (direction,damage = 10) ->
         console.log('current hp: ' + @hp)
-        @hp -= 10
+        @hp -= damage
         if @hp <= 0
             @character.gotoAndPlay "die"
             @setState 'die'
@@ -159,12 +128,10 @@ class window.Character
 
 
     checkState: ->
-        if @character.currentAnimation == "hurt" or @character.currentAnimation == "attack"
+        if @state == "disabled" or @character.currentAnimation in ["hurt","attack"]
             false
         else
             true
 
-    getPlayer: ->
-        return @character
 
 

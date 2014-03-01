@@ -1,5 +1,5 @@
 class window.Arena
-	constructor: (@w, @h, @players = {}) ->
+	constructor: (@w, @h, @players = [],@objects = []) ->
 
 		# Root container for battle arena
 		@container = new createjs.Container();
@@ -13,21 +13,29 @@ class window.Arena
 	init: ->
 		for p in @players
 			console.log 'add'
-			@container.addChild p.getPlayer()
+			@container.addChild p.get()
 
 	setPosition: (x, y) ->
 		@container.x = x
 		@container.y = y
 
 	addPlayer: (player) ->
-		@container.addChild player.getPlayer()
+		@container.addChild player.get()
+		@objects.push player
 		@players.push player
+
+	addObject: (object) ->
+		@container.addChild object.get()
+		@objects.push object
 
 	addToStage: (stage) ->
 		stage.addChild @container
 
 	getPlayers: ->
 		return @players
+
+	getObjects: ->
+		return @objects
 
 	getBound: ->
 		return {"x1":0, "x2":@background.image.width, "y1":0, "y2":@background.image.height}
