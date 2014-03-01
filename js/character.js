@@ -42,9 +42,10 @@
         switch (this.state) {
           case 'die':
             this.setState('idle');
-            return this.rebirth();
-          case 'hurt':
-            return this.idle();
+            this.rebirth();
+            break;
+          case 'disabled':
+            break;
           default:
             return this.idle();
         }
@@ -86,14 +87,14 @@
     };
 
     Character.prototype.attack = function() {
-      if (this.character.currentAnimation === "idle") {
+      if (this.checkState()) {
         return this.character.gotoAndPlay("attack");
       }
     };
 
     Character.prototype.cast = function() {
       var bound, m, width, x;
-      if (this.character.currentAnimation === "idle" && this.magicState === 'ready') {
+      if (this.checkState() && this.magicState === 'ready') {
         bound = this.getRect();
         width = bound.x2 - bound.x1;
         x = this.faceDirection === 'right' ? this.x + width : this.x - width;
@@ -133,15 +134,19 @@
     Character.prototype.idle = function() {
       this.setState('idle');
       this.speed = 0;
+      this.direction = "No";
       if (this.character.currentAnimation !== "idle") {
         return this.character.gotoAndPlay("idle");
       }
     };
 
-    Character.prototype.gotHit = function(direction) {
+    Character.prototype.gotHit = function(direction, damage) {
       var bound;
+      if (damage == null) {
+        damage = 10;
+      }
       console.log('current hp: ' + this.hp);
-      this.hp -= 10;
+      this.hp -= damage;
       if (this.hp <= 0) {
         this.character.gotoAndPlay("die");
         return this.setState('die');
@@ -159,7 +164,7 @@
 
     Character.prototype.checkState = function() {
       var _ref;
-      if ((_ref = this.character.currentAnimation) === "hurt" || _ref === "attack" || _ref === "disabled") {
+      if (this.state === "disabled" || ((_ref = this.character.currentAnimation) === "hurt" || _ref === "attack")) {
         return false;
       } else {
         return true;

@@ -6,6 +6,8 @@ class window.Object
         @mass = 1
         @speed = 0  #current speed
         @originSpeed = 5
+        @collisionHeight = 20
+        @collisionWidth = 10
         @spriteSheetInfo
         @SpriteSheet
         @object = null
@@ -29,14 +31,19 @@ class window.Object
     	switch @direction
     		when "right"
     			@direction = "left"
+    			break
     		when "left"
     			@direction = "right"
+    			break
     		when "up"
     			@direction = "down"
+    			break
     		when "down"
     			@direction = "up"
+    			break
     		when "No"
     			return
+    	console.log(@name + ' reversed to ' + @direction)
 
     moveStep: (direction) =>
 	    bound = @arena.getBound()
@@ -90,13 +97,25 @@ class window.Object
         y2 = @get().getBounds().y + @get().y + @get().getBounds().height
         return {"x1":x1, "x2":x2, "y1":y1, "y2":y2}
 
+    getCollisionRect: ->
+        x1 = @get().getBounds().x + @get().x + @collisionWidth
+        y1 = @get().getBounds().y + @get().y + @collisionHeight
+        x2 = @get().getBounds().x + @get().x + @get().getBounds().width - @collisionWidth
+        y2 = @get().getBounds().y + @get().y + @get().getBounds().height - @collisionHeight
+        return {"x1":x1, "x2":x2, "y1":y1, "y2":y2}
+
+    gotHit: (direction) ->
+        console.log("nothing happened")
+
+
+################################ Collision ###########################        
     detectCollision: () ->
         object = @
-        rect1 = @getRect()
+        rect1 = @getCollisionRect()
         for otherObject in @arena.getObjects()
           if object.id == otherObject.id
              continue
-          rect2 = otherObject.getRect()
+          rect2 = otherObject.getCollisionRect()
           if !((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2 ) || (rect2.y1 > rect1.y2 ) || (rect2.y2 < rect1.y1))
             console.log(object.name + 'collide with' + otherObject.name)
             @collisionHandler object,otherObject
@@ -117,15 +136,29 @@ class window.Object
     	a.speed += (2*b.mass)/(a.mass + b.mass)*v2
     	b.speed = (2*b.mass)/(a.mass + b.mass)*v1
     	b.speed += Math.abs(a.mass-b.mass)/(a.mass+b.mass)*v2
-    	# a.state = 'disabled'
-    	# b.state = 'disabled'
+    	a.state = 'disabled'
+    	b.state = 'disabled'
     	a.get().addEventListener("tick", @collide);
     	b.get().addEventListener("tick", @collide);
 
 
-	collisionHandler: (a,b)->
-		#override in child class
-		@updateSpeed a,b
+	collisionHandler: (a,b)=>
+        #override in child class
+        @updateSpeed a,b
+        createjs.Tween.get a, {loop:false} 
+        .wait(200) 
+        .call(
+            (=> 
+                a.idle()
+                a.get().removeEventListener("tick", @collide)
+            ))
+        createjs.Tween.get b, {loop:false} 
+        .wait(200) 
+        .call(
+            (=> 
+                b.idle()
+                b.get().removeEventListener("tick", @collide)
+            ))
 
 	collide:(event) =>
 		object = event.target
@@ -135,14 +168,11 @@ class window.Object
 			when "left"
 				object.x -= @speed
 			when "up"
-				object.y += @speed
-			when "down"
 				object.y -= @speed
+			when "down"
+				object.y += @speed
 		@updateCoords()
-		@speed -= 1
 		if @speed <= 0
 			@speed = @originSpeed
-			object.removeEventListener("tick", @collide)
 
-    gotHit: (direction) ->
-        console.log("nothing happened")
+################################################################

@@ -96,12 +96,10 @@ class window.Game
                 @keysDown[e.keyCode] = false
                 if (!@keysDown[Constant.KEYCODE_RIGHT] && !@keysDown[Constant.KEYCODE_LEFT] && !@keysDown[Constant.KEYCODE_UP] && !@keysDown[Constant.KEYCODE_DOWN])
                     if (player.character.currentAnimation == "run")
-                        player.idle()
-                    player.setState 'idle'
+                        player.character.gotoAndPlay 'idle'
                     @socket.emit "update", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y, state:"idle"}
             ).bind this
 
-        else
 
     onDisconnect: (data) ->
         console.log 'Player: ' + data.id + ' has disconnected';

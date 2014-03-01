@@ -31,8 +31,9 @@ class window.Character extends Object
                 when 'die'
                     @setState 'idle'
                     @rebirth()
-                when 'hurt'
-                    @idle()
+                    break
+                when 'disabled'
+                    break
                 else
                     @idle()
         ).bind this
@@ -66,11 +67,11 @@ class window.Character extends Object
 
 
     attack: ->
-        if @character.currentAnimation == "idle"
+        if @checkState()
             @character.gotoAndPlay "attack"
 
     cast: ->
-        if @character.currentAnimation == "idle" and @magicState == 'ready'
+        if @checkState() and @magicState == 'ready'
             bound = @getRect()
             width = bound.x2-bound.x1
             x  = if (@faceDirection == 'right') then @x+width  else @x-width
@@ -105,13 +106,13 @@ class window.Character extends Object
     idle: ->
         @setState 'idle'
         @speed = 0
-        # @direction = "No"
+        @direction = "No"
         if (@character.currentAnimation != "idle")
             @character.gotoAndPlay "idle"
 
-    gotHit: (direction) ->
+    gotHit: (direction,damage = 10) ->
         console.log('current hp: ' + @hp)
-        @hp -= 10
+        @hp -= damage
         if @hp <= 0
             @character.gotoAndPlay "die"
             @setState 'die'
@@ -127,7 +128,7 @@ class window.Character extends Object
 
 
     checkState: ->
-        if @character.currentAnimation in ["hurt","attack","disabled"]
+        if @state == "disabled" or @character.currentAnimation in ["hurt","attack"]
             false
         else
             true

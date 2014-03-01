@@ -91,9 +91,8 @@
           this.keysDown[e.keyCode] = false;
           if (!this.keysDown[Constant.KEYCODE_RIGHT] && !this.keysDown[Constant.KEYCODE_LEFT] && !this.keysDown[Constant.KEYCODE_UP] && !this.keysDown[Constant.KEYCODE_DOWN]) {
             if (player.character.currentAnimation === "run") {
-              player.idle();
+              player.character.gotoAndPlay('idle');
             }
-            player.setState('idle');
             return this.socket.emit("update", {
               id: this.clientID,
               x: this.localPlayer.x,
@@ -102,8 +101,6 @@
             });
           }
         }).bind(this));
-      } else {
-
       }
     };
 
