@@ -35,10 +35,9 @@ class window.Game
         @arena.setPosition 0, 0
         @arena.addToStage @stage
         #add a ai robot
-        robot = new Character "firzen", "robot", 5, 400, 200, @stage, @arena
+        robot = new Character "firzen", "robot", 400, 200, @stage, @arena
         robot.id = 0
         @arena.addPlayer robot
-        # @players.push robot
 
 
     addEventHandlers: () ->
@@ -79,14 +78,12 @@ class window.Game
     onNewPlayer: (data) ->
         if !(@playerExists data.id)
             console.log 'Add new player to stage ' + data.id
-            c = new Character "firzen", "player",5, data.x, data.y, @stage, @arena
-            c.id = data.id
-            @arena.addPlayer c
-            # @players.push c
+            player = new Character "firzen", "player", data.x, data.y, @stage, @arena
+            player.id = data.id
+            @arena.addPlayer player
 
         if (data.id == @clientID)
-            console.log 'My Character'
-            @localPlayer = c
+            @localPlayer = player
             createjs.Ticker.addEventListener "tick", ((evt) ->
             ).bind this
 
@@ -98,9 +95,9 @@ class window.Game
             window.addEventListener "keyup", ((e) ->
                 @keysDown[e.keyCode] = false
                 if (!@keysDown[Constant.KEYCODE_RIGHT] && !@keysDown[Constant.KEYCODE_LEFT] && !@keysDown[Constant.KEYCODE_UP] && !@keysDown[Constant.KEYCODE_DOWN])
-                    if (c.character.currentAnimation == "run")
-                        c.idle()
-                    c.setState 'idle'
+                    if (player.character.currentAnimation == "run")
+                        player.idle()
+                    player.setState 'idle'
                     @socket.emit "update", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y, state:"idle"}
             ).bind this
 
@@ -135,8 +132,6 @@ class window.Game
 
         if (@keysDown[Constant.KEYCODE_K])
             @localPlayer.cast()
-            # createjs.Tween.get @localPlayer, {loop:false} 
-            # .wait(500) 
             @socket.emit "magic", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y}
 
 

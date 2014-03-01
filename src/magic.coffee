@@ -1,22 +1,18 @@
-class window.Magic
-    constructor: (@character, @magicSheetInfo, @direction, @x, @y, @stage, @arena) ->
-        @id
-        @magicSheet
+class window.Magic extends Object
+    constructor: (@name,@type, @x, @y, @stage, @arena, @character, @spriteSheetInfo, @direction) ->
+        super
         @magic
-        @stage
-        @arena
-        @init()
 
     init:() ->
-        @magicSheet = new createjs.SpriteSheet @magicSheetInfo
-        @magic = new createjs.BitmapAnimation @magicSheet
+        @SpriteSheet = new createjs.SpriteSheet @spriteSheetInfo
+        @magic = new createjs.BitmapAnimation @SpriteSheet
         @magic.x = @x
         @magic.y = @y
+        @speed = @originSpeed
 
     cast:() ->
         console.log('cast magic on '+@direction)
         @magic.addEventListener("tick", @move);
-        @magic.addEventListener("tick", @hit);
         @arena.container.addChild @magic
         @magic.gotoAndPlay "cast"
 
@@ -25,33 +21,20 @@ class window.Magic
         magic = event.target
         bound = @arena.getBound()
         if @direction == "right"
-            magic.x += 10
+            magic.x += @speed
         else 
-            magic.x -= 10
+            magic.x -= @speed
+        @detectCollision()
         if magic.x > bound['x2'] or magic.x < 0
             @arena.container.removeChild magic
 
-    getRect: ->
-        x1 = @magic.getBounds().x + @magic.x
-        y1 = @magic.getBounds().y + @magic.y
-        x2 = @magic.getBounds().x + @magic.x + @magic.getBounds().width
-        y2 = @magic.getBounds().y + @magic.y + @magic.getBounds().height
-        return {"x1":x1, "x2":x2, "y1":y1, "y2":y2}
 
-    hit: (event) =>
-        magic = event.target
-        if magic is null
-            return
-        rect1 = {
-          "x1": magic.getBounds().x + magic.x
-          "y1": magic.getBounds().y + magic.y
-          "x2": magic.getBounds().x + magic.x + magic.getBounds().width
-          "y2": magic.getBounds().y + magic.y + magic.getBounds().height
-        }
-        for player in @arena.getPlayers()
-          rect2 = player.getRect()
-          if !((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2 ) || (rect2.y1 > rect1.y2 ) || (rect2.y2 < rect1.y1))
-            player.gotHit(@direction)
-            console.log('hit player'+player.id)
-            magic.removeAllEventListeners();
-            @arena.container.removeChild magic
+    collisionHandler: (a,b)->
+        b.gotHit(@direction)
+        console.log('hit player'+b.id)
+        a.get().removeAllEventListeners();
+        a.arena.container.removeChild a.get()
+
+
+    get: ->
+        return @magic

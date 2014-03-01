@@ -32,7 +32,7 @@
       this.arena = new Arena(this.stage.canvas.width, this.stage.canvas.height, this.players);
       this.arena.setPosition(0, 0);
       this.arena.addToStage(this.stage);
-      robot = new Character("firzen", "robot", 5, 400, 200, this.stage, this.arena);
+      robot = new Character("firzen", "robot", 400, 200, this.stage, this.arena);
       robot.id = 0;
       return this.arena.addPlayer(robot);
     };
@@ -74,16 +74,15 @@
     };
 
     Game.prototype.onNewPlayer = function(data) {
-      var c;
+      var player;
       if (!(this.playerExists(data.id))) {
         console.log('Add new player to stage ' + data.id);
-        c = new Character("firzen", "player", 5, data.x, data.y, this.stage, this.arena);
-        c.id = data.id;
-        this.arena.addPlayer(c);
+        player = new Character("firzen", "player", data.x, data.y, this.stage, this.arena);
+        player.id = data.id;
+        this.arena.addPlayer(player);
       }
       if (data.id === this.clientID) {
-        console.log('My Character');
-        this.localPlayer = c;
+        this.localPlayer = player;
         createjs.Ticker.addEventListener("tick", (function(evt) {}).bind(this));
         window.addEventListener("keydown", (function(e) {
           return this.keysDown[e.keyCode] = true;
@@ -91,10 +90,10 @@
         return window.addEventListener("keyup", (function(e) {
           this.keysDown[e.keyCode] = false;
           if (!this.keysDown[Constant.KEYCODE_RIGHT] && !this.keysDown[Constant.KEYCODE_LEFT] && !this.keysDown[Constant.KEYCODE_UP] && !this.keysDown[Constant.KEYCODE_DOWN]) {
-            if (c.character.currentAnimation === "run") {
-              c.idle();
+            if (player.character.currentAnimation === "run") {
+              player.idle();
             }
-            c.setState('idle');
+            player.setState('idle');
             return this.socket.emit("update", {
               id: this.clientID,
               x: this.localPlayer.x,

@@ -1,5 +1,5 @@
 class window.Arena
-	constructor: (@w, @h, @players = {}) ->
+	constructor: (@w, @h, @players = [],@objects = []) ->
 
 		# Root container for battle arena
 		@container = new createjs.Container();
@@ -8,7 +8,6 @@ class window.Arena
 		# Background for arena
 		@background = new createjs.Bitmap("assets/background/1.png");
 		@container.addChild(@background);
-		@objects = {}
 		@init()
 
 	init: ->
@@ -22,6 +21,7 @@ class window.Arena
 
 	addPlayer: (player) ->
 		@container.addChild player.get()
+		@objects.push player
 		@players.push player
 
 	addObject: (object) ->
