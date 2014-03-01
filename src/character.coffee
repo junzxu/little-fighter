@@ -118,6 +118,7 @@ class window.Character extends Object
             @setState 'die'
         else
             @setState 'hurt'
+            @changeFaceDirection @counterDirection(direction)
             @character.gotoAndPlay "hurt"
             bound = @arena.getBound()
             @moveStep(direction)

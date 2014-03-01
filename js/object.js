@@ -42,23 +42,27 @@
       return this.object;
     };
 
-    Object.prototype.reverseDirection = function() {
-      switch (this.direction) {
+    Object.prototype.counterDirection = function(direction) {
+      switch (direction) {
         case "right":
-          this.direction = "left";
+          return "left";
           break;
         case "left":
-          this.direction = "right";
+          return "right";
           break;
         case "up":
-          this.direction = "down";
+          return "down";
           break;
         case "down":
-          this.direction = "up";
+          return "up";
           break;
         case "No":
-          return;
+          return "No";
       }
+    };
+
+    Object.prototype.reverseDirection = function() {
+      this.direction = this.counterDirection(this.direction);
       return console.log(this.name + ' reversed to ' + this.direction);
     };
 
@@ -168,7 +172,7 @@
         }
         rect2 = otherObject.getCollisionRect();
         if (!((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2) || (rect2.y1 > rect1.y2) || (rect2.y2 < rect1.y1))) {
-          console.log(object.name + 'collide with' + otherObject.name);
+          console.log(object.name + ' collide with ' + otherObject.name);
           _results.push(this.collisionHandler(object, otherObject));
         } else {
           _results.push(void 0);

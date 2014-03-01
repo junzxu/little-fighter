@@ -27,22 +27,25 @@ class window.Object
     	#override in child class
     	return @object
 
-    reverseDirection: ->
-    	switch @direction
+    counterDirection: (direction) ->
+    	switch direction
     		when "right"
-    			@direction = "left"
+    			return "left"
     			break
     		when "left"
-    			@direction = "right"
+    			return "right"
     			break
     		when "up"
-    			@direction = "down"
+    			return "down"
     			break
     		when "down"
-    			@direction = "up"
+    			return "up"
     			break
     		when "No"
-    			return
+    			return "No"
+
+    reverseDirection: ->
+    	@direction = @counterDirection(@direction)
     	console.log(@name + ' reversed to ' + @direction)
 
     moveStep: (direction) =>
@@ -117,7 +120,7 @@ class window.Object
              continue
           rect2 = otherObject.getCollisionRect()
           if !((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2 ) || (rect2.y1 > rect1.y2 ) || (rect2.y2 < rect1.y1))
-            console.log(object.name + 'collide with' + otherObject.name)
+            console.log(object.name + ' collide with ' + otherObject.name)
             @collisionHandler object,otherObject
 
     updateSpeed: (a,b) ->

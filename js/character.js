@@ -152,6 +152,7 @@
         return this.setState('die');
       } else {
         this.setState('hurt');
+        this.changeFaceDirection(this.counterDirection(direction));
         this.character.gotoAndPlay("hurt");
         bound = this.arena.getBound();
         return this.moveStep(direction);
