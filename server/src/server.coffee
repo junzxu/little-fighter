@@ -1,6 +1,7 @@
 class Server
     constructor: ()->
         @util =  require ("util")
+        @express require ("express")
         @io = require("socket.io")
         @Character = require("../js/character.js").Character
 

@@ -1,0 +1,18 @@
+{
+  "name": "game-engine",
+  "description": "A 2D game frame work.",
+  "author": "Junzhe Xu <junzhe_xu@brown.edu>",
+  "homepage": "https://github.com/junzxu/game",
+
+  "dependencies": {
+    "express": "~3.0.6",
+    "mongodb": "1.2.x",
+    "mongoose": "3.8.x"
+  },
+
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": "0.10.x"
+  }
+}
