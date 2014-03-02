@@ -71,15 +71,3 @@ class window.World
 	get: ->
 		return @world
 
-############ detect collision of objects ##############
-	detectCollision: (e) ->
-		object_list = []
-		if @objects.length == 0
-			return
-		for object,index in @objects
-			if object in object_list or not object?
-				continue
-			pair = object.detectCollision()
-			for o in pair
-				object_list.push o
-

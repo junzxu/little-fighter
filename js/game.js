@@ -29,7 +29,7 @@
       var canvas, robot;
       canvas = document.getElementById("gameCanvas");
       this.world = new World(canvas);
-      robot = new Character("firzen", "robot", 400, 200, this.world);
+      robot = new Character("julian", "robot", 400, 200, this.world);
       robot.id = 0;
       return this.world.addPlayer(robot);
     };
@@ -40,8 +40,7 @@
       this.socket.on("client id", this.onReceivedClientID.bind(this));
       this.socket.on("update", this.onUpdate.bind(this));
       this.socket.on("disconnect", this.onDisconnect.bind(this));
-      createjs.Ticker.addEventListener("tick", this.onTick.bind(this));
-      return createjs.Ticker.addEventListener("tick", this.world.detectCollision.bind(this.world));
+      return createjs.Ticker.addEventListener("tick", this.onTick.bind(this));
     };
 
     Game.prototype.onUpdate = function(data) {

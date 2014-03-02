@@ -111,63 +111,52 @@ class window.Object
 
 
 ################################ Collision ###########################        
-    detectCollision: () =>
+    detectCollision: (trigger = true)->
         object = @
         rect1 = @getCollisionRect()
         for otherObject in @world.getObjects()
-          if object.id == otherObject.id
+          if @id == otherObject.id
              continue
           rect2 = otherObject.getCollisionRect()
           if !((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2 ) || (rect2.y1 > rect1.y2 ) || (rect2.y2 < rect1.y1))
-            console.log(object.name + ' collide with ' + otherObject.name)
-            @collisionHandler object,otherObject
-        return [object,otherObject]
+            # console.log(object.name + ' collide with ' + otherObject.name)
+            d1 = otherObject.direction
+            d2 = @direction
+            @collisionHandler otherObject, d1
+            if trigger
+                otherObject.collisionHandler @, d2
+            return [object,otherObject]
+          else
+            return []
 
-    collide: (a,b) =>
+    collide: (o,direction) ->
     	#default collide behavior
-    	v1 = a.speed
-    	v2 = b.speed
-    	if a.direction != "No" and b.direction != "No"
-    		a.reverseDirection()
-    		b.reverseDirection()
-    		b.moveStep(b.direction)
-    	if a.direction == "No"
-    		a.direction = b.direction
-    		b.reverseDirection()
-    		a.moveStep(a.direction)
-    	if b.direction == "No"
-    		b.direction = a.direction
-    		a.reverseDirection()
-    		b.moveStep(b.direction)
-    	a.speed = Math.abs(a.mass-b.mass)/(a.mass+b.mass)*v1
-    	a.speed += (2*b.mass)/(a.mass + b.mass)*v2
-    	b.speed = (2*b.mass)/(a.mass + b.mass)*v1
-    	b.speed += Math.abs(a.mass-b.mass)/(a.mass+b.mass)*v2
-    	a.state = 'disabled'
-    	b.state = 'disabled'
+    	console.log(@.name + ' collide with ' + o.name)
+    	v1 = @speed
+    	v2 = o.speed
+    	if @direction == "No"
+    		@direction = direction
+    		@moveStep(direction)
+    	else
+    		@reverseDirection()
+    		@moveStep(@direction)
+    	@speed = Math.abs(@mass-o.mass)/(@mass+o.mass)*v1
+    	@speed += (2*o.mass)/(@mass + o.mass)*v2
+    	@state = 'disabled'
     	#we must pass exactly same function reference to remove Eventlistener
-    	handlder_a = @updatePosition.bind a
-    	handlder_b = @updatePosition.bind b
-    	a.get().addEventListener "tick", handlder_a
-    	b.get().addEventListener "tick", handlder_b
-    	return [handlder_a,handlder_b]
+    	handlder = @updatePosition.bind this
+    	@get().addEventListener "tick", handlder
+    	return handlder
 
-	collisionHandler: (a,b) =>
-        #override in child class
-        handlders = @collide a,b
-        createjs.Tween.get a, {loop:false} 
+	collisionHandler: (o,direction = 'No') ->
+        #override in child class, direction argument is for still objects
+        handlder = @collide o,direction
+        createjs.Tween.get @, {loop:false} 
         .wait(100) 
         .call(
             (-> 
-                a.idle()
-                a.get().removeEventListener "tick", handlders[0]
-            ))
-        createjs.Tween.get b, {loop:false} 
-        .wait(100) 
-        .call(
-            (-> 
-                b.idle()
-                b.get().removeEventListener "tick", handlders[1]
+                @idle()
+                @get().removeEventListener "tick", handlder
             ))
 
 	updatePosition:(event) ->

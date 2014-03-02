@@ -33,7 +33,7 @@ class window.Game
         @world = new World canvas
         # createjs.Ticker.addEventListener "tick", @world.detectCollision
         #add a ai robot
-        robot = new Character "firzen", "robot", 400, 200, @world
+        robot = new Character "julian", "robot", 400, 200, @world
         robot.id = 0
         @world.addPlayer robot
 
@@ -46,7 +46,7 @@ class window.Game
         @socket.on "update", @onUpdate.bind this
         @socket.on "disconnect", @onDisconnect.bind this
         createjs.Ticker.addEventListener "tick", @onTick.bind this
-        createjs.Ticker.addEventListener "tick", @world.detectCollision.bind @world
+        # createjs.Ticker.addEventListener "tick", @world.detectCollision.bind @world
 
     # Handlers for events
     onUpdate: (data) ->

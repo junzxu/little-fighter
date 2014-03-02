@@ -24,16 +24,16 @@ class window.Magic extends Object
             magic.x += @speed
         else 
             magic.x -= @speed
-        @detectCollision()
+        @detectCollision false
         if magic.x > bound['x2'] or magic.x < 0
             @world.get().removeChild magic
 
 
-    collisionHandler: (a,b)->
-        b.gotHit(@direction)
-        console.log('hit player'+b.id)
-        a.get().removeAllEventListeners();
-        a.world.get().removeChild a.get()
+    collisionHandler: (o)->
+        o.gotHit(@direction)
+        console.log('hit player'+o.id)
+        @get().removeAllEventListeners();
+        @world.get().removeChild @get()
 
 
     get: ->

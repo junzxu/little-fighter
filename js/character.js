@@ -80,8 +80,9 @@
       this.speed = this.originSpeed;
       this.moveStep(direction);
       if (direction === "left" || direction === "right") {
-        return this.changeFaceDirection(direction);
+        this.changeFaceDirection(direction);
       }
+      return this.detectCollision();
     };
 
     Character.prototype.attack = function() {

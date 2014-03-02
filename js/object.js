@@ -9,9 +9,6 @@
       this.x = x;
       this.y = y;
       this.world = world;
-      this.collisionHandler = __bind(this.collisionHandler, this);
-      this.collide = __bind(this.collide, this);
-      this.detectCollision = __bind(this.detectCollision, this);
       this.moveStep = __bind(this.moveStep, this);
       this.id;
       this.type;
@@ -158,71 +155,65 @@
       return console.log("nothing happened");
     };
 
-    Object.prototype.detectCollision = function() {
-      var object, otherObject, rect1, rect2, _i, _len, _ref;
+    Object.prototype.detectCollision = function(trigger) {
+      var d1, d2, object, otherObject, rect1, rect2, _i, _len, _ref;
+      if (trigger == null) {
+        trigger = true;
+      }
       object = this;
       rect1 = this.getCollisionRect();
       _ref = this.world.getObjects();
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         otherObject = _ref[_i];
-        if (object.id === otherObject.id) {
+        if (this.id === otherObject.id) {
           continue;
         }
         rect2 = otherObject.getCollisionRect();
         if (!((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2) || (rect2.y1 > rect1.y2) || (rect2.y2 < rect1.y1))) {
-          console.log(object.name + ' collide with ' + otherObject.name);
-          this.collisionHandler(object, otherObject);
+          d1 = otherObject.direction;
+          d2 = this.direction;
+          this.collisionHandler(otherObject, d1);
+          if (trigger) {
+            otherObject.collisionHandler(this, d2);
+          }
+          return [object, otherObject];
+        } else {
+          return [];
         }
       }
-      return [object, otherObject];
     };
 
-    Object.prototype.collide = function(a, b) {
-      var handlder_a, handlder_b, v1, v2;
-      v1 = a.speed;
-      v2 = b.speed;
-      if (a.direction !== "No" && b.direction !== "No") {
-        a.reverseDirection();
-        b.reverseDirection();
-        b.moveStep(b.direction);
+    Object.prototype.collide = function(o, direction) {
+      var handlder, v1, v2;
+      console.log(this.name + ' collide with ' + o.name);
+      v1 = this.speed;
+      v2 = o.speed;
+      if (this.direction === "No") {
+        this.direction = direction;
+        this.moveStep(direction);
+      } else {
+        this.reverseDirection();
+        this.moveStep(this.direction);
       }
-      if (a.direction === "No") {
-        a.direction = b.direction;
-        b.reverseDirection();
-        a.moveStep(a.direction);
-      }
-      if (b.direction === "No") {
-        b.direction = a.direction;
-        a.reverseDirection();
-        b.moveStep(b.direction);
-      }
-      a.speed = Math.abs(a.mass - b.mass) / (a.mass + b.mass) * v1;
-      a.speed += (2 * b.mass) / (a.mass + b.mass) * v2;
-      b.speed = (2 * b.mass) / (a.mass + b.mass) * v1;
-      b.speed += Math.abs(a.mass - b.mass) / (a.mass + b.mass) * v2;
-      a.state = 'disabled';
-      b.state = 'disabled';
-      handlder_a = this.updatePosition.bind(a);
-      handlder_b = this.updatePosition.bind(b);
-      a.get().addEventListener("tick", handlder_a);
-      b.get().addEventListener("tick", handlder_b);
-      return [handlder_a, handlder_b];
+      this.speed = Math.abs(this.mass - o.mass) / (this.mass + o.mass) * v1;
+      this.speed += (2 * o.mass) / (this.mass + o.mass) * v2;
+      this.state = 'disabled';
+      handlder = this.updatePosition.bind(this);
+      this.get().addEventListener("tick", handlder);
+      return handlder;
     };
 
-    Object.prototype.collisionHandler = function(a, b) {
-      var handlders;
-      handlders = this.collide(a, b);
-      createjs.Tween.get(a, {
+    Object.prototype.collisionHandler = function(o, direction) {
+      var handlder;
+      if (direction == null) {
+        direction = 'No';
+      }
+      handlder = this.collide(o, direction);
+      return createjs.Tween.get(this, {
         loop: false
       }).wait(100).call((function() {
-        a.idle();
-        return a.get().removeEventListener("tick", handlders[0]);
-      }));
-      return createjs.Tween.get(b, {
-        loop: false
-      }).wait(100).call((function() {
-        b.idle();
-        return b.get().removeEventListener("tick", handlders[1]);
+        this.idle();
+        return this.get().removeEventListener("tick", handlder);
       }));
     };
 

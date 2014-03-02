@@ -45,17 +45,17 @@
       } else {
         magic.x -= this.speed;
       }
-      this.detectCollision();
+      this.detectCollision(false);
       if (magic.x > bound['x2'] || magic.x < 0) {
         return this.world.get().removeChild(magic);
       }
     };
 
-    Magic.prototype.collisionHandler = function(a, b) {
-      b.gotHit(this.direction);
-      console.log('hit player' + b.id);
-      a.get().removeAllEventListeners();
-      return a.world.get().removeChild(a.get());
+    Magic.prototype.collisionHandler = function(o) {
+      o.gotHit(this.direction);
+      console.log('hit player' + o.id);
+      this.get().removeAllEventListeners();
+      return this.world.get().removeChild(this.get());
     };
 
     Magic.prototype.get = function() {
