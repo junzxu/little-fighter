@@ -11,7 +11,7 @@
       this.stageInit();
       this.serverInit();
       createjs.Ticker.setFPS(60);
-      createjs.Ticker.addEventListener("tick", this.stage);
+      createjs.Ticker.addEventListener("tick", this.world.stage);
       this.ready = false;
       this.lastKeyPress = new Date();
       return this.addEventHandlers();
@@ -26,15 +26,12 @@
     };
 
     Game.prototype.stageInit = function() {
-      var robot;
-      this.rect = new createjs.Rectangle(0, 0, 100, 100);
-      this.stage = new createjs.Stage(document.getElementById("gameCanvas"));
-      this.arena = new Arena(this.stage.canvas.width, this.stage.canvas.height, this.players);
-      this.arena.setPosition(0, 0);
-      this.arena.addToStage(this.stage);
-      robot = new Character("firzen", "robot", 400, 200, this.stage, this.arena);
+      var canvas, robot;
+      canvas = document.getElementById("gameCanvas");
+      this.world = new World(canvas);
+      robot = new Character("firzen", "robot", 400, 200, this.world);
       robot.id = 0;
-      return this.arena.addPlayer(robot);
+      return this.world.addPlayer(robot);
     };
 
     Game.prototype.addEventHandlers = function() {
@@ -77,9 +74,9 @@
       var player;
       if (!(this.playerExists(data.id))) {
         console.log('Add new player to stage ' + data.id);
-        player = new Character("firzen", "player", data.x, data.y, this.stage, this.arena);
+        player = new Character("firzen", "player", data.x, data.y, this.world);
         player.id = data.id;
-        this.arena.addPlayer(player);
+        this.world.addPlayer(player);
       }
       if (data.id === this.clientID) {
         this.localPlayer = player;
@@ -194,15 +191,6 @@
           return p;
         }
       }
-    };
-
-    Game.prototype.collide = function(rect1, rect2) {
-      console.log('rect1 ' + rect1.y2);
-      console.log('rect2 ' + rect2.y2);
-      console.log(!(rect2.x2 < rect1.x1) && !(rect2.x1 > rect1.x2));
-      console.log(rect1.y2 - this.Y_AXIS_THREASHOLD);
-      console.log(rect1.y2 + this.Y_AXIS_THREASHOLD);
-      return !(rect2.x2 < rect1.x1) && !(rect2.x1 > rect1.x2) && (rect2.y2 > (rect1.y2 - this.Y_AXIS_THREASHOLD)) && (rect2.y2 < (rect1.y2 + this.Y_AXIS_THREASHOLD));
     };
 
     return Game;

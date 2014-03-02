@@ -1,5 +1,5 @@
 class window.Character extends Object
-    constructor: (@name, @type, @x, @y, @stage, @arena) ->
+    constructor: (@name, @type, @x, @y, @world) ->
         super
         @hp = 100
         @cd = 300
@@ -39,9 +39,9 @@ class window.Character extends Object
         ).bind this
 
 
-    addToStage: (stage) ->
-        stage.addChild(@character)
-        @stage = stage
+    addToWorld: (world) ->
+        world.addPlayer @
+        @world = world
 
     get: ->
         return @character
@@ -75,7 +75,7 @@ class window.Character extends Object
             bound = @getRect()
             width = bound.x2-bound.x1
             x  = if (@faceDirection == 'right') then @x+width  else @x-width
-            m = new Magic 'blue','magic', x, @y, @stage, @arena,@character, @magicSheetInfo, @faceDirection
+            m = new Magic 'blue','magic', x, @y, @world, @character, @magicSheetInfo, @faceDirection
             m.cast()
             @magicState = 'preparing'
             createjs.Tween.get @character, {loop:false} 
@@ -86,8 +86,8 @@ class window.Character extends Object
                 ))
 
     rebirth: ->
-        @arena.container.removeChild @character
-        bound = @arena.getBound()
+        @world.get().removeChild @character
+        bound = @world.getBound()
         x = Math.floor(Math.random() * bound.x2)
         y = Math.floor(Math.random() * bound.y2)
         @character.x = x
@@ -98,7 +98,7 @@ class window.Character extends Object
         .wait(3000) 
         .call(
             (=> 
-                @arena.container.addChild @character
+                @world.get().addChild @character
                 @character.gotoAndPlay "idle")
             )
 
@@ -120,7 +120,7 @@ class window.Character extends Object
             @setState 'hurt'
             @changeFaceDirection @counterDirection(direction)
             @character.gotoAndPlay "hurt"
-            bound = @arena.getBound()
+            bound = @world.getBound()
             @moveStep(direction)
 
 

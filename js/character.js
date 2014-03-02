@@ -6,13 +6,12 @@
   window.Character = (function(_super) {
     __extends(Character, _super);
 
-    function Character(name, type, x, y, stage, arena) {
+    function Character(name, type, x, y, world) {
       this.name = name;
       this.type = type;
       this.x = x;
       this.y = y;
-      this.stage = stage;
-      this.arena = arena;
+      this.world = world;
       Character.__super__.constructor.apply(this, arguments);
       this.hp = 100;
       this.cd = 300;
@@ -52,9 +51,9 @@
       }).bind(this));
     };
 
-    Character.prototype.addToStage = function(stage) {
-      stage.addChild(this.character);
-      return this.stage = stage;
+    Character.prototype.addToWorld = function(world) {
+      world.addPlayer(this);
+      return this.world = world;
     };
 
     Character.prototype.get = function() {
@@ -98,7 +97,7 @@
         bound = this.getRect();
         width = bound.x2 - bound.x1;
         x = this.faceDirection === 'right' ? this.x + width : this.x - width;
-        m = new Magic('blue', 'magic', x, this.y, this.stage, this.arena, this.character, this.magicSheetInfo, this.faceDirection);
+        m = new Magic('blue', 'magic', x, this.y, this.world, this.character, this.magicSheetInfo, this.faceDirection);
         m.cast();
         this.magicState = 'preparing';
         return createjs.Tween.get(this.character, {
@@ -113,8 +112,8 @@
 
     Character.prototype.rebirth = function() {
       var bound, x, y;
-      this.arena.container.removeChild(this.character);
-      bound = this.arena.getBound();
+      this.world.get().removeChild(this.character);
+      bound = this.world.getBound();
       x = Math.floor(Math.random() * bound.x2);
       y = Math.floor(Math.random() * bound.y2);
       this.character.x = x;
@@ -125,7 +124,7 @@
         loop: false
       }).wait(3000).call(((function(_this) {
         return function() {
-          _this.arena.container.addChild(_this.character);
+          _this.world.get().addChild(_this.character);
           return _this.character.gotoAndPlay("idle");
         };
       })(this)));
@@ -154,7 +153,7 @@
         this.setState('hurt');
         this.changeFaceDirection(this.counterDirection(direction));
         this.character.gotoAndPlay("hurt");
-        bound = this.arena.getBound();
+        bound = this.world.getBound();
         return this.moveStep(direction);
       }
     };

@@ -28,6 +28,7 @@ class window.Arena
 		@container.addChild object.get()
 		@objects.push object
 
+
 	addToStage: (stage) ->
 		stage.addChild @container
 

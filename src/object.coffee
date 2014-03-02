@@ -1,5 +1,5 @@
 class window.Object
-	constructor: (@name, @type, @x, @y, @stage, @arena) ->
+	constructor: (@name, @type, @x, @y, @world) ->
         @id
         @type
         @hp
@@ -7,14 +7,13 @@ class window.Object
         @speed = 0  #current speed
         @originSpeed = 5
         @collisionHeight = 20
-        @collisionWidth = 10
+        @collisionWidth = 30
         @spriteSheetInfo
         @SpriteSheet
         @object = null
         @objectSpriteSheet
         @direction
-        @stage
-        @arena
+        @world
         @magicState = "ready"
         @init()
 
@@ -49,7 +48,7 @@ class window.Object
     	console.log(@name + ' reversed to ' + @direction)
 
     moveStep: (direction) =>
-	    bound = @arena.getBound()
+	    bound = @world.getBound()
 	    switch direction
 	        when "left"
 	            if (@direction != "left")
@@ -80,7 +79,7 @@ class window.Object
 	    @updateCoords()
 
 	moveTo: (x,y)->
-	    bound = @arena.getBound()
+	    bound = @world.getBound()
 	    if (x  > bound['x1'] and x < bound['x2'] and y  > bound['y1'] and y < bound['y2'])
 	        @get().x = x
 	        @get().y = y
@@ -112,58 +111,66 @@ class window.Object
 
 
 ################################ Collision ###########################        
-    detectCollision: () ->
+    detectCollision: () =>
         object = @
         rect1 = @getCollisionRect()
-        for otherObject in @arena.getObjects()
+        for otherObject in @world.getObjects()
           if object.id == otherObject.id
              continue
           rect2 = otherObject.getCollisionRect()
           if !((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2 ) || (rect2.y1 > rect1.y2 ) || (rect2.y2 < rect1.y1))
             console.log(object.name + ' collide with ' + otherObject.name)
             @collisionHandler object,otherObject
+        return [object,otherObject]
 
-    updateSpeed: (a,b) ->
+    collide: (a,b) =>
+    	#default collide behavior
     	v1 = a.speed
     	v2 = b.speed
-    	if a.direction == "No"
-    		a.direction = b.direction
-    		b.reverseDirection()
-    	if b.direction == "No"
-    		b.direction = a.direction
-    		a.reverseDirection()
     	if a.direction != "No" and b.direction != "No"
     		a.reverseDirection()
     		b.reverseDirection()
+    		b.moveStep(b.direction)
+    	if a.direction == "No"
+    		a.direction = b.direction
+    		b.reverseDirection()
+    		a.moveStep(a.direction)
+    	if b.direction == "No"
+    		b.direction = a.direction
+    		a.reverseDirection()
+    		b.moveStep(b.direction)
     	a.speed = Math.abs(a.mass-b.mass)/(a.mass+b.mass)*v1
     	a.speed += (2*b.mass)/(a.mass + b.mass)*v2
     	b.speed = (2*b.mass)/(a.mass + b.mass)*v1
     	b.speed += Math.abs(a.mass-b.mass)/(a.mass+b.mass)*v2
     	a.state = 'disabled'
     	b.state = 'disabled'
-    	a.get().addEventListener("tick", @collide);
-    	b.get().addEventListener("tick", @collide);
+    	#we must pass exactly same function reference to remove Eventlistener
+    	handlder_a = @updatePosition.bind a
+    	handlder_b = @updatePosition.bind b
+    	a.get().addEventListener "tick", handlder_a
+    	b.get().addEventListener "tick", handlder_b
+    	return [handlder_a,handlder_b]
 
-
-	collisionHandler: (a,b)=>
+	collisionHandler: (a,b) =>
         #override in child class
-        @updateSpeed a,b
+        handlders = @collide a,b
         createjs.Tween.get a, {loop:false} 
         .wait(200) 
         .call(
-            (=> 
+            (-> 
                 a.idle()
-                a.get().removeEventListener("tick", @collide)
+                a.get().removeEventListener "tick", handlders[0]
             ))
         createjs.Tween.get b, {loop:false} 
         .wait(200) 
         .call(
-            (=> 
+            (-> 
                 b.idle()
-                b.get().removeEventListener("tick", @collide)
+                b.get().removeEventListener "tick", handlders[1]
             ))
 
-	collide:(event) =>
+	updatePosition:(event) ->
 		object = event.target
 		switch @direction
 			when "right"

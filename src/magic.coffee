@@ -1,5 +1,5 @@
 class window.Magic extends Object
-    constructor: (@name,@type, @x, @y, @stage, @arena, @character, @spriteSheetInfo, @direction) ->
+    constructor: (@name,@type, @x, @y, @world, @character, @spriteSheetInfo, @direction) ->
         super
         @magic
 
@@ -13,27 +13,27 @@ class window.Magic extends Object
     cast:() ->
         console.log('cast magic on '+@direction)
         @magic.addEventListener("tick", @move);
-        @arena.container.addChild @magic
+        @world.get().addChild @magic
         @magic.gotoAndPlay "cast"
 
 
     move: (event)=>
         magic = event.target
-        bound = @arena.getBound()
+        bound = @world.getBound()
         if @direction == "right"
             magic.x += @speed
         else 
             magic.x -= @speed
         @detectCollision()
         if magic.x > bound['x2'] or magic.x < 0
-            @arena.container.removeChild magic
+            @world.get().removeChild magic
 
 
     collisionHandler: (a,b)->
         b.gotHit(@direction)
         console.log('hit player'+b.id)
         a.get().removeAllEventListeners();
-        a.arena.container.removeChild a.get()
+        a.world.get().removeChild a.get()
 
 
     get: ->

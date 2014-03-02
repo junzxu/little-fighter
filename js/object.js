@@ -3,15 +3,15 @@
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.Object = (function() {
-    function Object(name, type, x, y, stage, arena) {
+    function Object(name, type, x, y, world) {
       this.name = name;
       this.type = type;
       this.x = x;
       this.y = y;
-      this.stage = stage;
-      this.arena = arena;
-      this.collide = __bind(this.collide, this);
+      this.world = world;
       this.collisionHandler = __bind(this.collisionHandler, this);
+      this.collide = __bind(this.collide, this);
+      this.detectCollision = __bind(this.detectCollision, this);
       this.moveStep = __bind(this.moveStep, this);
       this.id;
       this.type;
@@ -20,14 +20,13 @@
       this.speed = 0;
       this.originSpeed = 5;
       this.collisionHeight = 20;
-      this.collisionWidth = 10;
+      this.collisionWidth = 30;
       this.spriteSheetInfo;
       this.SpriteSheet;
       this.object = null;
       this.objectSpriteSheet;
       this.direction;
-      this.stage;
-      this.arena;
+      this.world;
       this.magicState = "ready";
       this.init();
     }
@@ -68,7 +67,7 @@
 
     Object.prototype.moveStep = function(direction) {
       var bound;
-      bound = this.arena.getBound();
+      bound = this.world.getBound();
       switch (direction) {
         case "left":
           if (this.direction !== "left") {
@@ -111,7 +110,7 @@
 
     Object.prototype.moveTo = function(x, y) {
       var bound;
-      bound = this.arena.getBound();
+      bound = this.world.getBound();
       if (x > bound['x1'] && x < bound['x2'] && y > bound['y1'] && y < bound['y2']) {
         this.get().x = x;
         this.get().y = y;
@@ -160,11 +159,10 @@
     };
 
     Object.prototype.detectCollision = function() {
-      var object, otherObject, rect1, rect2, _i, _len, _ref, _results;
+      var object, otherObject, rect1, rect2, _i, _len, _ref;
       object = this;
       rect1 = this.getCollisionRect();
-      _ref = this.arena.getObjects();
-      _results = [];
+      _ref = this.world.getObjects();
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         otherObject = _ref[_i];
         if (object.id === otherObject.id) {
@@ -173,29 +171,30 @@
         rect2 = otherObject.getCollisionRect();
         if (!((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2) || (rect2.y1 > rect1.y2) || (rect2.y2 < rect1.y1))) {
           console.log(object.name + ' collide with ' + otherObject.name);
-          _results.push(this.collisionHandler(object, otherObject));
-        } else {
-          _results.push(void 0);
+          this.collisionHandler(object, otherObject);
         }
       }
-      return _results;
+      return [object, otherObject];
     };
 
-    Object.prototype.updateSpeed = function(a, b) {
-      var v1, v2;
+    Object.prototype.collide = function(a, b) {
+      var handlder_a, handlder_b, v1, v2;
       v1 = a.speed;
       v2 = b.speed;
+      if (a.direction !== "No" && b.direction !== "No") {
+        a.reverseDirection();
+        b.reverseDirection();
+        b.moveStep(b.direction);
+      }
       if (a.direction === "No") {
         a.direction = b.direction;
         b.reverseDirection();
+        a.moveStep(a.direction);
       }
       if (b.direction === "No") {
         b.direction = a.direction;
         a.reverseDirection();
-      }
-      if (a.direction !== "No" && b.direction !== "No") {
-        a.reverseDirection();
-        b.reverseDirection();
+        b.moveStep(b.direction);
       }
       a.speed = Math.abs(a.mass - b.mass) / (a.mass + b.mass) * v1;
       a.speed += (2 * b.mass) / (a.mass + b.mass) * v2;
@@ -203,31 +202,31 @@
       b.speed += Math.abs(a.mass - b.mass) / (a.mass + b.mass) * v2;
       a.state = 'disabled';
       b.state = 'disabled';
-      a.get().addEventListener("tick", this.collide);
-      return b.get().addEventListener("tick", this.collide);
+      handlder_a = this.updatePosition.bind(a);
+      handlder_b = this.updatePosition.bind(b);
+      a.get().addEventListener("tick", handlder_a);
+      b.get().addEventListener("tick", handlder_b);
+      return [handlder_a, handlder_b];
     };
 
     Object.prototype.collisionHandler = function(a, b) {
-      this.updateSpeed(a, b);
+      var handlders;
+      handlders = this.collide(a, b);
       createjs.Tween.get(a, {
         loop: false
-      }).wait(200).call(((function(_this) {
-        return function() {
-          a.idle();
-          return a.get().removeEventListener("tick", _this.collide);
-        };
-      })(this)));
+      }).wait(200).call((function() {
+        a.idle();
+        return a.get().removeEventListener("tick", handlders[0]);
+      }));
       return createjs.Tween.get(b, {
         loop: false
-      }).wait(200).call(((function(_this) {
-        return function() {
-          b.idle();
-          return b.get().removeEventListener("tick", _this.collide);
-        };
-      })(this)));
+      }).wait(200).call((function() {
+        b.idle();
+        return b.get().removeEventListener("tick", handlders[1]);
+      }));
     };
 
-    Object.prototype.collide = function(event) {
+    Object.prototype.updatePosition = function(event) {
       var object;
       object = event.target;
       switch (this.direction) {

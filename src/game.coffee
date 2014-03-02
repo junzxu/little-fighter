@@ -10,7 +10,7 @@ class window.Game
         @serverInit()
 
         createjs.Ticker.setFPS 60
-        createjs.Ticker.addEventListener "tick", @stage
+        createjs.Ticker.addEventListener "tick", @world.stage
         @ready = false
 
 
@@ -28,16 +28,14 @@ class window.Game
 
     # Stage setup
     stageInit: () ->
-        @rect = new createjs.Rectangle 0, 0, 100, 100
         # Setup Stage
-        @stage = new createjs.Stage document.getElementById("gameCanvas")
-        @arena = new Arena @stage.canvas.width, @stage.canvas.height, @players
-        @arena.setPosition 0, 0
-        @arena.addToStage @stage
+        canvas = document.getElementById("gameCanvas")
+        @world = new World canvas
+        # createjs.Ticker.addEventListener "tick", @world.detectCollision
         #add a ai robot
-        robot = new Character "firzen", "robot", 400, 200, @stage, @arena
+        robot = new Character "firzen", "robot", 400, 200, @world
         robot.id = 0
-        @arena.addPlayer robot
+        @world.addPlayer robot
 
 
     addEventHandlers: () ->
@@ -48,7 +46,7 @@ class window.Game
         @socket.on "update", @onUpdate.bind this
         @socket.on "disconnect", @onDisconnect.bind this
         createjs.Ticker.addEventListener "tick", @onTick.bind this
-
+        # createjs.Ticker.addEventListener "tick", @world.detectCollision.bind this
 
     # Handlers for events
     onUpdate: (data) ->
@@ -78,9 +76,9 @@ class window.Game
     onNewPlayer: (data) ->
         if !(@playerExists data.id)
             console.log 'Add new player to stage ' + data.id
-            player = new Character "firzen", "player", data.x, data.y, @stage, @arena
+            player = new Character "firzen", "player", data.x, data.y, @world
             player.id = data.id
-            @arena.addPlayer player
+            @world.addPlayer player
 
         if (data.id == @clientID)
             @localPlayer = player
@@ -153,13 +151,4 @@ class window.Game
         for p in @players
             if (p.id == id)
                 return p
-
-    # Check if 2 rectangles intersect
-    collide: (rect1, rect2) ->
-        console.log 'rect1 ' + rect1.y2
-        console.log 'rect2 ' + rect2.y2
-        console.log (!(rect2.x2 < rect1.x1) && !(rect2.x1 > rect1.x2))
-        console.log  (rect1.y2 - @Y_AXIS_THREASHOLD)
-        console.log (rect1.y2 + @Y_AXIS_THREASHOLD)
-        return (!(rect2.x2 < rect1.x1) && !(rect2.x1 > rect1.x2) && (rect2.y2 > (rect1.y2 - @Y_AXIS_THREASHOLD)) && (rect2.y2 < (rect1.y2 + @Y_AXIS_THREASHOLD)))
 

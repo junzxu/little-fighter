@@ -7,13 +7,12 @@
   window.Magic = (function(_super) {
     __extends(Magic, _super);
 
-    function Magic(name, type, x, y, stage, arena, character, spriteSheetInfo, direction) {
+    function Magic(name, type, x, y, world, character, spriteSheetInfo, direction) {
       this.name = name;
       this.type = type;
       this.x = x;
       this.y = y;
-      this.stage = stage;
-      this.arena = arena;
+      this.world = world;
       this.character = character;
       this.spriteSheetInfo = spriteSheetInfo;
       this.direction = direction;
@@ -33,14 +32,14 @@
     Magic.prototype.cast = function() {
       console.log('cast magic on ' + this.direction);
       this.magic.addEventListener("tick", this.move);
-      this.arena.container.addChild(this.magic);
+      this.world.get().addChild(this.magic);
       return this.magic.gotoAndPlay("cast");
     };
 
     Magic.prototype.move = function(event) {
       var bound, magic;
       magic = event.target;
-      bound = this.arena.getBound();
+      bound = this.world.getBound();
       if (this.direction === "right") {
         magic.x += this.speed;
       } else {
@@ -48,7 +47,7 @@
       }
       this.detectCollision();
       if (magic.x > bound['x2'] || magic.x < 0) {
-        return this.arena.container.removeChild(magic);
+        return this.world.get().removeChild(magic);
       }
     };
 
@@ -56,7 +55,7 @@
       b.gotHit(this.direction);
       console.log('hit player' + b.id);
       a.get().removeAllEventListeners();
-      return a.arena.container.removeChild(a.get());
+      return a.world.get().removeChild(a.get());
     };
 
     Magic.prototype.get = function() {
