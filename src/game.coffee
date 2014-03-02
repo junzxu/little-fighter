@@ -46,7 +46,7 @@ class window.Game
         @socket.on "update", @onUpdate.bind this
         @socket.on "disconnect", @onDisconnect.bind this
         createjs.Ticker.addEventListener "tick", @onTick.bind this
-        # createjs.Ticker.addEventListener "tick", @world.detectCollision.bind this
+        createjs.Ticker.addEventListener "tick", @world.detectCollision.bind @world
 
     # Handlers for events
     onUpdate: (data) ->

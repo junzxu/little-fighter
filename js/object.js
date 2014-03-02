@@ -214,13 +214,13 @@
       handlders = this.collide(a, b);
       createjs.Tween.get(a, {
         loop: false
-      }).wait(200).call((function() {
+      }).wait(100).call((function() {
         a.idle();
         return a.get().removeEventListener("tick", handlders[0]);
       }));
       return createjs.Tween.get(b, {
         loop: false
-      }).wait(200).call((function() {
+      }).wait(100).call((function() {
         b.idle();
         return b.get().removeEventListener("tick", handlders[1]);
       }));

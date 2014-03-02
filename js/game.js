@@ -40,7 +40,8 @@
       this.socket.on("client id", this.onReceivedClientID.bind(this));
       this.socket.on("update", this.onUpdate.bind(this));
       this.socket.on("disconnect", this.onDisconnect.bind(this));
-      return createjs.Ticker.addEventListener("tick", this.onTick.bind(this));
+      createjs.Ticker.addEventListener("tick", this.onTick.bind(this));
+      return createjs.Ticker.addEventListener("tick", this.world.detectCollision.bind(this.world));
     };
 
     Game.prototype.onUpdate = function(data) {

@@ -63,7 +63,6 @@ class window.Character extends Object
         @moveStep(direction)
         if direction in ["left","right"]
             @changeFaceDirection(direction)
-        @detectCollision()
 
 
     attack: ->

@@ -156,14 +156,14 @@ class window.Object
         #override in child class
         handlders = @collide a,b
         createjs.Tween.get a, {loop:false} 
-        .wait(200) 
+        .wait(100) 
         .call(
             (-> 
                 a.idle()
                 a.get().removeEventListener "tick", handlders[0]
             ))
         createjs.Tween.get b, {loop:false} 
-        .wait(200) 
+        .wait(100) 
         .call(
             (-> 
                 b.idle()
