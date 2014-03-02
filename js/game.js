@@ -106,7 +106,7 @@
     };
 
     Game.prototype.onTick = function(e) {
-      if (this.keysDown[Constant.KEYCODE_RIGHT]) {
+      if (this.keysDown[Constant.KEYCODE_D]) {
         this.localPlayer.run('right');
         this.socket.emit("update", {
           id: this.clientID,
@@ -115,7 +115,7 @@
           dir: "right"
         });
       }
-      if (this.keysDown[Constant.KEYCODE_LEFT]) {
+      if (this.keysDown[Constant.KEYCODE_A]) {
         this.localPlayer.run('left');
         this.socket.emit("update", {
           id: this.clientID,
@@ -124,7 +124,7 @@
           dir: "left"
         });
       }
-      if (this.keysDown[Constant.KEYCODE_DOWN]) {
+      if (this.keysDown[Constant.KEYCODE_S]) {
         this.socket.emit("update", {
           id: this.clientID,
           x: this.localPlayer.x,
@@ -133,7 +133,7 @@
         });
         this.localPlayer.run('down');
       }
-      if (this.keysDown[Constant.KEYCODE_UP]) {
+      if (this.keysDown[Constant.KEYCODE_W]) {
         this.socket.emit("update", {
           id: this.clientID,
           x: this.localPlayer.x,

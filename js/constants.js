@@ -7,6 +7,7 @@
     KEYCODE_LEFT: 37,
     KEYCODE_RIGHT: 39,
     KEYCODE_W: 87,
+    KEYCODE_S: 83,
     KEYCODE_A: 65,
     KEYCODE_D: 68,
     KEYCODE_Z: 90,

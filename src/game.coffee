@@ -106,19 +106,19 @@ class window.Game
     onTick: (e) ->
 
         # Check which key is been pressed
-        if (@keysDown[Constant.KEYCODE_RIGHT])
+        if (@keysDown[Constant.KEYCODE_D])
             @localPlayer.run 'right'
             @socket.emit "update", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y, dir:"right"}
 
-        if (@keysDown[Constant.KEYCODE_LEFT])
+        if (@keysDown[Constant.KEYCODE_A])
             @localPlayer.run 'left'
             @socket.emit "update", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y, dir:"left"}
 
-        if (@keysDown[Constant.KEYCODE_DOWN])
+        if (@keysDown[Constant.KEYCODE_S])
             @socket.emit "update", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y, dir:"down"}
             @localPlayer.run 'down'
 
-        if (@keysDown[Constant.KEYCODE_UP])
+        if (@keysDown[Constant.KEYCODE_W])
             @socket.emit "update", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y, dir:"up"}
             @localPlayer.run 'up'
 
