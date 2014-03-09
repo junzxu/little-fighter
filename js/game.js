@@ -26,9 +26,10 @@
     };
 
     Game.prototype.stageInit = function() {
-      var canvas, robot;
+      var bar, canvas, robot;
       canvas = document.getElementById("gameCanvas");
-      this.world = new World(canvas);
+      bar = document.getElementById("hud");
+      this.world = new World(canvas, bar);
       robot = new Character("julian", "robot", 400, 200, this.world);
       robot.id = 0;
       return this.world.addPlayer(robot);

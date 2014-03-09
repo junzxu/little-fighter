@@ -15,6 +15,7 @@
       Character.__super__.constructor.apply(this, arguments);
       this.hp = 100;
       this.cd = 300;
+      this.number;
       this.character;
       this.faceDirection = "right";
     }
@@ -140,7 +141,7 @@
     };
 
     Character.prototype.gotHit = function(direction, damage) {
-      var bound;
+      var bound, pnumber;
       if (damage == null) {
         damage = 10;
       }
@@ -150,6 +151,9 @@
         this.character.gotoAndPlay("die");
         return this.setState('die');
       } else {
+        pnumber = "#player" + this.number;
+        $('#hud > ' + pnumber + ' > .progress > #hp').css("width", this.hp + "%");
+        $('#hud > ' + pnumber + ' > .progress > #hp').html(this.hp);
         this.setState('hurt');
         this.changeFaceDirection(this.counterDirection(direction));
         this.character.gotoAndPlay("hurt");

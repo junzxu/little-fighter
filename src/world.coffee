@@ -1,29 +1,32 @@
 class window.World
-	constructor: (@canvas, @players = [],@objects = []) ->
+	constructor: (@canvas, @bar, @players = [],@objects = []) ->
 		# Root container
 		@world = new createjs.Container()
 		@world.x = 0
-		@world.y = 0
-		@width
-		@height
+		@world.y = 100
+		@hud = new createjs.Container()
+		@width = @canvas.width
+		@height = @canvas.height - 100
 		@objects
 		@players
 		@init()
 
 	init: ->
 		@stage = new createjs.Stage @canvas
-		@width = @stage.canvas.width
-		@height = @stage.canvas.height
 		@build()
 
 	build: () ->
 		#should build world from script
 		@background = new createjs.Bitmap("assets/background/1.png")
-		@world.addChild(@background);
+		@world.addChild(@background)
 		for object in @objects
 			console.log 'add'
 			@world.addChild object.get()
 		@stage.addChild @world
+
+		@statusBar = new createjs.DOMElement(@bar)
+		@hud.addChild(@statusBar)
+		@stage.addChild @hud
 
 	moveCamera:(x,y) ->
 		Xdiff = x - @background.x
@@ -43,6 +46,8 @@ class window.World
 		@world.addChild player.get()
 		@objects.push player
 		@players.push player
+		count = @players.length
+		player.number = count
 
 	addObject: (object) ->
 		@world.addChild object.get()

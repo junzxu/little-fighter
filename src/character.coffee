@@ -3,6 +3,7 @@ class window.Character extends Object
         super
         @hp = 100
         @cd = 300
+        @number
         @character
         @faceDirection = "right"
 
@@ -117,6 +118,9 @@ class window.Character extends Object
             @character.gotoAndPlay "die"
             @setState 'die'
         else
+            pnumber = "#player" + @number
+            $('#hud > '+ pnumber + ' > .progress > #hp').css("width",@hp+"%")
+            $('#hud > '+ pnumber + ' > .progress > #hp').html(@hp)
             @setState 'hurt'
             @changeFaceDirection @counterDirection(direction)
             @character.gotoAndPlay "hurt"

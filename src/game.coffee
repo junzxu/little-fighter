@@ -30,7 +30,8 @@ class window.Game
     stageInit: () ->
         # Setup Stage
         canvas = document.getElementById("gameCanvas")
-        @world = new World canvas
+        bar = document.getElementById("hud")
+        @world = new World canvas, bar
         # createjs.Ticker.addEventListener "tick", @world.detectCollision
         #add a ai robot
         robot = new Character "julian", "robot", 400, 200, @world
