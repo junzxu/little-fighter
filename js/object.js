@@ -155,6 +155,15 @@
       return console.log("nothing happened");
     };
 
+    Object.prototype.realtiveDirection = function(object) {
+      if (object.get().x < this.get().x) {
+        return "left";
+      }
+      if (object.get().x >= this.get().x) {
+        return "right";
+      }
+    };
+
     Object.prototype.detectCollision = function(trigger) {
       var d1, d2, object, otherObject, rect1, rect2, _i, _len, _ref;
       if (trigger == null) {
@@ -222,21 +231,18 @@
       object = event.target;
       switch (this.direction) {
         case "right":
-          object.x += this.speed;
+          object.x += 2;
           break;
         case "left":
-          object.x -= this.speed;
+          object.x -= 2;
           break;
         case "up":
-          object.y -= this.speed;
+          object.y -= 2;
           break;
         case "down":
-          object.y += this.speed;
+          object.y += 2;
       }
-      this.updateCoords();
-      if (this.speed <= 0) {
-        return this.speed = this.originSpeed;
-      }
+      return this.updateCoords();
     };
 
     return Object;

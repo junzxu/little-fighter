@@ -3,6 +3,7 @@ class window.Character extends Object
         super
         @hp = 100
         @cd = 300
+        @attackRange = 50
         @number
         @character
         @faceDirection = "right"
@@ -19,7 +20,6 @@ class window.Character extends Object
 
         @spriteSheetInfo = data.spriteSheetInfo
         @magicSheetInfo = data.magicSheetInfo
-
         console.log 'init'
         @SpriteSheet = new createjs.SpriteSheet @spriteSheetInfo
         @character = new createjs.BitmapAnimation @SpriteSheet
@@ -69,7 +69,13 @@ class window.Character extends Object
 
     attack: ->
         if @checkState()
-            @character.gotoAndPlay "attack"
+            if @state != "attack"
+                @state = "attack"
+            if @character.currentAnimation != "attack"
+                @character.gotoAndPlay "attack"
+            [player,distance] = @world.getNearestCharacter(@)
+            if  player != null and distance < @attackRange and @faceDirection == @realtiveDirection(player)
+                player.gotHit(10,@counterDirection(@faceDirection))
 
     cast: ->
         if @checkState() and @magicState == 'ready'
@@ -77,7 +83,6 @@ class window.Character extends Object
             width = bound.x2-bound.x1
             x  = if (@faceDirection == 'right') then @x+width  else @x-width
             m = new Magic 'blue','magic', x, @y, @world, @character, @magicSheetInfo, @faceDirection
-            m.cast()
             @magicState = 'preparing'
             createjs.Tween.get @character, {loop:false} 
             .wait(@cd) 
@@ -99,8 +104,10 @@ class window.Character extends Object
         .wait(3000) 
         .call(
             (=> 
+                @setHPBar(100)
                 @world.get().addChild @character
-                @character.gotoAndPlay "idle")
+                @character.idle()
+                )
             )
 
 
@@ -111,18 +118,17 @@ class window.Character extends Object
         if (@character.currentAnimation != "idle")
             @character.gotoAndPlay "idle"
 
-    gotHit: (direction,damage = 10) ->
+    gotHit: (damage,direction) ->
+        #direction indicates where the hit come from
         console.log('current hp: ' + @hp)
         @hp -= damage
+        @setHPBar(@hp)
         if @hp <= 0
             @character.gotoAndPlay "die"
             @setState 'die'
         else
-            pnumber = "#player" + @number
-            $('#hud > '+ pnumber + ' > .progress > #hp').css("width",@hp+"%")
-            $('#hud > '+ pnumber + ' > .progress > #hp').html(@hp)
             @setState 'hurt'
-            @changeFaceDirection @counterDirection(direction)
+            @changeFaceDirection direction
             @character.gotoAndPlay "hurt"
             bound = @world.getBound()
             @moveStep(direction)
@@ -138,5 +144,10 @@ class window.Character extends Object
         else
             true
 
+
+    setHPBar: (hp) ->
+        pnumber = "#player" + @number
+        $('#hud > '+ pnumber + ' > .progress > #hp').css("width",hp+"%")
+        $('#hud > '+ pnumber + ' > .progress > #hp').html(hp)
 
 
