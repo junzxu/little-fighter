@@ -1,11 +1,12 @@
 Game = require("./game.js")
+Player = require("./character.js")
 
-exports = module.exports = class Server
+class Server
     constructor: (@io)->
         @util =  require ("util")
         @games = []
         @game_count = 0
-        @players = []
+        @clients = []
         @init()
 
 
@@ -16,40 +17,41 @@ exports = module.exports = class Server
         @_dte = new Date().getTime();
 
     # Event handlers #################################################################################
-    findGame: (player) ->
-        joined = false
+    findGame: (client) ->
         if @game_count > 0
-            joined = @joinGame(player)
-        if joined  == false
-            @createGame(player)
+            game = @joinGame(client)
+        if game  == null
+            game = @createGame(client)
+        #tell client they have joined a game
+        client.emit 'joined', { id: client.userid, gameid: client.gameid, world: game.world, character:player}
 
 
-    createGame:(player) ->
-        game = new Game player.gameid, @io
-        game.addPlayer player
+    createGame:(client) ->
+        game = new Game client.gameid, @io
+        player = game.onNewPlayer(client) #create a game character and add to player list
         @startGame(game.id)
         @game_count += 1
         @games.push game
+        return game
 
 
-    joinGame:(player) ->
+    joinGame:(client) ->
         for game in @games
-            if game.id == player.gameid and game.player_count < game.Max_players
-                game.addPlayer player
+            if game.id == client.gameid and game.player_count < game.Max_players
+                player = game.onNewPlayer(client)
                 @startGame(game.id)
-                return true
-        return false
+                return game
+        return null
 
 
     endGame: (game_id, client_id)->
         for game,index in @games
             if game.id == game_id
                 @util.log 'client ' + @id + ' has disconnected'
-                game.removePlayer client_id
-                if game.player_count == 0
+                game.onRemovePlayer client_id
+                if game.player_count == 0  #no player in the game, so we destroy the game
                     @games.splice index,1
                     @game_count -= 1
-                @io.sockets.emit "disconnect", {}
                 return true
         return false
 
@@ -59,7 +61,7 @@ exports = module.exports = class Server
         game = @getGame(game_id)
         if game.active == true
             return
-        if game.id == game_id and game.player_count > game.Min_players
+        if game.player_count > game.Min_players
             game.active = true
             game.startUpdate()
 
@@ -76,3 +78,10 @@ exports = module.exports = class Server
             if game.id == id
                 return game
         return null
+
+    removeClient: (target) ->
+        for client,index in @clients
+            if client.userid == target.userid
+                @clients.splice index,1
+#####################################################
+module.exports = Server

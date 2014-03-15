@@ -20,14 +20,13 @@ class Game
     start: ->
         game.state = "start"
         setTimeout @updateState, 16
+        @io.sockets.in(@room).emit "start", {"gameid":@id}
 
     handleInput: (data) ->
     #handle data send by client
         player = getPlayerById(data.id)
         if player != null
             switch data.action
-                when "join"
-                    @onNewPlayer()
                 when "run"
                     @onPlayerMove()
                 when "attack"
@@ -55,24 +54,27 @@ class Game
             m = new Magic 'blue','magic', x, player.y, @world, player, @faceDirection
             @addObject m
 
-    onRemovePlayer: (player)->
+    onRemovePlayer: (client)->
+        id = client.userid
+        player = @getPlayerById id
         if @removePlayer player
             @player_count -= 1
-            @io.sockets.in(@room).emit "disconnect", {"id":id, "player":player}
+            client.broadcast.to(@room).emit "disconnect", {"id":id, "player":player}
             return true
         return false
 
-    onNewPlayer: (id) ->
+    onNewPlayer: (client) ->
         # Create new player instance
         if @player_count >= @max_player
             return false
         bound = @world.getBound()
         x = Math.floor(Math.random() * bound.x2)
         y = Math.floor(Math.random() * bound.y2)
+        id = client.userid
         player = new Player id, "firzen", "player", x, y, @world
         @player_count += 1
         @addPlayer player, @player_count
-        @io.sockets.in(@room).emit "join", {"id": @id, "player": player}
+        client.broadcast.to(@room).emit "new player", {"id": id, "player": player}
         return true
 
 
