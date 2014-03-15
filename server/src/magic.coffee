@@ -5,6 +5,7 @@ class Magic extends Object
         super(@name,@type, @x, @y, @world)
 
     init:() ->
+        #load spritesheet info from db
         @speed = @originSpeed
         @state = "run"
 
