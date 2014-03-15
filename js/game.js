@@ -32,7 +32,7 @@
       this.world = new World(canvas, bar);
       robot = new Character("julian", "robot", 400, 200, this.world);
       robot.id = 0;
-      return this.world.addPlayer(robot, 2);
+      return this.world.addPlayer(robot);
     };
 
     Game.prototype.addEventHandlers = function() {
@@ -77,7 +77,7 @@
         console.log('Add new player to stage ' + data.id);
         player = new Character("firzen", "player", data.x, data.y, this.world);
         player.id = data.id;
-        this.world.addPlayer(player, 1);
+        this.world.addPlayer(player);
       }
       if (data.id === this.clientID) {
         this.localPlayer = player;

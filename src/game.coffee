@@ -36,7 +36,7 @@ class window.Game
         #add a ai robot
         robot = new Character "julian", "robot", 400, 200, @world
         robot.id = 0
-        @world.addPlayer robot, 2
+        @world.addPlayer robot
 
 
     addEventHandlers: () ->
@@ -79,7 +79,7 @@ class window.Game
             console.log 'Add new player to stage ' + data.id
             player = new Character "firzen", "player", data.x, data.y, @world
             player.id = data.id
-            @world.addPlayer player,1
+            @world.addPlayer player
 
         if (data.id == @clientID)
             @localPlayer = player

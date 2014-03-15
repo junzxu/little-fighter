@@ -15,7 +15,6 @@
       Character.__super__.constructor.apply(this, arguments);
       this.hp = 100;
       this.cd = 300;
-      this.attackRange = 50;
       this.number;
       this.character;
       this.faceDirection = "right";
@@ -88,18 +87,8 @@
     };
 
     Character.prototype.attack = function() {
-      var distance, player, _ref;
       if (this.checkState()) {
-        if (this.state !== "attack") {
-          this.state = "attack";
-        }
-        if (this.character.currentAnimation !== "attack") {
-          this.character.gotoAndPlay("attack");
-        }
-        _ref = this.world.getNearestCharacter(this), player = _ref[0], distance = _ref[1];
-        if (player !== null && distance < this.attackRange && this.faceDirection === this.realtiveDirection(player)) {
-          return player.gotHit(10, this.counterDirection(this.faceDirection));
-        }
+        return this.character.gotoAndPlay("attack");
       }
     };
 
@@ -110,6 +99,7 @@
         width = bound.x2 - bound.x1;
         x = this.faceDirection === 'right' ? this.x + width : this.x - width;
         m = new Magic('blue', 'magic', x, this.y, this.world, this.character, this.magicSheetInfo, this.faceDirection);
+        m.cast();
         this.magicState = 'preparing';
         return createjs.Tween.get(this.character, {
           loop: false
@@ -135,9 +125,8 @@
         loop: false
       }).wait(3000).call(((function(_this) {
         return function() {
-          _this.setHPBar(100);
           _this.world.get().addChild(_this.character);
-          return _this.character.idle();
+          return _this.character.gotoAndPlay("idle");
         };
       })(this)));
     };
@@ -151,17 +140,22 @@
       }
     };
 
-    Character.prototype.gotHit = function(damage, direction) {
-      var bound;
+    Character.prototype.gotHit = function(direction, damage) {
+      var bound, pnumber;
+      if (damage == null) {
+        damage = 10;
+      }
       console.log('current hp: ' + this.hp);
       this.hp -= damage;
-      this.setHPBar(this.hp);
       if (this.hp <= 0) {
         this.character.gotoAndPlay("die");
         return this.setState('die');
       } else {
+        pnumber = "#player" + this.number;
+        $('#hud > ' + pnumber + ' > .progress > #hp').css("width", this.hp + "%");
+        $('#hud > ' + pnumber + ' > .progress > #hp').html(this.hp);
         this.setState('hurt');
-        this.changeFaceDirection(direction);
+        this.changeFaceDirection(this.counterDirection(direction));
         this.character.gotoAndPlay("hurt");
         bound = this.world.getBound();
         return this.moveStep(direction);
@@ -179,13 +173,6 @@
       } else {
         return true;
       }
-    };
-
-    Character.prototype.setHPBar = function(hp) {
-      var pnumber;
-      pnumber = "#player" + this.number;
-      $('#hud > ' + pnumber + ' > .progress > #hp').css("width", hp + "%");
-      return $('#hud > ' + pnumber + ' > .progress > #hp').html(hp);
     };
 
     return Character;

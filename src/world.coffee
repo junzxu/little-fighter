@@ -42,11 +42,12 @@ class window.World
 		@world.x = x
 		@world.y = y
 
-	addPlayer: (player,number = 0) ->
+	addPlayer: (player) ->
 		@world.addChild player.get()
 		@objects.push player
 		@players.push player
-		player.number ?= number
+		count = @players.length
+		player.number = count
 
 	addObject: (object) ->
 		@world.addChild object.get()
@@ -55,7 +56,6 @@ class window.World
 	removeObject:(target) ->
 		for object,index in @objects
 			if object.id == target.id
-				@world.removeChild object.get()
 				@objects.splice index,1
 
 	removePlayer:(target) ->
@@ -68,22 +68,6 @@ class window.World
 
 	getObjects: ->
 		return @objects
-
-	getNearestCharacter: (origin) ->
-		character = origin.get()
-		distance = 100000
-		index = 0
-		target = null
-		for player in @players
-			if player.number == origin.number
-				continue
-			c = player.get()
-			d = Math.pow((character.x - c.x),2) + Math.pow((character.y - c.y),2)
-			if d < distance
-				distance = d
-				target = player
-		d = Math.sqrt(distance)
-		[target,d]
 
 	getBound: ->
 		#playing area

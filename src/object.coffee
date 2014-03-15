@@ -110,14 +110,6 @@ class window.Object
         console.log("nothing happened")
 
 
-
-    realtiveDirection: (object) ->
-        #target object's direction relative to this object
-        if object.get().x < @get().x
-            return "left"
-        if object.get().x >= @get().x
-            return "right"
-
 ################################ Collision ###########################        
     detectCollision: (trigger = true)->
         object = @
@@ -171,13 +163,15 @@ class window.Object
 		object = event.target
 		switch @direction
 			when "right"
-				object.x += 2
+				object.x += @speed
 			when "left"
-				object.x -= 2
+				object.x -= @speed
 			when "up"
-				object.y -= 2
+				object.y -= @speed
 			when "down"
-				object.y += 2
+				object.y += @speed
 		@updateCoords()
+		if @speed <= 0
+			@speed = @originSpeed
 
 ################################################################
