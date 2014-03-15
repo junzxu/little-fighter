@@ -19,6 +19,7 @@
       this.move = __bind(this.move, this);
       Magic.__super__.constructor.apply(this, arguments);
       this.magic;
+      this.damage = 10;
     }
 
     Magic.prototype.init = function() {
@@ -26,7 +27,11 @@
       this.magic = new createjs.BitmapAnimation(this.SpriteSheet);
       this.magic.x = this.x;
       this.magic.y = this.y;
-      return this.speed = this.originSpeed;
+      this.collisionHeight = 0;
+      this.collisionWidth = 0;
+      this.speed = this.originSpeed;
+      this.world.addObject(this);
+      return this.cast();
     };
 
     Magic.prototype.cast = function() {
@@ -52,10 +57,12 @@
     };
 
     Magic.prototype.collisionHandler = function(o) {
-      o.gotHit(this.direction);
+      var dir;
+      dir = this.counterDirection(this.direction);
+      o.gotHit(this.damage, dir);
       console.log('hit player' + o.id);
       this.get().removeAllEventListeners();
-      return this.world.get().removeChild(this.get());
+      return this.world.removeObject(this);
     };
 
     Magic.prototype.get = function() {

@@ -36,3 +36,8 @@ html , body {
 #playerName {
 	color: #FBFBEF; 
 }
+
+.my-thumbnail {
+	max-width: 80px;
+	max-height: 100px;
+}

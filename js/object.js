@@ -217,21 +217,30 @@
       }));
     };
 
+    Object.prototype.realtiveDirection = function(object) {
+      if (object.get().x < this.get().x) {
+        return "left";
+      }
+      if (object.get().x >= this.get().x) {
+        return "right";
+      }
+    };
+
     Object.prototype.updatePosition = function(event) {
       var object;
       object = event.target;
       switch (this.direction) {
         case "right":
-          object.x += this.speed;
+          object.x += 2;
           break;
         case "left":
-          object.x -= this.speed;
+          object.x -= 2;
           break;
         case "up":
-          object.y -= this.speed;
+          object.y -= 2;
           break;
         case "down":
-          object.y += this.speed;
+          object.y += 2;
       }
       this.updateCoords();
       if (this.speed <= 0) {

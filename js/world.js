@@ -58,13 +58,14 @@
       return this.world.y = y;
     };
 
-    World.prototype.addPlayer = function(player) {
-      var count;
+    World.prototype.addPlayer = function(player, number) {
+      if (number == null) {
+        number = 0;
+      }
       this.world.addChild(player.get());
       this.objects.push(player);
       this.players.push(player);
-      count = this.players.length;
-      return player.number = count;
+      return player.number != null ? player.number : player.number = number;
     };
 
     World.prototype.addObject = function(object) {
@@ -79,6 +80,7 @@
       for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
         object = _ref[index];
         if (object.id === target.id) {
+          this.world.removeChild(object.get());
           _results.push(this.objects.splice(index, 1));
         } else {
           _results.push(void 0);
@@ -94,6 +96,7 @@
       for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
         player = _ref[index];
         if (player.id === target.id) {
+          this.world.removeChild(object.get());
           _results.push(this.players.splice(index, 1));
         } else {
           _results.push(void 0);
@@ -121,6 +124,29 @@
 
     World.prototype.get = function() {
       return this.world;
+    };
+
+    World.prototype.getNearestCharacter = function(origin) {
+      var c, character, d, distance, index, player, target, _i, _len, _ref;
+      character = origin.get();
+      distance = 100000;
+      index = 0;
+      target = null;
+      _ref = this.players;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        player = _ref[_i];
+        if (player.number === origin.number) {
+          continue;
+        }
+        c = player.get();
+        d = Math.pow(character.x - c.x, 2) + Math.pow(character.y - c.y, 2);
+        if (d < distance) {
+          distance = d;
+          target = player;
+        }
+      }
+      d = Math.sqrt(distance);
+      return [target, d];
     };
 
     return World;

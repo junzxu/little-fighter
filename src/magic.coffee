@@ -2,13 +2,18 @@ class window.Magic extends Object
     constructor: (@name,@type, @x, @y, @world, @character, @spriteSheetInfo, @direction) ->
         super
         @magic
+        @damage = 10
 
     init:() ->
         @SpriteSheet = new createjs.SpriteSheet @spriteSheetInfo
         @magic = new createjs.BitmapAnimation @SpriteSheet
         @magic.x = @x
         @magic.y = @y
+        @collisionHeight = 0
+        @collisionWidth = 0
         @speed = @originSpeed
+        @world.addObject @
+        @cast()
 
     cast:() ->
         console.log('cast magic on '+@direction)
@@ -30,10 +35,11 @@ class window.Magic extends Object
 
 
     collisionHandler: (o)->
-        o.gotHit(@direction)
+        dir = @counterDirection(@direction)
+        o.gotHit(@damage, dir)
         console.log('hit player'+o.id)
         @get().removeAllEventListeners();
-        @world.get().removeChild @get()
+        @world.removeObject @
 
 
     get: ->
