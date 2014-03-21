@@ -1,155 +1,195 @@
 class window.Game
-    constructor: ->
-        @Y_AXIS_THREASHOLD = 30; # hit detection of y axis threashold in pixels
-
     init: ->
         @keysDown = {}
         @players = []
-
+        @player_count = 1
         @stageInit()
         @serverInit()
+        @localPlayer = null
 
         createjs.Ticker.setFPS 60
-        createjs.Ticker.addEventListener "tick", @world.stage
         @ready = false
 
-
         @lastKeyPress = new Date()
-
-
         @addEventHandlers()
 
 
     # Server setup
     serverInit: () ->
-        @socket = io.connect "http://localhost", {port: 8000, transports: ["websocket"]}
-        console.log @socket
+        @socket = io.connect "http://localhost", {port: 3000, transports: ["websocket"]}
+        console.log('\t connected to server')
 
 
     # Stage setup
     stageInit: () ->
         # Setup Stage
+        console.log('\t stage init...')
         canvas = document.getElementById("gameCanvas")
         bar = document.getElementById("hud")
         @world = new World canvas, bar
+        console.log('\t stage completed')
         # createjs.Ticker.addEventListener "tick", @world.detectCollision
         #add a ai robot
-        robot = new Character "julian", "robot", 400, 200, @world
-        robot.id = 0
-        @world.addPlayer robot,2
+        # robot = new Character "julian", "robot", 400, 200, @world
+        # robot.id = 0
+        # @world.addPlayer robot,2
 
 
     addEventHandlers: () ->
-
-        @socket.on "connect", @onConnected.bind this
-        @socket.on "new player", @onNewPlayer.bind this
-        @socket.on "client id", @onReceivedClientID.bind this
+        @socket.on "connected", @onConnected.bind this
+        @socket.on "joined", @gameSetup.bind this
         @socket.on "update", @onUpdate.bind this
-        @socket.on "disconnect", @onDisconnect.bind this
+        @socket.on "start", @gameStart.bind this
+        @socket.on "new player", @onNewPlayer.bind this
+        @socket.on "player disconnect", @onPlayerDisconnect.bind this
         createjs.Ticker.addEventListener "tick", @onTick.bind this
         # createjs.Ticker.addEventListener "tick", @world.detectCollision.bind @world
 
-    # Handlers for events
+    # update game from server data
     onUpdate: (data) ->
-        if (data.id != @clientID)
-                console.log 'update'
-                updatePlayer = @playerGet (data.id)
+        for object in data.objects          
+            if object.type in ["player","robot"]
+                player = @world.getPlayer(object.id)
+                if player != null
+                    player.update(object)
+                else
+                    character = @buildCharacter(object)
+                    console.log(character)
+                    @world.addPlayer character, @player_count
+                    @player_count += 1      
+            if object.type == "magic"
+                magic = @world.getObject(object.id)
+                if magic == null
+                    magic = new Magic object.id, object.name, object.x, object.y, @world, object.characterID, object.direction, object.magicSheetInfo
+                else
+                    magic.get().x = object.x
+                    magic.get().y = object.y
+                    if @is_outofBound(magic)
+                        @world.removeObject magic
 
-                updatePlayer.x = data.x
-                updatePlayer.y = data.y
-                updatePlayer.run data.dir
-        if (data.state)
-            if (data.state == "idle")
-                #updatePlayer.idle()
-                console.log 'IDLEEEEEEEE'
+
 
     # Connected to Server
-    onConnected: () ->
+    onConnected: (data) ->
+        @id = data.id
+        @gameid = data.gameid
+        console.log('client id is ' + @id)
+        console.log('game id is ' + data.gameid)
 
-    # Received client ID from the server
-    onReceivedClientID: (data) ->
-        # Send local player to server
-        @socket.emit "new player", {id:data.id,x:250, y:250}
 
-        @clientID = data.id
+    gameStart: (data) ->
+        console.log("receive game started")
 
-    # New player has joined ( This include the local)
+
+    gameSetup: (data) ->
+        console.log('\t player ' + @id + ' has joined game');
+        @gameid = data.gameid
+        @world.build(data.world)
+        createjs.Ticker.addEventListener "tick", @world.stage
+        character = @buildCharacter(data.character)
+        console.log(character)
+        @world.addPlayer character, @player_count
+        @player_count += 1
+
+        @localPlayer = character
+        createjs.Ticker.addEventListener "tick", ((evt) ->
+        ).bind this
+
+        window.addEventListener "keydown", ((e) ->
+            @keysDown[e.keyCode] = true
+        ).bind this
+
+        window.addEventListener "keyup", ((e) ->
+            @keysDown[e.keyCode] = false
+            if (!@keysDown[Constant.KEYCODE_RIGHT] && !@keysDown[Constant.KEYCODE_LEFT] && !@keysDown[Constant.KEYCODE_UP] && !@keysDown[Constant.KEYCODE_DOWN])
+                if (@localPlayer.get().currentAnimation == "run")
+                    # player.character.gotoAndPlay 'idle'
+                    @socket.emit "update", {id:@id, action:"keyup"}
+        ).bind this
+
+        @localPlayer.get().addEventListener "animationend", ((evt) =>
+            switch @localPlayer.state
+                when 'die'
+                    @socket.emit "update", {id:@id, action:"animationend"}
+                    break
+                when 'disabled'
+                    break
+                when 'collided'
+                    break
+                when 'attack'
+                    @socket.emit "update", {id:@id, action:"animationend"}
+                    @localPlayer.idle()
+                when 'cast'
+                    @socket.emit "update", {id:@id, action:"animationend"}
+                    @localPlayer.idle()
+                else
+                    @localPlayer.idle()
+        ).bind this
+
     onNewPlayer: (data) ->
         if !(@playerExists data.id)
             console.log 'Add new player to stage ' + data.id
-            player = new Character "firzen", "player", data.x, data.y, @world
-            player.id = data.id
-            @world.addPlayer player,1
-
-        if (data.id == @clientID)
-            @localPlayer = player
-            createjs.Ticker.addEventListener "tick", ((evt) ->
-            ).bind this
+            player = @buildCharacter(data.player)
+            @world.addPlayer player,@player_count
+            # @addPlayerUI(@player_count)
+            @player_count += 1
 
 
-            window.addEventListener "keydown", ((e) ->
-                @keysDown[e.keyCode] = true
-            ).bind this
+    onPlayerDisconnect: (data) ->
+        if (@world.playerExists data.id)
+            console.log 'player:' + data.id + ' leave the game'
+            @world.removePlayer player
+            @player_count -= 1
 
-            window.addEventListener "keyup", ((e) ->
-                @keysDown[e.keyCode] = false
-                if (!@keysDown[Constant.KEYCODE_RIGHT] && !@keysDown[Constant.KEYCODE_LEFT] && !@keysDown[Constant.KEYCODE_UP] && !@keysDown[Constant.KEYCODE_DOWN])
-                    if (player.character.currentAnimation == "run")
-                        player.character.gotoAndPlay 'idle'
-                    @socket.emit "update", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y, state:"idle"}
-            ).bind this
-
-
-    onDisconnect: (data) ->
-        console.log 'Player: ' + data.id + ' has disconnected';
 
     # This event is trigged every frame
     onTick: (e) ->
-
         # Check which key is been pressed
-        if (@keysDown[Constant.KEYCODE_RIGHT])
-            @localPlayer.run 'right'
-            @socket.emit "update", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y, dir:"right"}
-
-        if (@keysDown[Constant.KEYCODE_LEFT])
-            @localPlayer.run 'left'
-            @socket.emit "update", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y, dir:"left"}
-
-        if (@keysDown[Constant.KEYCODE_DOWN])
-            @socket.emit "update", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y, dir:"down"}
-            @localPlayer.run 'down'
-
-        if (@keysDown[Constant.KEYCODE_UP])
-            @socket.emit "update", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y, dir:"up"}
-            @localPlayer.run 'up'
-
-        if (@keysDown[Constant.KEYCODE_J])
-            @localPlayer.attack()
-            @socket.emit "attack", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y}
-
-        if (@keysDown[Constant.KEYCODE_K])
-            @localPlayer.cast()
-            @socket.emit "magic", {id:@clientID, x:@localPlayer.x, y:@localPlayer.y}
-
+        if @checkState(@localPlayer)
+            if @keysDown[Constant.KEYCODE_J]
+                @socket.emit "update", {id:@id, action:'attack'}
+                @localPlayer.state = "attack"
+                return
+            if @keysDown[Constant.KEYCODE_K]
+                @socket.emit "update", {id:@id, action:'cast'}
+                @localPlayer.state = "cast"
+                return
+            if @keysDown[Constant.KEYCODE_RIGHT]
+                @socket.emit "update", {id:@id, action:'run', dir:'right'}
+                return
+            if @keysDown[Constant.KEYCODE_LEFT]
+                @socket.emit "update", {id:@id, action:'run', dir:'left'}
+                return
+            if @keysDown[Constant.KEYCODE_UP]
+                @socket.emit "update", {id:@id, action:'run', dir:'up'}
+                return
+            if @keysDown[Constant.KEYCODE_DOWN]
+                @socket.emit "update", {id:@id, action:'run', dir:'down'}
+                return
 
     onKeyDown: (e) ->
-        console.log "key down " + e.keyCode
         @keysDown[e.keyCode] = true
 
     onKeyUp: (e) ->
-        console.log "key up " + e.keyCode
         @keysDown[e.keyCode] = false
 
 
     # Member Functions #############################################################################
-    playerExists: (id) ->
-        for p in @players
-            if (p.id == id)
-                return true
-        return false
+    is_outofBound: (object) ->
+        bound = @world.getBound()
+        return object.x > bound['x2'] or object.x < 0 or object.y > bound['y2'] or object.y < 0
 
-    playerGet: (id) ->
-        for p in @players
-            if (p.id == id)
-                return p
+    # addPlayerUI: (number) ->
 
+
+    checkState:(player) ->
+        if player == null
+            return false
+        if player.state in ['collided', 'disabled','hurt','attack']
+            return false
+        return true
+
+    buildCharacter: (object) =>
+        character = new Character object.id, object.name, object.type, object.x, object.y , @world
+        character.build(object.spriteSheetInfo, object.magicSheetInfo)
+        return character

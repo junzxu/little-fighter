@@ -19,23 +19,25 @@
 
     World.prototype.init = function() {
       this.stage = new createjs.Stage(this.canvas);
-      return this.build();
-    };
-
-    World.prototype.build = function() {
-      var object, _i, _len, _ref;
-      this.background = new createjs.Bitmap("assets/background/1.png");
-      this.world.addChild(this.background);
-      _ref = this.objects;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        object = _ref[_i];
-        console.log('add');
-        this.world.addChild(object.get());
-      }
-      this.stage.addChild(this.world);
       this.statusBar = new createjs.DOMElement(this.bar);
       this.hud.addChild(this.statusBar);
       return this.stage.addChild(this.hud);
+    };
+
+    World.prototype.build = function(world) {
+      var AnimatedObject, object, spriteSheet, _i, _len, _ref;
+      this.background = new createjs.Bitmap(world.backgroundURL);
+      this.world.addChild(this.background);
+      _ref = world.objects;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        object = _ref[_i];
+        spriteSheet = new createjs.SpriteSheet(object.spriteSheetInfo);
+        AnimatedObject = new createjs.BitmapAnimation(spriteSheet);
+        AnimatedObject.x = object.x;
+        AnimatedObject.y = object.y;
+        this.world.addChild(AnimatedObject);
+      }
+      return this.stage.addChild(this.world);
     };
 
     World.prototype.moveCamera = function(x, y) {
@@ -105,12 +107,28 @@
       return _results;
     };
 
-    World.prototype.getPlayers = function() {
-      return this.players;
+    World.prototype.getPlayer = function(id) {
+      var player, _i, _len, _ref;
+      _ref = this.players;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        player = _ref[_i];
+        if (player.id === id) {
+          return player;
+        }
+      }
+      return null;
     };
 
-    World.prototype.getObjects = function() {
-      return this.objects;
+    World.prototype.getObject = function(id) {
+      var object, _i, _len, _ref;
+      _ref = this.objects;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        object = _ref[_i];
+        if (object.id === id) {
+          return object;
+        }
+      }
+      return null;
     };
 
     World.prototype.getBound = function() {
@@ -120,6 +138,18 @@
         "y1": 0,
         "y2": this.background.image.height
       };
+    };
+
+    World.prototype.playerExists = function(id) {
+      var p, _i, _len, _ref;
+      _ref = this.players;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        p = _ref[_i];
+        if (p.id === id) {
+          return true;
+        }
+      }
+      return false;
     };
 
     World.prototype.get = function() {

@@ -1,44 +1,30 @@
-class window.Character extends Object
-    constructor: (@name, @type, @x, @y, @world) ->
-        super
+class window.Character extends object
+    constructor: (@id, @name, @type, @x, @y, @world) ->
+        super(@id, @name, @type, @x, @y, @world)
         @hp = 100
         @cd = 300
         @attackRange = 50
         @number
         @character
         @faceDirection = "right"
+        @init()
 
     init:() ->
         super
         #should load schema from database
         @state = "idle"
         @direction = "No"
-        if @type == "robot"
-            data = eval(robot_schema)
-        else
-            data = eval(player_schema)
 
-        @spriteSheetInfo = data.spriteSheetInfo
-        @magicSheetInfo = data.magicSheetInfo
 
-        console.log 'init'
+    build:(spriteSheetInfo, magicSheetInfo) ->
+        @spriteSheetInfo = spriteSheetInfo
+        @magicSheetInfo = magicSheetInfo
         @SpriteSheet = new createjs.SpriteSheet @spriteSheetInfo
         @character = new createjs.BitmapAnimation @SpriteSheet
         @character.x = @x
         @character.y = @y
         @character.gotoAndPlay "idle"
 
-        @character.addEventListener "animationend", ((evt) ->
-            switch @state
-                when 'die'
-                    @setState 'idle'
-                    @rebirth()
-                    break
-                when 'disabled'
-                    break
-                else
-                    @idle()
-        ).bind this
 
 
     addToWorld: (world) ->
@@ -56,101 +42,73 @@ class window.Character extends Object
             @get().scaleX = -@get().scaleX
 
     run: (direction) ->
-        if not @checkState()
-            return
         if (@character.currentAnimation != "run")
             @character.gotoAndPlay "run"
-        @setState "run"
-        @speed = @originSpeed
-        @moveStep(direction)
+        @direction = direction
         if direction in ["left","right"]
             @changeFaceDirection(direction)
-        @detectCollision()
+        @state = "run"
 
 
     attack: ->
-        if @checkState()
-            if @state != "attack"
-                 @state = "attack"
-             if @character.currentAnimation != "attack"
-                 @character.gotoAndPlay "attack"
-             [player,distance] = @world.getNearestCharacter(@)
-             if  player != null and distance < @attackRange and @faceDirection == @realtiveDirection(player)
-                 player.gotHit(10,@counterDirection(@faceDirection))
+        if @character.currentAnimation != "attack"
+            @character.gotoAndPlay "attack"
+
 
     cast: ->
-        if @checkState() and @magicState == 'ready'
-            bound = @getRect()
-            width = bound.x2-bound.x1
-            x  = if (@faceDirection == 'right') then @x+width  else @x-width
-            m = new Magic 'blue','magic', x, @y, @world, @character, @magicSheetInfo, @faceDirection
-            m.cast()
-            @magicState = 'preparing'
-            createjs.Tween.get @character, {loop:false} 
-            .wait(@cd) 
-            .call(
-                (=> 
-                    @magicState = "ready"
-                ))
+        if @character.currentAnimation != "cast"
+            @character.gotoAndPlay "cast"
+        @state = "cast"
 
-    rebirth: ->
-        @world.get().removeChild @character
-        bound = @world.getBound()
-        x = Math.floor(Math.random() * bound.x2)
-        y = Math.floor(Math.random() * bound.y2)
-        @character.x = x
-        @character.y = y
-        @updateCoords()
-        @hp = 100
-        createjs.Tween.get @character, {loop:false} 
-        .wait(3000) 
-        .call(
-            (=> 
-                @setHPBar(100)
-                @world.get().addChild @character
-                @character.idle()
-                )
-            )
-
+    die: ->
+        if @state != "die"
+            if @character.currentAnimation != "die"
+                @character.gotoAndPlay "die"
+                @state = "die"
+                @world.get().removeChild @character
 
     idle: ->
-        @setState 'idle'
         @speed = 0
         @direction = "No"
         if (@character.currentAnimation != "idle")
             @character.gotoAndPlay "idle"
+        @state = "idle"
 
-    gotHit: (damage, direction) ->
+    gotHit: (direction) ->
         #direction indicates where the hit come from
-        console.log('current hp: ' + @hp)
-        @hp -= damage
-        @setHPBar(@hp)
-        if @hp <= 0
-            @character.gotoAndPlay "die"
-            @setState 'die'
-        else
-            @setState 'hurt'
-            @changeFaceDirection direction
+        @changeFaceDirection direction
+        if @character.currentAnimation != "hurt"
             @character.gotoAndPlay "hurt"
-            bound = @world.getBound()
-            @moveStep(direction)
+        @state = "hurt"
 
-
-    setState: (state) ->
-        @state = state
-
-
-    checkState: ->
-        if @state == "disabled" or @character.currentAnimation in ["hurt","attack"]
-            false
-        else
-            true
 
     setHPBar: (hp) ->
          pnumber = "#player" + @number
          $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').css("width", hp+"%")
          $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').html(hp)
-         # $('#hud > '+ pnumber + ' > .progress > #hp').css("width",hp+"%")
-         # $('#hud > '+ pnumber + ' > .progress > #hp').html(hp)
+
  
+    update: (object) ->
+        switch object.state
+            when 'die'
+                @die()
+            when 'hurt'
+                @gotHit(object.direction)
+                @hp = object.hp
+                @setHPBar(@hp)
+            when 'run'
+                @run(object.direction)
+                @get().x = object.x
+                @get().y = object.y
+            when 'attack'
+                @attack()
+            when 'cast'
+                @cast()
+            when 'idle'
+                if @state == "die"
+                    @character.x = object.x
+                    @character.y = object.y
+                    @world.get().addChild @character
+                @idle()
+
 

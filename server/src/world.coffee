@@ -8,6 +8,7 @@ class World
 		#should build world from script
 		@width = 800
 		@height = 400
+		@backgroundURL = "/assets/background/1.png"
 
 	getBound: ->
 		#playing area

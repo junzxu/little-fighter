@@ -4,7 +4,7 @@
         io = require('socket.io'),
         express = require('express'),
         UUID = require('node-uuid'),
-        Server = require('./game_server.js')
+        Server = require('./server/js/game_server.js')
         http = require('http'),
         app = express(),
         server = http.createServer(app);
@@ -84,7 +84,7 @@
         client.join(client.gameid);
         game_server.clients.push(client);
         //tell the player they connected, giving them their id
-        client.emit('onConnected', {
+        client.emit('connected', {
             id: client.userid
         });
 

@@ -1,10 +1,13 @@
-Object = require("./Object.js")
+object = require("./object.js")
+player_schema = require("./player_schema.js")
+robot_schema = require("./robot_schema.js")
 
-class Player extends Object
+class Player extends object
     constructor: (@id, @name, @type, @x, @y, @world) ->
         super(@name, @type, @x, @y, @world)
         @hp = 100
         @cd = 300
+        @damage = 15
         @attackRange = 50
         @number
         @faceDirection = "right"
@@ -14,28 +17,24 @@ class Player extends Object
         #should load schema from database
         @state = "idle"
         @direction = "No"
-        if @type == "robot"
-            data = eval(robot_schema)
+        @width = 80
+        @height = 80
+        if @type == "player"
+            @spriteSheetInfo = player_schema.spriteSheetInfo
+            @magicSheetInfo = player_schema.magicSheetInfo
         else
-            data = eval(player_schema)
+            @spriteSheetInfo = robot_schema.spriteSheetInfo
+            @magicSheetInfo = robot_schema.magicSheetInfo
 
-        @spriteSheetInfo = data.spriteSheetInfo
-        @magicSheetInfo = data.magicSheetInfo
-
-
-
-    changeFaceDirection: (direction) ->
-        if @faceDirection == direction
-            return
-        else
-            @faceDirection = direction
 
     move: (direction) ->
         if @checkState()
             @setState "run"
             @speed = @originSpeed
+            @direction = direction
             if direction in ["left","right"]
-                @changeFaceDirection(direction)
+                @faceDirection = direction
+            @moveStep()
             return true
         return false
 
@@ -51,6 +50,8 @@ class Player extends Object
     cast: ->
         if @checkState() and @magicState == 'ready'
             @magicState = 'preparing'
+            if @state != "cast"
+                @state = "cast"
             setTimeout ( => 
                 @magicState = "ready"
             ), @cd
@@ -91,7 +92,8 @@ class Player extends Object
 
 
     checkState: ->
-        if @state in ["hurt","attack","disabled","collided"]
+        #["hurt","attack","disabled","collided"]
+        if @state in ["disabled","collided"]
             false
         else
             true

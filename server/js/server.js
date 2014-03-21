@@ -5,6 +5,7 @@
   Server = (function() {
     function Server() {
       this.util = require("util");
+      this.express(require("express"));
       this.io = require("socket.io");
       this.Character = require("../js/character.js").Character;
       this.players = [];

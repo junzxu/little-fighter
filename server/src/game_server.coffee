@@ -18,12 +18,11 @@ class Server
 
     # Event handlers #################################################################################
     findGame: (client) ->
-        if @game_count > 0
-            game = @joinGame(client)
-        if game  == null
-            game = @createGame(client)
-        #tell client they have joined a game
-        client.emit 'joined', { id: client.userid, gameid: client.gameid, world: game.world, character:player}
+        joined = false
+        if @game_count > 0 and client.gameid != null
+            joined = @joinGame(client)
+        if joined  == false
+            @createGame(client)
 
 
     createGame:(client) ->
@@ -32,16 +31,20 @@ class Server
         @startGame(game.id)
         @game_count += 1
         @games.push game
-        return game
+        #tell client they have joined a game
+        client.emit 'joined', { id: client.userid, gameid: client.gameid, world: game.world, character:player}
+        console.log("player " + client.userid + ' has joined game ' +  client.gameid)
 
 
     joinGame:(client) ->
         for game in @games
-            if game.id == client.gameid and game.player_count < game.Max_players
+            if game.id == client.gameid and game.player_count < game.max_player
                 player = game.onNewPlayer(client)
-                @startGame(game.id)
-                return game
-        return null
+                #tell client they have joined a game
+                client.emit 'joined', { id: client.userid, gameid: client.gameid, world: game.world, character:player}
+                @startGame(game)
+                return true
+        return false
 
 
     endGame: (game_id, client_id)->
@@ -56,12 +59,11 @@ class Server
         return false
 
 
-    startGame: (game_id) ->
+    startGame: (game) ->
         #we have enough players for a game
-        game = @getGame(game_id)
         if game.active == true
             return
-        if game.player_count > game.Min_players
+        if game.player_count > game.min_player
             game.active = true
             game.startUpdate()
 

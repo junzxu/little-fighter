@@ -13,20 +13,22 @@ class window.World
 
 	init: ->
 		@stage = new createjs.Stage @canvas
-		@build()
-
-	build: () ->
-		#should build world from script
-		@background = new createjs.Bitmap("assets/background/1.png")
-		@world.addChild(@background)
-		for object in @objects
-			console.log 'add'
-			@world.addChild object.get()
-		@stage.addChild @world
-
 		@statusBar = new createjs.DOMElement(@bar)
 		@hud.addChild(@statusBar)
 		@stage.addChild @hud
+		# @build()
+
+	build: (world) ->
+		#should build world from server data
+		@background = new createjs.Bitmap(world.backgroundURL)
+		@world.addChild(@background)
+		for object in world.objects
+			spriteSheet = new createjs.SpriteSheet object.spriteSheetInfo
+			AnimatedObject = new createjs.BitmapAnimation spriteSheet
+			AnimatedObject.x = object.x
+			AnimatedObject.y = object.y
+			@world.addChild AnimatedObject
+		@stage.addChild @world
 
 	moveCamera:(x,y) ->
 		Xdiff = x - @background.x
@@ -64,15 +66,27 @@ class window.World
 				@world.removeChild object.get()
 				@players.splice index,1
 
-	getPlayers: ->
-		return @players
+	getPlayer: (id) ->
+		for player in @players
+			if player.id == id
+				return player
+		return null
 
-	getObjects: ->
-		return @objects
+	getObject: (id) ->
+		for object in @objects
+			if object.id == id
+				return object
+		return null
 
 	getBound: ->
 		#playing area
 		return {"x1":0, "x2":@background.image.width, "y1":0, "y2":@background.image.height}
+
+	playerExists: (id) ->
+		for p in @players
+			if (p.id == id)
+				return true
+		return false
 
 	get: ->
 		return @world

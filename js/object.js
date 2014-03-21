@@ -2,8 +2,9 @@
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.Object = (function() {
-    function Object(name, type, x, y, world) {
+  window.object = (function() {
+    function object(id, name, type, x, y, world) {
+      this.id = id;
       this.name = name;
       this.type = type;
       this.x = x;
@@ -15,30 +16,29 @@
       this.hp;
       this.mass = 1;
       this.speed = 0;
-      this.originSpeed = 5;
+      this.originSpeed = 2;
       this.collisionHeight = 20;
       this.collisionWidth = 30;
       this.spriteSheetInfo;
       this.SpriteSheet;
-      this.object = null;
+      this.sprite = null;
       this.objectSpriteSheet;
       this.direction;
       this.world;
       this.magicState = "ready";
-      this.init();
     }
 
-    Object.prototype.init = function() {
+    object.prototype.init = function() {
       if (this.spriteSheetInfo) {
         return this.SpriteSheet = new createjs.SpriteSheet(this.spriteSheetInfo);
       }
     };
 
-    Object.prototype.get = function() {
-      return this.object;
+    object.prototype.get = function() {
+      return this.sprite;
     };
 
-    Object.prototype.counterDirection = function(direction) {
+    object.prototype.counterDirection = function(direction) {
       switch (direction) {
         case "right":
           return "left";
@@ -57,12 +57,12 @@
       }
     };
 
-    Object.prototype.reverseDirection = function() {
+    object.prototype.reverseDirection = function() {
       this.direction = this.counterDirection(this.direction);
       return console.log(this.name + ' reversed to ' + this.direction);
     };
 
-    Object.prototype.moveStep = function(direction) {
+    object.prototype.moveStep = function(direction) {
       var bound;
       bound = this.world.getBound();
       switch (direction) {
@@ -105,7 +105,7 @@
       return this.updateCoords();
     };
 
-    Object.prototype.moveTo = function(x, y) {
+    object.prototype.moveTo = function(x, y) {
       var bound;
       bound = this.world.getBound();
       if (x > bound['x1'] && x < bound['x2'] && y > bound['y1'] && y < bound['y2']) {
@@ -117,13 +117,7 @@
       }
     };
 
-    Object.prototype.updateCoords = function() {
-      this.get().localToGlobal(this.x, this.y);
-      this.x = this.get().x;
-      return this.y = this.get().y;
-    };
-
-    Object.prototype.getRect = function() {
+    object.prototype.getRect = function() {
       var x1, x2, y1, y2;
       x1 = this.get().getBounds().x + this.get().x;
       y1 = this.get().getBounds().y + this.get().y;
@@ -137,7 +131,7 @@
       };
     };
 
-    Object.prototype.getCollisionRect = function() {
+    object.prototype.getCollisionRect = function() {
       var x1, x2, y1, y2;
       x1 = this.get().getBounds().x + this.get().x + this.collisionWidth;
       y1 = this.get().getBounds().y + this.get().y + this.collisionHeight;
@@ -151,104 +145,11 @@
       };
     };
 
-    Object.prototype.gotHit = function(direction) {
-      return console.log("nothing happened");
+    object.prototype.gotHit = function(direction) {
+      return console.log("got hit");
     };
 
-    Object.prototype.detectCollision = function(trigger) {
-      var d1, d2, object, otherObject, rect1, rect2, _i, _len, _ref;
-      if (trigger == null) {
-        trigger = true;
-      }
-      object = this;
-      rect1 = this.getCollisionRect();
-      _ref = this.world.getObjects();
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        otherObject = _ref[_i];
-        if (this.id === otherObject.id) {
-          continue;
-        }
-        rect2 = otherObject.getCollisionRect();
-        if (!((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2) || (rect2.y1 > rect1.y2) || (rect2.y2 < rect1.y1))) {
-          d1 = otherObject.direction;
-          d2 = this.direction;
-          this.collisionHandler(otherObject, d1);
-          if (trigger) {
-            otherObject.collisionHandler(this, d2);
-          }
-          return [object, otherObject];
-        } else {
-          return [];
-        }
-      }
-    };
-
-    Object.prototype.collide = function(o, direction) {
-      var handlder, v1, v2;
-      console.log(this.name + ' collide with ' + o.name);
-      v1 = this.speed;
-      v2 = o.speed;
-      if (this.direction === "No") {
-        this.direction = direction;
-        this.moveStep(direction);
-      } else {
-        this.reverseDirection();
-        this.moveStep(this.direction);
-      }
-      this.speed = Math.abs(this.mass - o.mass) / (this.mass + o.mass) * v1;
-      this.speed += (2 * o.mass) / (this.mass + o.mass) * v2;
-      this.state = 'disabled';
-      handlder = this.updatePosition.bind(this);
-      this.get().addEventListener("tick", handlder);
-      return handlder;
-    };
-
-    Object.prototype.collisionHandler = function(o, direction) {
-      var handlder;
-      if (direction == null) {
-        direction = 'No';
-      }
-      handlder = this.collide(o, direction);
-      return createjs.Tween.get(this, {
-        loop: false
-      }).wait(100).call((function() {
-        this.idle();
-        return this.get().removeEventListener("tick", handlder);
-      }));
-    };
-
-    Object.prototype.realtiveDirection = function(object) {
-      if (object.get().x < this.get().x) {
-        return "left";
-      }
-      if (object.get().x >= this.get().x) {
-        return "right";
-      }
-    };
-
-    Object.prototype.updatePosition = function(event) {
-      var object;
-      object = event.target;
-      switch (this.direction) {
-        case "right":
-          object.x += 2;
-          break;
-        case "left":
-          object.x -= 2;
-          break;
-        case "up":
-          object.y -= 2;
-          break;
-        case "down":
-          object.y += 2;
-      }
-      this.updateCoords();
-      if (this.speed <= 0) {
-        return this.speed = this.originSpeed;
-      }
-    };
-
-    return Object;
+    return object;
 
   })();
 

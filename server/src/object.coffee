@@ -1,4 +1,4 @@
-class Object
+class object
 	constructor: (@name, @type, @x, @y, @world) ->
         @id
         @type
@@ -6,7 +6,7 @@ class Object
         @state = "idle"
         @mass = 1
         @speed = 0  #current speed
-        @originSpeed = 5
+        @originSpeed = 2
         @collisionHeight = 20
         @collisionWidth = 30
         @spriteSheetInfo
@@ -38,49 +38,49 @@ class Object
     			return "No"
 
     reverseDirection: ->
-    	@direction = @counterDirection(@direction)
+        @direction = @counterDirection(@direction)
 
 
     moveStep: (direction = null, speed = null) =>
-	    bound = @world.getBound()
+        bound = @world.getBound()
         if direction == null
             direction = @direction
         if speed == null
             speed = @speed
-	    switch direction
-	        when "left"
-	            if (@direction != "left")
-	                @direction = "left"
-	            if(@x - speed > bound['x1'])
-	                @x -= speed
-	            else
-	                @x += speed
-	        when "right"
-	            if (@direction != "right")
-	                @direction = "right"
-	            if(@x + speed < bound['x2'])
-	                @x += speed
-	            else
-	                @x -= speed
-	        when "down"
-	            @direction = "down"
-	            if(@y + speed < bound['y2'])
-	                @y += speed
-	            else
-	                @y -= speed
-	        when "up"
-	            @direction = "up"
-	            if(@y - speed > bound['y1'])
-	                @y -= speed
-	            else
-	                @y += speed
+        switch direction
+            when "left"
+                if (@direction != "left")
+                    @direction = "left"
+                if(@x - speed > bound['x1'])
+                    @x -= speed
+                else
+                    @x += speed
+            when "right"
+                if (@direction != "right")
+                    @direction = "right"
+                if(@x + speed < bound['x2'])
+                    @x += speed
+                else
+                    @x -= speed
+            when "down"
+                @direction = "down"
+                if(@y + speed < bound['y2'])
+                    @y += speed
+                else
+                    @y -= speed
+            when "up"
+                @direction = "up"
+                if(@y - speed > bound['y1'])
+                    @y -= speed
+                else
+                    @y += speed
 
 	moveTo: (x,y)->
-	    bound = @world.getBound()
-	    if (x  > bound['x1'] and x < bound['x2'] and y  > bound['y1'] and y < bound['y2'])
-	        @x = x
-	        @y = y
-	    else
+        bound = @world.getBound()
+        if (x  > bound['x1'] and x < bound['x2'] and y  > bound['y1'] and y < bound['y2'])
+            @x = x
+            @y = y
+        else
             console.log('invalid coordinates: (' + x + ',' + y + ')')
 
 
@@ -112,19 +112,19 @@ class Object
 
 ################################ Collision ###########################        
     collide: (o) ->
-    	#default collide behavior
-    	console.log(@name + ' collide with ' + o.name)
-    	v1 = @speed
-    	v2 = o.speed
-    	if o.direction == "No"
-    		o.direction = @direction
-    		o.moveStep(direction)
-    	else
-    		o.reverseDirection()
-    		o.moveStep()
-    	o.speed = Math.abs(o.mass-@mass)/(@mass+o.mass)*v1
-    	o.speed += (2*@mass)/(@mass + o.mass)*v2
-    	o.state = 'collided'
+        #default collide behavior
+        console.log(@name + ' collide with ' + o.name)
+        v1 = @speed
+        v2 = o.speed
+        if o.direction == "No"
+           o.direction = @direction
+           o.moveStep(direction)
+        else
+            o.reverseDirection()
+            o.moveStep()
+        o.speed = Math.abs(o.mass-@mass)/(@mass+o.mass)*v1
+        o.speed += (2*@mass)/(@mass + o.mass)*v2
+        o.state = 'collided'
         @state = 'collided'
 
 	collisionHandler: (object) ->
@@ -135,9 +135,9 @@ class Object
                 @state = "idle"
             if object.state == "collided"
                 object.state = "idle"
-         ), 100
+         ).bind(this), 100
 
 
 
 ################################################################
-module.exports = Object
+module.exports = object
