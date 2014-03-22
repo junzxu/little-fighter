@@ -1,7 +1,7 @@
 object = require("./object.js")
-player_schema = require("./player_schema.js")
+robot_schema = require("./robot_schema.js")
 
-class Player extends object
+class Robot extends object
     constructor: (@id, @name, @type, @x, @y, @world) ->
         super(@name, @type, @x, @y, @world)
         @hp = 100
@@ -18,8 +18,8 @@ class Player extends object
         @direction = "No"
         @width = 80
         @height = 80
-        @spriteSheetInfo = player_schema.spriteSheetInfo
-        @magicSheetInfo = player_schema.magicSheetInfo
+        @spriteSheetInfo = robot_schema.spriteSheetInfo
+        @magicSheetInfo = robot_schema.magicSheetInfo
 
 
     move: (direction) ->
@@ -93,5 +93,17 @@ class Player extends object
         else
             true
 
+    animationTime: (act = null) ->
+        if act == null
+            act = @state
+        switch act
+            when 'hurt'
+                return 200
+            when 'attack'
+                return 500
+            when 'cast'
+                return 500
+            else
+                return null
 ################################################################
-module.exports = Player
+module.exports = Robot

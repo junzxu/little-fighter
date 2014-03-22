@@ -28,11 +28,6 @@ class window.Game
         bar = document.getElementById("hud")
         @world = new World canvas, bar
         console.log('\t stage completed')
-        # createjs.Ticker.addEventListener "tick", @world.detectCollision
-        #add a ai robot
-        # robot = new Character "julian", "robot", 400, 200, @world
-        # robot.id = 0
-        # @world.addPlayer robot,2
 
 
     addEventHandlers: () ->
@@ -40,6 +35,7 @@ class window.Game
         @socket.on "joined", @gameSetup.bind this
         @socket.on "update", @onUpdate.bind this
         @socket.on "start", @gameStart.bind this
+        @socket.on "remove", @onRemove.bind this
         @socket.on "new player", @onNewPlayer.bind this
         @socket.on "player disconnect", @onPlayerDisconnect.bind this
         createjs.Ticker.addEventListener "tick", @onTick.bind this
@@ -53,10 +49,11 @@ class window.Game
                 if player != null
                     player.update(object)
                 else
+                    #create a new character
                     character = @buildCharacter(object)
                     console.log(character)
                     @world.addPlayer character, @player_count
-                    @player_count += 1      
+                    @player_count += 1
             if object.type == "magic"
                 magic = @world.getObject(object.id)
                 if magic == null
@@ -64,10 +61,11 @@ class window.Game
                 else
                     magic.get().x = object.x
                     magic.get().y = object.y
-                    if @is_outofBound(magic)
-                        @world.removeObject magic
 
-
+    onRemove: (data) ->
+        target = @world.getObject(data.object.id)
+        if target != null
+            @world.removeObject target
 
     # Connected to Server
     onConnected: (data) ->
@@ -117,6 +115,9 @@ class window.Game
                 when 'collided'
                     break
                 when 'attack'
+                    @socket.emit "update", {id:@id, action:"animationend"}
+                    @localPlayer.idle()
+                when 'hurt'
                     @socket.emit "update", {id:@id, action:"animationend"}
                     @localPlayer.idle()
                 when 'cast'

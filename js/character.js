@@ -94,10 +94,10 @@
     Character.prototype.idle = function() {
       this.speed = 0;
       this.direction = "No";
+      this.state = "idle";
       if (this.character.currentAnimation !== "idle") {
-        this.character.gotoAndPlay("idle");
+        return this.character.gotoAndPlay("idle");
       }
-      return this.state = "idle";
     };
 
     Character.prototype.gotHit = function(direction) {
@@ -118,6 +118,7 @@
     Character.prototype.update = function(object) {
       switch (object.state) {
         case 'die':
+          this.setHPBar(0);
           return this.die();
         case 'hurt':
           this.gotHit(object.direction);
@@ -125,6 +126,9 @@
           return this.setHPBar(this.hp);
         case 'run':
           this.run(object.direction);
+          this.get().x = object.x;
+          return this.get().y = object.y;
+        case 'collided':
           this.get().x = object.x;
           return this.get().y = object.y;
         case 'attack':
@@ -135,6 +139,8 @@
           if (this.state === "die") {
             this.character.x = object.x;
             this.character.y = object.y;
+            this.hp = object.hp;
+            this.setHPBar(this.hp);
             this.world.get().addChild(this.character);
           }
           return this.idle();

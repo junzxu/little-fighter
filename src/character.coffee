@@ -70,9 +70,9 @@ class window.Character extends object
     idle: ->
         @speed = 0
         @direction = "No"
+        @state = "idle"
         if (@character.currentAnimation != "idle")
             @character.gotoAndPlay "idle"
-        @state = "idle"
 
     gotHit: (direction) ->
         #direction indicates where the hit come from
@@ -91,6 +91,7 @@ class window.Character extends object
     update: (object) ->
         switch object.state
             when 'die'
+                @setHPBar(0)
                 @die()
             when 'hurt'
                 @gotHit(object.direction)
@@ -98,6 +99,9 @@ class window.Character extends object
                 @setHPBar(@hp)
             when 'run'
                 @run(object.direction)
+                @get().x = object.x
+                @get().y = object.y
+            when 'collided'
                 @get().x = object.x
                 @get().y = object.y
             when 'attack'
@@ -108,6 +112,8 @@ class window.Character extends object
                 if @state == "die"
                     @character.x = object.x
                     @character.y = object.y
+                    @hp = object.hp
+                    @setHPBar(@hp)
                     @world.get().addChild @character
                 @idle()
 

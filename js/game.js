@@ -42,6 +42,7 @@
       this.socket.on("joined", this.gameSetup.bind(this));
       this.socket.on("update", this.onUpdate.bind(this));
       this.socket.on("start", this.gameStart.bind(this));
+      this.socket.on("remove", this.onRemove.bind(this));
       this.socket.on("new player", this.onNewPlayer.bind(this));
       this.socket.on("player disconnect", this.onPlayerDisconnect.bind(this));
       return createjs.Ticker.addEventListener("tick", this.onTick.bind(this));
@@ -70,18 +71,21 @@
             _results.push(magic = new Magic(object.id, object.name, object.x, object.y, this.world, object.characterID, object.direction, object.magicSheetInfo));
           } else {
             magic.get().x = object.x;
-            magic.get().y = object.y;
-            if (this.is_outofBound(magic)) {
-              _results.push(this.world.removeObject(magic));
-            } else {
-              _results.push(void 0);
-            }
+            _results.push(magic.get().y = object.y);
           }
         } else {
           _results.push(void 0);
         }
       }
       return _results;
+    };
+
+    Game.prototype.onRemove = function(data) {
+      var target;
+      target = this.world.getObject(data.object.id);
+      if (target !== null) {
+        return this.world.removeObject(target);
+      }
     };
 
     Game.prototype.onConnected = function(data) {
@@ -135,6 +139,12 @@
             case 'collided':
               break;
             case 'attack':
+              _this.socket.emit("update", {
+                id: _this.id,
+                action: "animationend"
+              });
+              return _this.localPlayer.idle();
+            case 'hurt':
               _this.socket.emit("update", {
                 id: _this.id,
                 action: "animationend"

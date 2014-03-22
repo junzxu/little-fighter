@@ -20,8 +20,7 @@ class Magic extends object
 
     collisionHandler: (o)->
         if o.id != @characterID
-            o.gotHit(@direction)
-            console.log('hit player'+o.id)
+            o.gotHit(@damage, @direction)
             @state = "removed"
 
 

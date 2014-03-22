@@ -11,10 +11,12 @@ robot_schema = {
             },
             attack: {
                 frames: [10, 11, 12, 13, 14, 15, 16, 17],
+                next: "idle",
                 frequency: 10
             },
             hurt: {
                 frames: [41, 42, 43, 44],
+                next: "idle",
                 frequency: 10
             },
             die: {

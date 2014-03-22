@@ -1,5 +1,6 @@
 util =  require ("util")
 Player = require("./character.js")
+Robot = require("./robot.js")
 World = require("./world.js")
 Magic = require("./magic.js")
 UUID = require('node-uuid')
@@ -20,7 +21,7 @@ class Game
         @players = []
         # add a robot to game
         id = UUID()
-        robot = new Player id, "Julian", "robot", 600, 300, @world
+        robot = new Robot id, "Julian", "robot", 500, 200, @world
         @addPlayer robot
 
     start: ->
@@ -56,7 +57,7 @@ class Game
         if player.attack()
             [target,distance] = @getNearestCharacter(player)
             if  target != null and distance < player.attackRange and player.faceDirection == player.realtiveDirection(target)
-                target.gotHit(10, player.counterDirection(player.faceDirection))
+                target.gotHit(player.damage, player.faceDirection)
 
 
     onPlayerCast: (player) ->
@@ -94,7 +95,7 @@ class Game
         # x = Math.floor(Math.random() * bound.x2)
         # y = Math.floor(Math.random() * bound.y2)
         x = 100
-        y = 300
+        y = 200
         id = client.userid
         player = new Player id, "firzen", "player", x, y, @world
         @player_count += 1
@@ -105,8 +106,9 @@ class Game
 #################################################
 #physics update
     handle_collision: ->
-        for player in @players
-            @detectCollision(player)
+        for object in @objects
+            if object.state != 'collided'
+                @detectCollision(object)
 
     detectCollision: (object) ->
         rect1 = object.getCollisionRect()
@@ -115,7 +117,8 @@ class Game
              continue
           rect2 = otherObject.getCollisionRect()
           if !((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2 ) || (rect2.y1 > rect1.y2 ) || (rect2.y2 < rect1.y1))
-            object.collisionHandler otherObject
+            dir = object.counterDirection(object.direction)
+            object.collisionHandler otherObject, dir
 
 
 #################################################
@@ -133,10 +136,16 @@ class Game
                     break
                 when "run"
                     object.moveStep()
-                    # @detectCollision(object)
+                    @detectCollision(object)
                     break
                 when "removed"
                     @removeObject object
+                else
+                #we need to update robot's state because no animationed signal from client
+                    if object.type == 'robot' and object.state in ['attack','cast','hurt']
+                        setTimeout ( -> 
+                            @state = 'idle'
+                         ).bind(object), object.animationTime()
         @io.sockets.in(@room).emit "update", {objects: @objects}
 
 
@@ -161,6 +170,7 @@ class Game
         for object,index in @objects
             if object.id == target.id
                 @objects.splice index,1
+                @io.sockets.in(@room).emit "remove", {object: target}
                 return true
         return false
 

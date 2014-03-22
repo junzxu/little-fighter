@@ -152,41 +152,35 @@
     };
 
     object.prototype.realtiveDirection = function(object) {
-      if (object.x < this.get().x) {
+      if (object.x < this.x) {
         return "left";
       }
-      if (object.x >= this.get().x) {
+      if (object.x >= this.x) {
         return "right";
       }
     };
 
-    object.prototype.collide = function(o) {
-      var v1, v2;
-      console.log(this.name + ' collide with ' + o.name);
-      v1 = this.speed;
-      v2 = o.speed;
-      if (o.direction === "No") {
-        o.direction = this.direction;
-        o.moveStep(direction);
+    object.prototype.collide = function(direction) {
+      if (this.direction === "No") {
+        this.direction = direction;
+        this.moveStep(direction, 10);
       } else {
-        o.reverseDirection();
-        o.moveStep();
+        this.reverseDirection();
+        this.moveStep();
       }
-      o.speed = Math.abs(o.mass - this.mass) / (this.mass + o.mass) * v1;
-      o.speed += (2 * this.mass) / (this.mass + o.mass) * v2;
-      o.state = 'collided';
+      this.speed = 2;
       return this.state = 'collided';
     };
 
-    object.prototype.collisionHandler = function(object) {
-      this.collide(object);
+    object.prototype.collisionHandler = function(object, direction) {
+      this.collide(direction);
+      if (object.state !== "collided") {
+        object.collisionHandler(this, this.counterDirection(direction));
+      }
       return setTimeout(((function(_this) {
         return function() {
           if (_this.state === "collided") {
-            _this.state = "idle";
-          }
-          if (object.state === "collided") {
-            return object.state = "idle";
+            return _this.idle();
           }
         };
       })(this)).bind(this), 100);

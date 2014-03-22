@@ -38,8 +38,7 @@
 
     Magic.prototype.collisionHandler = function(o) {
       if (o.id !== this.characterID) {
-        o.gotHit(this.direction);
-        console.log('hit player' + o.id);
+        o.gotHit(this.damage, this.direction);
         return this.state = "removed";
       }
     };

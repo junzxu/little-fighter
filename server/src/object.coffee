@@ -105,36 +105,31 @@ class object
 
     realtiveDirection: (object) ->
         #target object's direction relative to this object
-        if object.x < @get().x
+        if object.x < @x
             return "left"
-        if object.x >= @get().x
+        if object.x >= @x
             return "right"
 
 ################################ Collision ###########################        
-    collide: (o) ->
+    collide: (direction) ->
         #default collide behavior
-        console.log(@name + ' collide with ' + o.name)
-        v1 = @speed
-        v2 = o.speed
-        if o.direction == "No"
-           o.direction = @direction
-           o.moveStep(direction)
+        if @direction == "No"
+           @direction = direction
+           @moveStep(direction,10)
         else
-            o.reverseDirection()
-            o.moveStep()
-        o.speed = Math.abs(o.mass-@mass)/(@mass+o.mass)*v1
-        o.speed += (2*@mass)/(@mass + o.mass)*v2
-        o.state = 'collided'
+            @reverseDirection()
+            @moveStep()
+        @speed = 2
         @state = 'collided'
 
-	collisionHandler: (object) ->
+	collisionHandler: (object, direction) ->
         #override in child class, direction argument is for still objects
-        @collide object
+        @collide direction
+        if object.state != "collided"
+            object.collisionHandler @, @counterDirection(direction)
         setTimeout ( => 
             if @state == "collided"
-                @state = "idle"
-            if object.state == "collided"
-                object.state = "idle"
+                @idle()
          ).bind(this), 100
 
 
