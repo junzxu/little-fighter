@@ -27,8 +27,7 @@ class Player extends object
             @setState "run"
             @speed = @originSpeed
             @direction = direction
-            if direction in ["left","right"]
-                @faceDirection = direction
+            @faceDirection = if direction in ["left","ul",'dl'] then "left" else "right" 
             @moveStep()
             return true
         return false
@@ -69,7 +68,6 @@ class Player extends object
 
     gotHit: (damage,direction) ->
         #direction indicates where the hit come from
-        console.log('current hp: ' + @hp)
         @hp -= damage
         if @hp <= 0
             @setState 'die'

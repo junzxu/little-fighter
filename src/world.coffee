@@ -21,6 +21,7 @@ class window.World
 	build: (world) ->
 		#should build world from server data
 		@background = new createjs.Bitmap(world.backgroundURL)
+		@background.name = "background"
 		@world.addChild(@background)
 		for object in world.objects
 			spriteSheet = new createjs.SpriteSheet object.spriteSheetInfo

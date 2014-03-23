@@ -34,6 +34,7 @@
       this.magicSheetInfo = magicSheetInfo;
       this.SpriteSheet = new createjs.SpriteSheet(this.spriteSheetInfo);
       this.character = new createjs.BitmapAnimation(this.SpriteSheet);
+      this.character.name = this.name;
       this.character.x = this.x;
       this.character.y = this.y;
       return this.character.gotoAndPlay("idle");
@@ -62,9 +63,6 @@
         this.character.gotoAndPlay("run");
       }
       this.direction = direction;
-      if (direction === "left" || direction === "right") {
-        this.changeFaceDirection(direction);
-      }
       return this.state = "run";
     };
 
@@ -125,6 +123,7 @@
           this.hp = object.hp;
           return this.setHPBar(this.hp);
         case 'run':
+          this.changeFaceDirection(object.faceDirection);
           this.run(object.direction);
           this.get().x = object.x;
           return this.get().y = object.y;

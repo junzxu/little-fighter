@@ -68,16 +68,25 @@
         if (object.type === "magic") {
           magic = this.world.getObject(object.id);
           if (magic === null) {
-            _results.push(magic = new Magic(object.id, object.name, object.x, object.y, this.world, object.characterID, object.direction, object.magicSheetInfo));
+            magic = new Magic(object.id, object.name, object.x, object.y, this.world, object.characterID, object.direction, object.magicSheetInfo);
           } else {
             magic.get().x = object.x;
-            _results.push(magic.get().y = object.y);
+            magic.get().y = object.y;
           }
-        } else {
-          _results.push(void 0);
         }
+        _results.push(this.world.get().sortChildren(this.renderOrder));
       }
       return _results;
+    };
+
+    Game.prototype.renderOrder = function(obj1, obj2) {
+      if (obj1.y > obj2.y) {
+        return 1;
+      }
+      if (obj1.y < obj2.y) {
+        return -1;
+      }
+      return 0;
     };
 
     Game.prototype.onRemove = function(data) {
@@ -197,6 +206,38 @@
             action: 'cast'
           });
           this.localPlayer.state = "cast";
+          return;
+        }
+        if (this.keysDown[Constant.KEYCODE_RIGHT] && this.keysDown[Constant.KEYCODE_UP]) {
+          this.socket.emit("update", {
+            id: this.id,
+            action: 'run',
+            dir: 'ur'
+          });
+          return;
+        }
+        if (this.keysDown[Constant.KEYCODE_LEFT] && this.keysDown[Constant.KEYCODE_UP]) {
+          this.socket.emit("update", {
+            id: this.id,
+            action: 'run',
+            dir: 'ul'
+          });
+          return;
+        }
+        if (this.keysDown[Constant.KEYCODE_RIGHT] && this.keysDown[Constant.KEYCODE_DOWN]) {
+          this.socket.emit("update", {
+            id: this.id,
+            action: 'run',
+            dir: 'dr'
+          });
+          return;
+        }
+        if (this.keysDown[Constant.KEYCODE_LEFT] && this.keysDown[Constant.KEYCODE_DOWN]) {
+          this.socket.emit("update", {
+            id: this.id,
+            action: 'run',
+            dir: 'dl'
+          });
           return;
         }
         if (this.keysDown[Constant.KEYCODE_RIGHT]) {

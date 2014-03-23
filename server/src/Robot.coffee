@@ -27,8 +27,7 @@ class Robot extends object
             @setState "run"
             @speed = @originSpeed
             @direction = direction
-            if direction in ["left","right"]
-                @faceDirection = direction
+            @faceDirection = if direction in ["left","ul",'dl'] then "left" else "right" 
             @moveStep()
             return true
         return false

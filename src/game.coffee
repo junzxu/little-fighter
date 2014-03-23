@@ -61,6 +61,17 @@ class window.Game
                 else
                     magic.get().x = object.x
                     magic.get().y = object.y
+        #change render order
+            @world.get().sortChildren(@renderOrder)
+
+    renderOrder:(obj1, obj2) ->
+        #object near top get rendered first 
+         if (obj1.y > obj2.y)
+            return 1
+         if (obj1.y < obj2.y)
+            return -1
+         return 0
+
 
     onRemove: (data) ->
         target = @world.getObject(data.object.id)
@@ -154,6 +165,18 @@ class window.Game
             if @keysDown[Constant.KEYCODE_K]
                 @socket.emit "update", {id:@id, action:'cast'}
                 @localPlayer.state = "cast"
+                return
+            if @keysDown[Constant.KEYCODE_RIGHT] and @keysDown[Constant.KEYCODE_UP]
+                @socket.emit "update", {id:@id, action:'run', dir:'ur'}
+                return
+            if @keysDown[Constant.KEYCODE_LEFT] and @keysDown[Constant.KEYCODE_UP]
+                @socket.emit "update", {id:@id, action:'run', dir:'ul'}
+                return
+            if @keysDown[Constant.KEYCODE_RIGHT] and @keysDown[Constant.KEYCODE_DOWN]
+                @socket.emit "update", {id:@id, action:'run', dir:'dr'}
+                return
+            if @keysDown[Constant.KEYCODE_LEFT] and @keysDown[Constant.KEYCODE_DOWN]
+                @socket.emit "update", {id:@id, action:'run', dir:'dl'}
                 return
             if @keysDown[Constant.KEYCODE_RIGHT]
                 @socket.emit "update", {id:@id, action:'run', dir:'right'}

@@ -27,6 +27,7 @@
     World.prototype.build = function(world) {
       var AnimatedObject, object, spriteSheet, _i, _len, _ref;
       this.background = new createjs.Bitmap(world.backgroundURL);
+      this.background.name = "background";
       this.world.addChild(this.background);
       _ref = world.objects;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {

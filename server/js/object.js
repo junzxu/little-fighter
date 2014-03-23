@@ -45,6 +45,14 @@
         case "down":
           return "up";
           break;
+        case "ur":
+          return "dl";
+        case "ul":
+          return "dr";
+        case "dr":
+          return "ul";
+        case "dl":
+          return "ur";
         case "No":
           return "No";
       }
@@ -71,9 +79,7 @@
       }
       switch (direction) {
         case "left":
-          if (this.direction !== "left") {
-            this.direction = "left";
-          }
+          this.direction = "left";
           if (this.x - speed > bound['x1']) {
             return this.x -= speed;
           } else {
@@ -81,9 +87,7 @@
           }
           break;
         case "right":
-          if (this.direction !== "right") {
-            this.direction = "right";
-          }
+          this.direction = "right";
           if (this.x + speed < bound['x2']) {
             return this.x += speed;
           } else {
@@ -104,6 +108,42 @@
             return this.y -= speed;
           } else {
             return this.y += speed;
+          }
+          break;
+        case "ur":
+          this.direction = "ur";
+          if (this.y - speed > bound['y1']) {
+            this.y -= speed;
+          }
+          if (this.x + speed < bound['x2']) {
+            return this.x += speed;
+          }
+          break;
+        case "ul":
+          this.direction = "ul";
+          if (this.y - speed > bound['y1']) {
+            this.y -= speed;
+          }
+          if (this.x - speed > bound['x1']) {
+            return this.x -= speed;
+          }
+          break;
+        case "dr":
+          this.direction = "dr";
+          if (this.y + speed < bound['y2']) {
+            this.y += speed;
+          }
+          if (this.x + speed < bound['x2']) {
+            return this.x += speed;
+          }
+          break;
+        case "dl":
+          this.direction = "dl";
+          if (this.y + speed < bound['y2']) {
+            this.y += speed;
+          }
+          if (this.x - speed > bound['x1']) {
+            return this.x -= speed;
           }
       }
     };

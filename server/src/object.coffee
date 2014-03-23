@@ -21,21 +21,29 @@ class object
 
 
     counterDirection: (direction) ->
-    	switch direction
-    		when "right"
-    			return "left"
-    			break
-    		when "left"
-    			return "right"
-    			break
-    		when "up"
-    			return "down"
-    			break
-    		when "down"
-    			return "up"
-    			break
-    		when "No"
-    			return "No"
+        switch direction
+            when "right"
+                return "left"
+                break
+            when "left"
+                return "right"
+                break
+            when "up"
+                return "down"
+                break
+            when "down"
+                return "up"
+                break
+            when "ur"
+                return "dl"
+            when "ul"
+                return "dr"
+            when "dr"
+                return "ul"
+            when "dl"
+                return "ur"
+            when "No"
+                return "No"
 
     reverseDirection: ->
         @direction = @counterDirection(@direction)
@@ -49,15 +57,13 @@ class object
             speed = @speed
         switch direction
             when "left"
-                if (@direction != "left")
-                    @direction = "left"
+                @direction = "left"
                 if(@x - speed > bound['x1'])
                     @x -= speed
                 else
                     @x += speed
             when "right"
-                if (@direction != "right")
-                    @direction = "right"
+                @direction = "right"
                 if(@x + speed < bound['x2'])
                     @x += speed
                 else
@@ -74,8 +80,32 @@ class object
                     @y -= speed
                 else
                     @y += speed
+            when "ur"
+                @direction = "ur"
+                if(@y - speed > bound['y1'])
+                    @y -= speed
+                if(@x + speed < bound['x2'])
+                    @x += speed
+            when "ul"
+                @direction = "ul"
+                if(@y - speed > bound['y1'])
+                    @y -= speed
+                if( @x - speed > bound['x1'])
+                    @x -= speed
+            when "dr"
+                @direction = "dr"
+                if(@y + speed < bound['y2'])
+                    @y += speed
+                if(@x + speed < bound['x2'])
+                    @x += speed
+            when "dl"
+                @direction = "dl"
+                if(@y + speed < bound['y2'])
+                    @y += speed
+                if(@x - speed > bound['x1'])
+                    @x -= speed
 
-	moveTo: (x,y)->
+    moveTo: (x,y)->
         bound = @world.getBound()
         if (x  > bound['x1'] and x < bound['x2'] and y  > bound['y1'] and y < bound['y2'])
             @x = x
@@ -122,7 +152,7 @@ class object
         @speed = 2
         @state = 'collided'
 
-	collisionHandler: (object, direction) ->
+    collisionHandler: (object, direction) ->
         #override in child class, direction argument is for still objects
         @collide direction
         if object.state != "collided"

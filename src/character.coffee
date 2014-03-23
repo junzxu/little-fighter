@@ -21,6 +21,7 @@ class window.Character extends object
         @magicSheetInfo = magicSheetInfo
         @SpriteSheet = new createjs.SpriteSheet @spriteSheetInfo
         @character = new createjs.BitmapAnimation @SpriteSheet
+        @character.name = @name
         @character.x = @x
         @character.y = @y
         @character.gotoAndPlay "idle"
@@ -35,6 +36,7 @@ class window.Character extends object
         return @character
 
     changeFaceDirection: (direction) ->
+        #direction is left or right
         if @faceDirection == direction
             return
         else
@@ -45,8 +47,6 @@ class window.Character extends object
         if (@character.currentAnimation != "run")
             @character.gotoAndPlay "run"
         @direction = direction
-        if direction in ["left","right"]
-            @changeFaceDirection(direction)
         @state = "run"
 
 
@@ -98,6 +98,7 @@ class window.Character extends object
                 @hp = object.hp
                 @setHPBar(@hp)
             when 'run'
+                @changeFaceDirection(object.faceDirection)
                 @run(object.direction)
                 @get().x = object.x
                 @get().y = object.y

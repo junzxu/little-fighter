@@ -42,9 +42,7 @@
         this.setState("run");
         this.speed = this.originSpeed;
         this.direction = direction;
-        if (direction === "left" || direction === "right") {
-          this.faceDirection = direction;
-        }
+        this.faceDirection = direction === "left" || direction === "ul" || direction === 'dl' ? "left" : "right";
         this.moveStep();
         return true;
       }
@@ -93,7 +91,6 @@
     };
 
     Player.prototype.gotHit = function(damage, direction) {
-      console.log('current hp: ' + this.hp);
       this.hp -= damage;
       if (this.hp <= 0) {
         this.setState('die');

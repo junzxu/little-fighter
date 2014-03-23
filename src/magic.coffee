@@ -10,6 +10,7 @@ class window.Magic extends object
         @magic = new createjs.BitmapAnimation @SpriteSheet
         @magic.x = @x
         @magic.y = @y
+        @magic.name = @name
         @collisionHeight = 0
         @collisionWidth = 0
         @originSpeed = 5

@@ -26,6 +26,7 @@
       this.magic = new createjs.BitmapAnimation(this.SpriteSheet);
       this.magic.x = this.x;
       this.magic.y = this.y;
+      this.magic.name = this.name;
       this.collisionHeight = 0;
       this.collisionWidth = 0;
       this.originSpeed = 5;
