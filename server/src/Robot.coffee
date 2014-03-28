@@ -8,14 +8,18 @@ class Robot extends object
         @cd = 300
         @damage = 15
         @attackRange = 50
+        @sightRange = 100
+        @originSpeed = 1
         @number
         @faceDirection = "right"
+        @currentDestination = [@x,@y]
+        @waitTime = 0
+        @oldtime = new Date().getTime()
+
 
     init:() ->
         super
         #should load schema from database
-        @state = "idle"
-        @direction = "No"
         @width = 80
         @height = 80
         @spriteSheetInfo = robot_schema.spriteSheetInfo
@@ -33,11 +37,12 @@ class Robot extends object
         return false
 
 
-    attack: ->
+    attack: (target = null) ->
         if @checkState()
-            if @state != "attack"
-                @state = "attack"
-                return true
+            @setState "attack"
+            if @distanceTo(target) < @attackRange
+                target.gotHit(@damage, @faceDirection)
+            return true
         return false
 
 
@@ -45,7 +50,7 @@ class Robot extends object
         if @checkState() and @magicState == 'ready'
             @magicState = 'preparing'
             if @state != "cast"
-                @state = "cast"
+                @setState "cast"
             setTimeout ( => 
                 @magicState = "ready"
             ), @cd
@@ -54,7 +59,7 @@ class Robot extends object
 
 
     rebirth: ->
-        @setState "idle"
+        @idle()
         bound = @world.getBound()
         @x = Math.floor(Math.random() * bound.x2)
         @y = Math.floor(Math.random() * bound.y2)
@@ -62,19 +67,15 @@ class Robot extends object
 
 
     idle: ->
-        @setState 'idle'
+        @state = 'idle'
         @speed = 0
         @direction = "No"
 
     gotHit: (damage,direction) ->
         #direction indicates where the hit come from
-        console.log('current hp: ' + @hp)
         @hp -= damage
         if @hp <= 0
             @setState 'die'
-            setTimeout ( => 
-                @rebirth()
-            ), 3000
         else
             @setState 'hurt'
             @faceDirection = direction
@@ -83,26 +84,134 @@ class Robot extends object
 
     setState: (state) ->
         @state = state
+        switch state
+            when "idle"
+                idle()
+            when "run"
+                return
+            when "die"
+                setTimeout ( => 
+                    @rebirth()
+                ), @animationTime()
+            else
+                setTimeout ( -> 
+                    @idle()
+                 ).bind(this), @animationTime()
 
 
     checkState: ->
         #["hurt","attack","disabled","collided"]
-        if @state in ["disabled","collided"]
-            false
+        if @state in ["disabled","collided","die", "hurt", "attack"]
+            return false
         else
-            true
+            return true
 
     animationTime: (act = null) ->
         if act == null
             act = @state
         switch act
             when 'hurt'
-                return 200
+                return 800
             when 'attack'
-                return 500
+                return 1500
             when 'cast'
                 return 500
+            when 'die'
+                return 3000
+            when 'collided'
+                return 100
             else
                 return null
+
+################### ai component ###################################
+    moveTo: (dest = null)->
+        if dest != null
+            @currentDestination = dest
+        @setState 'run'
+        @speed = @originSpeed
+        count = 0
+        if @x < @currentDestination[0]
+            count += 1
+        else
+            count += 2
+        if @y < @currentDestination[1]
+            count += 4
+        else
+            count += 8
+        switch count
+            when 1
+                @direction = 'right'
+            when 2
+                @direction = 'left'
+            when 4
+                @direction = 'down'
+            when 8
+                @direction = 'up'
+            when 5
+                @direction = 'dr'
+            when 6
+                @direction = 'dl'
+            when 9
+                @direction = 'ur'
+            when 10
+                @direction = 'ul'
+        @faceDirection = if @direction in ["left","ul",'dl'] then "left" else "right" 
+
+
+    wait:(time) ->
+        #robot will be idle for a given time(ms)
+        @idle()
+        @waitTime = time
+        @oldtime = new Date().getTime()
+
+    randomWalk: ->
+        if not (Math.abs(@x - @currentDestination[0]) <= @originSpeed and Math.abs(@y - @currentDestination[1]) <= @originSpeed)
+            @moveTo(@currentDestination)
+        else
+            bound = @world.getBound()
+            x = Math.floor(Math.random() * (bound.x2 - @width/2))
+            y = Math.floor(Math.random() * (bound.y2 - @height/2))
+            @currentDestination = [x,y]
+            @wait(2000)
+
+
+    enemyInRange: (players) ->
+        #return nearest enemy in sight range
+        if @faceDirection == "right"
+            sightRange = {"x1": @x, "x2": @x+@sightRange, "y1": @y-@sightRange/2, "y2":@y+@sightRange/2 }
+        else
+            sightRange = {"x1": @x-@sightRange, "x2": @x, "y1": @y - @sightRange/2, "y2":@y + @sightRange/2 }
+        target = null
+        distance = Infinity
+        for player in players
+            if player.id == @id
+                continue
+            if player.inRange(sightRange)
+                d = @distanceTo(player)
+                if d < distance
+                    target = player
+                    distance = d
+        return target
+
+
+    goAttack: (players) ->
+        #move to target then attack
+        target = @enemyInRange(players)
+        if target == null
+            @randomWalk()
+        else
+            if @distanceTo(target) < @attackRange
+                @attack(target)
+            else
+                @moveTo([target.x,target.y])
+
+    update: (game)->
+        time = new Date().getTime()
+        if @state == "idle" and time - @oldtime < @waitTime
+            return
+        if @checkState()
+            @goAttack(game.players)
+            # @randomWalk()
+
 ################################################################
 module.exports = Robot

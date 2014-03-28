@@ -14,8 +14,6 @@ class Player extends object
     init:() ->
         super
         #should load schema from database
-        @state = "idle"
-        @direction = "No"
         @width = 80
         @height = 80
         @spriteSheetInfo = player_schema.spriteSheetInfo
@@ -36,7 +34,7 @@ class Player extends object
     attack: ->
         if @checkState()
             if @state != "attack"
-                @state = "attack"
+                @setState "attack"
                 return true
         return false
 
@@ -45,7 +43,7 @@ class Player extends object
         if @checkState() and @magicState == 'ready'
             @magicState = 'preparing'
             if @state != "cast"
-                @state = "cast"
+                @setState "cast"
             setTimeout ( => 
                 @magicState = "ready"
             ), @cd
@@ -54,7 +52,7 @@ class Player extends object
 
 
     rebirth: ->
-        @setState "idle"
+        @idle()
         bound = @world.getBound()
         @x = Math.floor(Math.random() * bound.x2)
         @y = Math.floor(Math.random() * bound.y2)
@@ -62,7 +60,7 @@ class Player extends object
 
 
     idle: ->
-        @setState 'idle'
+        @state = 'idle'
         @speed = 0
         @direction = "No"
 
@@ -71,9 +69,6 @@ class Player extends object
         @hp -= damage
         if @hp <= 0
             @setState 'die'
-            setTimeout ( => 
-                @rebirth()
-            ), 3000
         else
             @setState 'hurt'
             @faceDirection = direction
@@ -82,11 +77,33 @@ class Player extends object
 
     setState: (state) ->
         @state = state
+        switch state
+            when "idle"
+                idle()
+            when "die"
+                setTimeout ( => 
+                    @rebirth()
+                ), @animationTime()
+            when "collided"
+                setTimeout ( -> 
+                    @idle()
+                 ).bind(this), @animationTime()
 
+
+    animationTime: (act = null) ->
+        if act == null
+            act = @state
+        switch act
+            when 'die'
+                return 3000
+            when 'collided'
+                return 100
+            else
+                return null
 
     checkState: ->
         #["hurt","attack","disabled","collided"]
-        if @state in ["disabled","collided"]
+        if @state in ["disabled","collided","die","hurt"]
             false
         else
             true

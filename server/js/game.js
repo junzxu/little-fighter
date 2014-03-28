@@ -159,7 +159,7 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         otherObject = _ref[_i];
-        if (object.id === otherObject.id) {
+        if (object.id === otherObject.id || otherObject.state === "die") {
           continue;
         }
         rect2 = otherObject.getCollisionRect();
@@ -174,13 +174,16 @@
     };
 
     Game.prototype.updateState = function() {
-      var len, object, _ref;
+      var len, object;
       len = this.objects.length - 1;
       while (len >= 0) {
         object = this.objects[len];
         len -= 1;
         if (this.is_outofBound(object)) {
           this.removeObject(object);
+        }
+        if (object.type === 'robot') {
+          object.update(this);
         }
         switch (object.state) {
           case "collided":
@@ -192,13 +195,6 @@
             break;
           case "removed":
             this.removeObject(object);
-            break;
-          default:
-            if (object.type === 'robot' && ((_ref = object.state) === 'attack' || _ref === 'cast' || _ref === 'hurt')) {
-              setTimeout((function() {
-                return this.state = 'idle';
-              }).bind(object), object.animationTime());
-            }
         }
       }
       return this.io.sockets["in"](this.room).emit("update", {
@@ -284,7 +280,7 @@
 
     Game.prototype.getNearestCharacter = function(character) {
       var d, distance, index, player, target, _i, _len, _ref;
-      distance = 100000;
+      distance = Infinity;
       index = 0;
       target = null;
       _ref = this.players;
@@ -293,14 +289,13 @@
         if (player.id === character.id) {
           continue;
         }
-        d = Math.pow(character.x - player.x, 2) + Math.pow(character.y - player.y, 2);
+        d = character.distanceTo(player);
         if (d < distance) {
           distance = d;
           target = player;
         }
       }
-      d = Math.sqrt(distance);
-      return [target, d];
+      return [target, distance];
     };
 
     Game.prototype.getBound = function() {

@@ -13,8 +13,8 @@ class Server
     init: ()->
         @fake_latency = 0;
         @local_time = 0;
-        @_dt = new Date().getTime();
-        @_dte = new Date().getTime();
+        @_dt = new Date().getTime()
+        @_dte = new Date().getTime()
 
     # Event handlers #################################################################################
     findGame: (client) ->

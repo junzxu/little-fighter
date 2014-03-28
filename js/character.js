@@ -68,8 +68,9 @@
 
     Character.prototype.attack = function() {
       if (this.character.currentAnimation !== "attack") {
-        return this.character.gotoAndPlay("attack");
+        this.character.gotoAndPlay("attack");
       }
+      return this.state = "attack";
     };
 
     Character.prototype.cast = function() {
@@ -114,6 +115,13 @@
     };
 
     Character.prototype.update = function(object) {
+      if (this.state === "die" && object.state !== "die") {
+        this.character.x = object.x;
+        this.character.y = object.y;
+        this.hp = object.hp;
+        this.setHPBar(this.hp);
+        this.world.get().addChild(this.character);
+      }
       switch (object.state) {
         case 'die':
           this.setHPBar(0);
@@ -135,13 +143,6 @@
         case 'cast':
           return this.cast();
         case 'idle':
-          if (this.state === "die") {
-            this.character.x = object.x;
-            this.character.y = object.y;
-            this.hp = object.hp;
-            this.setHPBar(this.hp);
-            this.world.get().addChild(this.character);
-          }
           return this.idle();
       }
     };

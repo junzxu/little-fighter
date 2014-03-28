@@ -53,6 +53,7 @@ class window.Character extends object
     attack: ->
         if @character.currentAnimation != "attack"
             @character.gotoAndPlay "attack"
+        @state = "attack"
 
 
     cast: ->
@@ -89,6 +90,12 @@ class window.Character extends object
 
  
     update: (object) ->
+        if @state == "die" and object.state != "die"
+            @character.x = object.x
+            @character.y = object.y
+            @hp = object.hp
+            @setHPBar(@hp)
+            @world.get().addChild @character
         switch object.state
             when 'die'
                 @setHPBar(0)
@@ -110,12 +117,6 @@ class window.Character extends object
             when 'cast'
                 @cast()
             when 'idle'
-                if @state == "die"
-                    @character.x = object.x
-                    @character.y = object.y
-                    @hp = object.hp
-                    @setHPBar(@hp)
-                    @world.get().addChild @character
                 @idle()
 
 

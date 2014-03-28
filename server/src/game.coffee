@@ -113,7 +113,7 @@ class Game
     detectCollision: (object) ->
         rect1 = object.getCollisionRect()
         for otherObject in @objects
-          if object.id == otherObject.id
+          if object.id == otherObject.id or otherObject.state == "die"
              continue
           rect2 = otherObject.getCollisionRect()
           if !((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2 ) || (rect2.y1 > rect1.y2 ) || (rect2.y2 < rect1.y1))
@@ -130,6 +130,8 @@ class Game
             len -= 1
             if @is_outofBound(object)
                 @removeObject object
+            if object.type == 'robot'
+                object.update(@)
             switch object.state
                 when "collided"
                     object.moveStep()
@@ -140,12 +142,6 @@ class Game
                     break
                 when "removed"
                     @removeObject object
-                else
-                #we need to update robot's state because no animationed signal from client
-                    if object.type == 'robot' and object.state in ['attack','cast','hurt']
-                        setTimeout ( -> 
-                            @state = 'idle'
-                         ).bind(object), object.animationTime()
         @io.sockets.in(@room).emit "update", {objects: @objects}
 
 
@@ -197,18 +193,17 @@ class Game
         return null
 
     getNearestCharacter: (character) ->
-        distance = 100000
+        distance = Infinity
         index = 0
         target = null
         for player in @players
             if player.id == character.id
                 continue
-            d = Math.pow((character.x - player.x),2) + Math.pow((character.y - player.y),2)
+            d = character.distanceTo(player)
             if d < distance
                 distance = d
                 target = player
-        d = Math.sqrt(distance)
-        [target,d]
+        [target,distance]
 
     getBound: ->
         #playing area

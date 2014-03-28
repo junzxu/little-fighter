@@ -23,14 +23,17 @@
       this.cd = 300;
       this.damage = 15;
       this.attackRange = 50;
+      this.sightRange = 100;
+      this.originSpeed = 1;
       this.number;
       this.faceDirection = "right";
+      this.currentDestination = [this.x, this.y];
+      this.waitTime = 0;
+      this.oldtime = new Date().getTime();
     }
 
     Robot.prototype.init = function() {
       Robot.__super__.init.apply(this, arguments);
-      this.state = "idle";
-      this.direction = "No";
       this.width = 80;
       this.height = 80;
       this.spriteSheetInfo = robot_schema.spriteSheetInfo;
@@ -49,12 +52,16 @@
       return false;
     };
 
-    Robot.prototype.attack = function() {
+    Robot.prototype.attack = function(target) {
+      if (target == null) {
+        target = null;
+      }
       if (this.checkState()) {
-        if (this.state !== "attack") {
-          this.state = "attack";
-          return true;
+        this.setState("attack");
+        if (this.distanceTo(target) < this.attackRange) {
+          target.gotHit(this.damage, this.faceDirection);
         }
+        return true;
       }
       return false;
     };
@@ -63,7 +70,7 @@
       if (this.checkState() && this.magicState === 'ready') {
         this.magicState = 'preparing';
         if (this.state !== "cast") {
-          this.state = "cast";
+          this.setState("cast");
         }
         setTimeout(((function(_this) {
           return function() {
@@ -77,7 +84,7 @@
 
     Robot.prototype.rebirth = function() {
       var bound;
-      this.setState("idle");
+      this.idle();
       bound = this.world.getBound();
       this.x = Math.floor(Math.random() * bound.x2);
       this.y = Math.floor(Math.random() * bound.y2);
@@ -85,21 +92,15 @@
     };
 
     Robot.prototype.idle = function() {
-      this.setState('idle');
+      this.state = 'idle';
       this.speed = 0;
       return this.direction = "No";
     };
 
     Robot.prototype.gotHit = function(damage, direction) {
-      console.log('current hp: ' + this.hp);
       this.hp -= damage;
       if (this.hp <= 0) {
-        this.setState('die');
-        return setTimeout(((function(_this) {
-          return function() {
-            return _this.rebirth();
-          };
-        })(this)), 3000);
+        return this.setState('die');
       } else {
         this.setState('hurt');
         this.faceDirection = direction;
@@ -108,12 +109,28 @@
     };
 
     Robot.prototype.setState = function(state) {
-      return this.state = state;
+      this.state = state;
+      switch (state) {
+        case "idle":
+          return idle();
+        case "run":
+          break;
+        case "die":
+          return setTimeout(((function(_this) {
+            return function() {
+              return _this.rebirth();
+            };
+          })(this)), this.animationTime());
+        default:
+          return setTimeout((function() {
+            return this.idle();
+          }).bind(this), this.animationTime());
+      }
     };
 
     Robot.prototype.checkState = function() {
       var _ref;
-      if ((_ref = this.state) === "disabled" || _ref === "collided") {
+      if ((_ref = this.state) === "disabled" || _ref === "collided" || _ref === "die" || _ref === "hurt" || _ref === "attack") {
         return false;
       } else {
         return true;
@@ -129,13 +146,145 @@
       }
       switch (act) {
         case 'hurt':
-          return 200;
+          return 800;
         case 'attack':
-          return 500;
+          return 1500;
         case 'cast':
           return 500;
+        case 'die':
+          return 3000;
+        case 'collided':
+          return 100;
         default:
           return null;
+      }
+    };
+
+    Robot.prototype.moveTo = function(dest) {
+      var count, _ref;
+      if (dest == null) {
+        dest = null;
+      }
+      if (dest !== null) {
+        this.currentDestination = dest;
+      }
+      this.setState('run');
+      this.speed = this.originSpeed;
+      count = 0;
+      if (this.x < this.currentDestination[0]) {
+        count += 1;
+      } else {
+        count += 2;
+      }
+      if (this.y < this.currentDestination[1]) {
+        count += 4;
+      } else {
+        count += 8;
+      }
+      switch (count) {
+        case 1:
+          this.direction = 'right';
+          break;
+        case 2:
+          this.direction = 'left';
+          break;
+        case 4:
+          this.direction = 'down';
+          break;
+        case 8:
+          this.direction = 'up';
+          break;
+        case 5:
+          this.direction = 'dr';
+          break;
+        case 6:
+          this.direction = 'dl';
+          break;
+        case 9:
+          this.direction = 'ur';
+          break;
+        case 10:
+          this.direction = 'ul';
+      }
+      return this.faceDirection = (_ref = this.direction) === "left" || _ref === "ul" || _ref === 'dl' ? "left" : "right";
+    };
+
+    Robot.prototype.wait = function(time) {
+      this.idle();
+      this.waitTime = time;
+      return this.oldtime = new Date().getTime();
+    };
+
+    Robot.prototype.randomWalk = function() {
+      var bound, x, y;
+      if (!(Math.abs(this.x - this.currentDestination[0]) <= this.originSpeed && Math.abs(this.y - this.currentDestination[1]) <= this.originSpeed)) {
+        return this.moveTo(this.currentDestination);
+      } else {
+        bound = this.world.getBound();
+        x = Math.floor(Math.random() * (bound.x2 - this.width / 2));
+        y = Math.floor(Math.random() * (bound.y2 - this.height / 2));
+        this.currentDestination = [x, y];
+        return this.wait(2000);
+      }
+    };
+
+    Robot.prototype.enemyInRange = function(players) {
+      var d, distance, player, sightRange, target, _i, _len;
+      if (this.faceDirection === "right") {
+        sightRange = {
+          "x1": this.x,
+          "x2": this.x + this.sightRange,
+          "y1": this.y - this.sightRange / 2,
+          "y2": this.y + this.sightRange / 2
+        };
+      } else {
+        sightRange = {
+          "x1": this.x - this.sightRange,
+          "x2": this.x,
+          "y1": this.y - this.sightRange / 2,
+          "y2": this.y + this.sightRange / 2
+        };
+      }
+      target = null;
+      distance = Infinity;
+      for (_i = 0, _len = players.length; _i < _len; _i++) {
+        player = players[_i];
+        if (player.id === this.id) {
+          continue;
+        }
+        if (player.inRange(sightRange)) {
+          d = this.distanceTo(player);
+          if (d < distance) {
+            target = player;
+            distance = d;
+          }
+        }
+      }
+      return target;
+    };
+
+    Robot.prototype.goAttack = function(players) {
+      var target;
+      target = this.enemyInRange(players);
+      if (target === null) {
+        return this.randomWalk();
+      } else {
+        if (this.distanceTo(target) < this.attackRange) {
+          return this.attack(target);
+        } else {
+          return this.moveTo([target.x, target.y]);
+        }
+      }
+    };
+
+    Robot.prototype.update = function(game) {
+      var time;
+      time = new Date().getTime();
+      if (this.state === "idle" && time - this.oldtime < this.waitTime) {
+        return;
+      }
+      if (this.checkState()) {
+        return this.goAttack(game.players);
       }
     };
 

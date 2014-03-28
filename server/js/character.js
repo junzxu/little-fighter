@@ -29,8 +29,6 @@
 
     Player.prototype.init = function() {
       Player.__super__.init.apply(this, arguments);
-      this.state = "idle";
-      this.direction = "No";
       this.width = 80;
       this.height = 80;
       this.spriteSheetInfo = player_schema.spriteSheetInfo;
@@ -52,7 +50,7 @@
     Player.prototype.attack = function() {
       if (this.checkState()) {
         if (this.state !== "attack") {
-          this.state = "attack";
+          this.setState("attack");
           return true;
         }
       }
@@ -63,7 +61,7 @@
       if (this.checkState() && this.magicState === 'ready') {
         this.magicState = 'preparing';
         if (this.state !== "cast") {
-          this.state = "cast";
+          this.setState("cast");
         }
         setTimeout(((function(_this) {
           return function() {
@@ -77,7 +75,7 @@
 
     Player.prototype.rebirth = function() {
       var bound;
-      this.setState("idle");
+      this.idle();
       bound = this.world.getBound();
       this.x = Math.floor(Math.random() * bound.x2);
       this.y = Math.floor(Math.random() * bound.y2);
@@ -85,7 +83,7 @@
     };
 
     Player.prototype.idle = function() {
-      this.setState('idle');
+      this.state = 'idle';
       this.speed = 0;
       return this.direction = "No";
     };
@@ -93,12 +91,7 @@
     Player.prototype.gotHit = function(damage, direction) {
       this.hp -= damage;
       if (this.hp <= 0) {
-        this.setState('die');
-        return setTimeout(((function(_this) {
-          return function() {
-            return _this.rebirth();
-          };
-        })(this)), 3000);
+        return this.setState('die');
       } else {
         this.setState('hurt');
         this.faceDirection = direction;
@@ -107,12 +100,43 @@
     };
 
     Player.prototype.setState = function(state) {
-      return this.state = state;
+      this.state = state;
+      switch (state) {
+        case "idle":
+          return idle();
+        case "die":
+          return setTimeout(((function(_this) {
+            return function() {
+              return _this.rebirth();
+            };
+          })(this)), this.animationTime());
+        case "collided":
+          return setTimeout((function() {
+            return this.idle();
+          }).bind(this), this.animationTime());
+      }
+    };
+
+    Player.prototype.animationTime = function(act) {
+      if (act == null) {
+        act = null;
+      }
+      if (act === null) {
+        act = this.state;
+      }
+      switch (act) {
+        case 'die':
+          return 3000;
+        case 'collided':
+          return 100;
+        default:
+          return null;
+      }
     };
 
     Player.prototype.checkState = function() {
       var _ref;
-      if ((_ref = this.state) === "disabled" || _ref === "collided") {
+      if ((_ref = this.state) === "disabled" || _ref === "collided" || _ref === "die" || _ref === "hurt") {
         return false;
       } else {
         return true;

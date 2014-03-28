@@ -14,19 +14,19 @@
       this.id;
       this.type;
       this.hp;
-      this.state = "idle";
       this.mass = 1;
       this.speed = 0;
       this.originSpeed = 2;
       this.collisionHeight = 20;
       this.collisionWidth = 30;
       this.spriteSheetInfo;
-      this.direction;
       this.magicState = "ready";
       this.init();
     }
 
     object.prototype.init = function() {
+      this.state = "idle";
+      this.direction = "No";
       this.width;
       return this.height;
     };
@@ -209,21 +209,34 @@
         this.moveStep();
       }
       this.speed = 2;
-      return this.state = 'collided';
+      return this.setState('collided');
     };
 
     object.prototype.collisionHandler = function(object, direction) {
       this.collide(direction);
       if (object.state !== "collided") {
-        object.collisionHandler(this, this.counterDirection(direction));
+        return object.collisionHandler(this, this.counterDirection(direction));
       }
-      return setTimeout(((function(_this) {
-        return function() {
-          if (_this.state === "collided") {
-            return _this.idle();
-          }
-        };
-      })(this)).bind(this), 100);
+    };
+
+    object.prototype.distanceTo = function(object) {
+      var d, squared;
+      if (object === null) {
+        return Infinity;
+      }
+      squared = Math.pow(this.x - object.x, 2) + Math.pow(this.y - object.y, 2);
+      d = Math.sqrt(squared);
+      return d;
+    };
+
+    object.prototype.inRange = function(bound) {
+      var rect;
+      rect = this.getRect;
+      if (!((rect.x2 < bound.x1) || (rect.x1 > bound.x2) || (rect.y1 > bound.y2) || (rect.y2 < bound.y1))) {
+        return true;
+      } else {
+        return false;
+      }
     };
 
     return object;

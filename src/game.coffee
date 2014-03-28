@@ -16,7 +16,7 @@ class window.Game
 
     # Server setup
     serverInit: () ->
-        @socket = io.connect "http://localhost", {port: 3000, transports: ["websocket"]}
+        @socket = io.connect "localhost", {port: 3000, transports: ["websocket"]}
         console.log('\t connected to server')
 
 
@@ -209,7 +209,7 @@ class window.Game
     checkState:(player) ->
         if player == null
             return false
-        if player.state in ['collided', 'disabled','hurt','attack']
+        if player.state in ['collided', 'disabled','hurt','attack',"die"]
             return false
         return true
 

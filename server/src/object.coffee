@@ -3,19 +3,19 @@ class object
         @id
         @type
         @hp
-        @state = "idle"
         @mass = 1
         @speed = 0  #current speed
         @originSpeed = 2
         @collisionHeight = 20
         @collisionWidth = 30
         @spriteSheetInfo
-        @direction
         @magicState = "ready"
         @init()
 
     init:() ->
     	#load spriteSheet, do extra init in child class
+        @state = "idle"
+        @direction = "No"
         @width
         @height 
 
@@ -150,19 +150,31 @@ class object
             @reverseDirection()
             @moveStep()
         @speed = 2
-        @state = 'collided'
+        @setState 'collided'
 
     collisionHandler: (object, direction) ->
         #override in child class, direction argument is for still objects
         @collide direction
         if object.state != "collided"
             object.collisionHandler @, @counterDirection(direction)
-        setTimeout ( => 
-            if @state == "collided"
-                @idle()
-         ).bind(this), 100
 
 
+############################# helper function ##########################
+
+    distanceTo:(object) ->
+        if object == null
+            return Infinity
+        squared = Math.pow((@.x - object.x),2) + Math.pow((@y - object.y),2)
+        d = Math.sqrt(squared)
+        return d
+
+    inRange:(bound) ->
+        #check if object's position is inside a given range
+        rect = @getRect
+        if !((rect.x2 < bound.x1) || (rect.x1 > bound.x2 ) || (rect.y1 > bound.y2 ) || (rect.y2 < bound.y1))
+            return true
+        else
+            return false
 
 ################################################################
 module.exports = object
