@@ -7,7 +7,7 @@ class Player extends object
         @hp = 100
         @cd = 300
         @damage = 15
-        @attackRange = 50
+        @attackRange = 70
         @number
         @faceDirection = "right"
 
@@ -66,6 +66,8 @@ class Player extends object
 
     gotHit: (damage,direction) ->
         #direction indicates where the hit come from
+        if @state == "die"
+            return
         @hp -= damage
         if @hp <= 0
             @setState 'die'
@@ -79,7 +81,7 @@ class Player extends object
         @state = state
         switch state
             when "idle"
-                idle()
+                @idle()
             when "die"
                 setTimeout ( => 
                     @rebirth()

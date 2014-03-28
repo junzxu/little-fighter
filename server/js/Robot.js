@@ -23,7 +23,7 @@
       this.cd = 300;
       this.damage = 15;
       this.attackRange = 50;
-      this.sightRange = 100;
+      this.sightRange = 150;
       this.originSpeed = 1;
       this.number;
       this.faceDirection = "right";
@@ -53,13 +53,15 @@
     };
 
     Robot.prototype.attack = function(target) {
+      var dir;
       if (target == null) {
         target = null;
       }
       if (this.checkState()) {
         this.setState("attack");
         if (this.distanceTo(target) < this.attackRange) {
-          target.gotHit(this.damage, this.faceDirection);
+          dir = this.counterDirection(this.faceDirection);
+          target.gotHit(this.damage, dir);
         }
         return true;
       }
@@ -84,6 +86,9 @@
 
     Robot.prototype.rebirth = function() {
       var bound;
+      if (this.state !== "die") {
+        return;
+      }
       this.idle();
       bound = this.world.getBound();
       this.x = Math.floor(Math.random() * bound.x2);
@@ -98,6 +103,9 @@
     };
 
     Robot.prototype.gotHit = function(damage, direction) {
+      if (this.state === "die") {
+        return;
+      }
       this.hp -= damage;
       if (this.hp <= 0) {
         return this.setState('die');
@@ -120,10 +128,12 @@
             return function() {
               return _this.rebirth();
             };
-          })(this)), this.animationTime());
+          })(this)).bind(this), this.animationTime("die"));
         default:
           return setTimeout((function() {
-            return this.idle();
+            if (this.hp > 0) {
+              return this.idle();
+            }
           }).bind(this), this.animationTime());
       }
     };
@@ -216,7 +226,11 @@
     };
 
     Robot.prototype.randomWalk = function() {
-      var bound, x, y;
+      var bound, time, x, y;
+      time = new Date().getTime();
+      if (this.state === "idle" && time - this.oldtime < this.waitTime) {
+        return;
+      }
       if (!(Math.abs(this.x - this.currentDestination[0]) <= this.originSpeed && Math.abs(this.y - this.currentDestination[1]) <= this.originSpeed)) {
         return this.moveTo(this.currentDestination);
       } else {
@@ -263,28 +277,24 @@
       return target;
     };
 
-    Robot.prototype.goAttack = function(players) {
-      var target;
-      target = this.enemyInRange(players);
-      if (target === null) {
-        return this.randomWalk();
+    Robot.prototype.goAttack = function(target) {
+      if (this.distanceTo(target) < this.attackRange) {
+        return this.attack(target);
       } else {
-        if (this.distanceTo(target) < this.attackRange) {
-          return this.attack(target);
-        } else {
-          return this.moveTo([target.x, target.y]);
-        }
+        return this.moveTo([target.x, target.y]);
       }
     };
 
     Robot.prototype.update = function(game) {
-      var time;
-      time = new Date().getTime();
-      if (this.state === "idle" && time - this.oldtime < this.waitTime) {
+      var target;
+      if (!this.checkState()) {
         return;
       }
-      if (this.checkState()) {
-        return this.goAttack(game.players);
+      target = this.enemyInRange(game.players);
+      if (target === null) {
+        return this.randomWalk();
+      } else {
+        return this.goAttack(target);
       }
     };
 

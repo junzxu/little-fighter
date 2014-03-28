@@ -23,7 +23,8 @@
     Game.prototype.serverInit = function() {
       this.socket = io.connect("localhost", {
         port: 3000,
-        transports: ["websocket"]
+        transports: ["websocket"],
+        'force new connection': true
       });
       return console.log('\t connected to server');
     };
@@ -138,10 +139,6 @@
         return function(evt) {
           switch (_this.localPlayer.state) {
             case 'die':
-              _this.socket.emit("update", {
-                id: _this.id,
-                action: "animationend"
-              });
               break;
             case 'disabled':
               break;

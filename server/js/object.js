@@ -230,12 +230,10 @@
     };
 
     object.prototype.inRange = function(bound) {
-      var rect;
-      rect = this.getRect;
-      if (!((rect.x2 < bound.x1) || (rect.x1 > bound.x2) || (rect.y1 > bound.y2) || (rect.y2 < bound.y1))) {
-        return true;
-      } else {
+      if ((this.x < bound.x1) || (this.x > bound.x2) || (this.y > bound.y2) || (this.y < bound.y1)) {
         return false;
+      } else {
+        return true;
       }
     };
 

@@ -66,7 +66,7 @@ class window.Character extends object
             if @character.currentAnimation != "die"
                 @character.gotoAndPlay "die"
                 @state = "die"
-                @world.get().removeChild @character
+                
 
     idle: ->
         @speed = 0
@@ -95,13 +95,13 @@ class window.Character extends object
             @character.y = object.y
             @hp = object.hp
             @setHPBar(@hp)
-            @world.get().addChild @character
+            # @world.get().addChild @character
         switch object.state
             when 'die'
                 @setHPBar(0)
                 @die()
             when 'hurt'
-                @gotHit(object.direction)
+                @gotHit(object.faceDirection)
                 @hp = object.hp
                 @setHPBar(@hp)
             when 'run'

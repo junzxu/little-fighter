@@ -23,7 +23,11 @@ player_schema = {
             },
             die: {
                 frames: [30, 31, 32, 33, 34, 35, 34],
+                next: "lay",
                 frequency: 10
+            },
+            lay: {
+                frames: [34]
             }
         },
         images: ["assets/spritesheets/firzen.png"],

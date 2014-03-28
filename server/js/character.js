@@ -22,7 +22,7 @@
       this.hp = 100;
       this.cd = 300;
       this.damage = 15;
-      this.attackRange = 50;
+      this.attackRange = 70;
       this.number;
       this.faceDirection = "right";
     }
@@ -89,6 +89,9 @@
     };
 
     Player.prototype.gotHit = function(damage, direction) {
+      if (this.state === "die") {
+        return;
+      }
       this.hp -= damage;
       if (this.hp <= 0) {
         return this.setState('die');
@@ -103,7 +106,7 @@
       this.state = state;
       switch (state) {
         case "idle":
-          return idle();
+          return this.idle();
         case "die":
           return setTimeout(((function(_this) {
             return function() {

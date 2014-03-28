@@ -53,7 +53,6 @@ class Game
         player.move(dir)
 
     onPlayerAttack: (player) ->
-        console.log("received player attack of id" + player.id)
         if player.attack()
             [target,distance] = @getNearestCharacter(player)
             if  target != null and distance < player.attackRange and player.faceDirection == player.realtiveDirection(target)
@@ -65,17 +64,12 @@ class Game
             bound = player.getRect()
             width = bound.x2-bound.x1
             id = UUID()
-            x  = if (player.faceDirection == 'right') then player.x+ width  else player.x-width
+            x  = if (player.faceDirection == 'right') then bound.x2  else bound.x1
             m = new Magic id, 'blue', x, player.y, @world, player.id, player.faceDirection
             @addObject m
 
     onAnimationend:(player) ->
-        switch player.state
-            when 'die'
-                player.setState 'idle'
-                player.rebirth()
-            else
-                player.idle()
+        player.idle()
 
     onRemovePlayer: (client)->
         id = client.userid
@@ -92,8 +86,6 @@ class Game
         if @player_count >= @max_player
             return null
         bound = @world.getBound()
-        # x = Math.floor(Math.random() * bound.x2)
-        # y = Math.floor(Math.random() * bound.y2)
         x = 100
         y = 200
         id = client.userid

@@ -72,7 +72,6 @@
 
     Game.prototype.onPlayerAttack = function(player) {
       var distance, target, _ref;
-      console.log("received player attack of id" + player.id);
       if (player.attack()) {
         _ref = this.getNearestCharacter(player), target = _ref[0], distance = _ref[1];
         if (target !== null && distance < player.attackRange && player.faceDirection === player.realtiveDirection(target)) {
@@ -87,20 +86,14 @@
         bound = player.getRect();
         width = bound.x2 - bound.x1;
         id = UUID();
-        x = player.faceDirection === 'right' ? player.x + width : player.x - width;
+        x = player.faceDirection === 'right' ? bound.x2 : bound.x1;
         m = new Magic(id, 'blue', x, player.y, this.world, player.id, player.faceDirection);
         return this.addObject(m);
       }
     };
 
     Game.prototype.onAnimationend = function(player) {
-      switch (player.state) {
-        case 'die':
-          player.setState('idle');
-          return player.rebirth();
-        default:
-          return player.idle();
-      }
+      return player.idle();
     };
 
     Game.prototype.onRemovePlayer = function(client) {

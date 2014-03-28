@@ -162,6 +162,7 @@ class object
 ############################# helper function ##########################
 
     distanceTo:(object) ->
+        #distance between this object to a given object
         if object == null
             return Infinity
         squared = Math.pow((@.x - object.x),2) + Math.pow((@y - object.y),2)
@@ -170,11 +171,10 @@ class object
 
     inRange:(bound) ->
         #check if object's position is inside a given range
-        rect = @getRect
-        if !((rect.x2 < bound.x1) || (rect.x1 > bound.x2 ) || (rect.y1 > bound.y2 ) || (rect.y2 < bound.y1))
-            return true
-        else
+        if (@x < bound.x1) or (@x > bound.x2 ) or (@y > bound.y2 ) or (@y < bound.y1)
             return false
+        else
+            return true
 
 ################################################################
 module.exports = object

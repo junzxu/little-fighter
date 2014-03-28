@@ -8,7 +8,7 @@ class Robot extends object
         @cd = 300
         @damage = 15
         @attackRange = 50
-        @sightRange = 100
+        @sightRange = 150
         @originSpeed = 1
         @number
         @faceDirection = "right"
@@ -41,7 +41,8 @@ class Robot extends object
         if @checkState()
             @setState "attack"
             if @distanceTo(target) < @attackRange
-                target.gotHit(@damage, @faceDirection)
+                dir = @counterDirection(@faceDirection)
+                target.gotHit(@damage, dir)
             return true
         return false
 
@@ -59,6 +60,8 @@ class Robot extends object
 
 
     rebirth: ->
+        if @state != "die"
+            return
         @idle()
         bound = @world.getBound()
         @x = Math.floor(Math.random() * bound.x2)
@@ -73,6 +76,8 @@ class Robot extends object
 
     gotHit: (damage,direction) ->
         #direction indicates where the hit come from
+        if @state == "die"
+            return
         @hp -= damage
         if @hp <= 0
             @setState 'die'
@@ -92,15 +97,15 @@ class Robot extends object
             when "die"
                 setTimeout ( => 
                     @rebirth()
-                ), @animationTime()
+                ).bind(this), @animationTime("die")      
             else
-                setTimeout ( -> 
-                    @idle()
+                setTimeout ( ->
+                    if @hp > 0  
+                        @idle()
                  ).bind(this), @animationTime()
 
 
     checkState: ->
-        #["hurt","attack","disabled","collided"]
         if @state in ["disabled","collided","die", "hurt", "attack"]
             return false
         else
@@ -165,6 +170,9 @@ class Robot extends object
         @oldtime = new Date().getTime()
 
     randomWalk: ->
+        time = new Date().getTime()
+        if @state == "idle" and time - @oldtime < @waitTime
+            return
         if not (Math.abs(@x - @currentDestination[0]) <= @originSpeed and Math.abs(@y - @currentDestination[1]) <= @originSpeed)
             @moveTo(@currentDestination)
         else
@@ -194,24 +202,22 @@ class Robot extends object
         return target
 
 
-    goAttack: (players) ->
+    goAttack: (target) ->
         #move to target then attack
-        target = @enemyInRange(players)
-        if target == null
-            @randomWalk()
+        if @distanceTo(target) < @attackRange
+            @attack(target)
         else
-            if @distanceTo(target) < @attackRange
-                @attack(target)
-            else
-                @moveTo([target.x,target.y])
+            @moveTo([target.x,target.y])
 
     update: (game)->
-        time = new Date().getTime()
-        if @state == "idle" and time - @oldtime < @waitTime
+        if not @checkState()
             return
-        if @checkState()
-            @goAttack(game.players)
-            # @randomWalk()
+        target = @enemyInRange(game.players) #find target in sight
+        if target == null
+            #wait if not find any enemy
+            @randomWalk()
+        else
+            @goAttack(target)
 
 ################################################################
 module.exports = Robot

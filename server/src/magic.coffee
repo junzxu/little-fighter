@@ -20,7 +20,7 @@ class Magic extends object
 
     collisionHandler: (o)->
         if o.id != @characterID
-            o.gotHit(@damage, @direction)
+            o.gotHit(@damage, @counterDirection(@direction))
             @state = "removed"
 
 

@@ -84,8 +84,7 @@
       if (this.state !== "die") {
         if (this.character.currentAnimation !== "die") {
           this.character.gotoAndPlay("die");
-          this.state = "die";
-          return this.world.get().removeChild(this.character);
+          return this.state = "die";
         }
       }
     };
@@ -120,14 +119,13 @@
         this.character.y = object.y;
         this.hp = object.hp;
         this.setHPBar(this.hp);
-        this.world.get().addChild(this.character);
       }
       switch (object.state) {
         case 'die':
           this.setHPBar(0);
           return this.die();
         case 'hurt':
-          this.gotHit(object.direction);
+          this.gotHit(object.faceDirection);
           this.hp = object.hp;
           return this.setHPBar(this.hp);
         case 'run':

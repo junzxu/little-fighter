@@ -20,7 +20,12 @@ robot_schema = {
                 frequency: 10
             },
             die: {
-                frames: [16, 15, 14]
+                frames: [16, 15, 14, 14, 14],
+                next: "lay",
+                frequency: 10
+            },
+            lay: {
+                frames: [14]
             }
         },
         images: ["assets/spritesheets/julian.png"],

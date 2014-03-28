@@ -16,7 +16,7 @@ class window.Game
 
     # Server setup
     serverInit: () ->
-        @socket = io.connect "localhost", {port: 3000, transports: ["websocket"]}
+        @socket = io.connect "localhost", {port: 3000, transports: ["websocket"],'force new connection': true}
         console.log('\t connected to server')
 
 
@@ -119,7 +119,6 @@ class window.Game
         @localPlayer.get().addEventListener "animationend", ((evt) =>
             switch @localPlayer.state
                 when 'die'
-                    @socket.emit "update", {id:@id, action:"animationend"}
                     break
                 when 'disabled'
                     break
