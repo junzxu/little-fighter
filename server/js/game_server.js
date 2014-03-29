@@ -76,11 +76,14 @@
       for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
         game = _ref[index];
         if (game.id === game_id) {
-          this.util.log('client ' + this.id + ' has disconnected');
+          this.util.log('client ' + client_id + ' has disconnected');
           game.onRemovePlayer(client_id);
+          this.util.log('remaining players:' + game.player_count);
           if (game.player_count === 0) {
+            game.end();
             this.games.splice(index, 1);
             this.game_count -= 1;
+            this.util.log('game ' + game_id + ' destroyed');
           }
           return true;
         }
@@ -94,7 +97,7 @@
       }
       if (game.player_count > game.min_player) {
         game.active = true;
-        return game.startUpdate();
+        return game.start();
       }
     };
 
@@ -117,18 +120,15 @@
     };
 
     Server.prototype.removeClient = function(target) {
-      var client, index, _i, _len, _ref, _results;
+      var client, index, _i, _len, _ref;
       _ref = this.clients;
-      _results = [];
       for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
         client = _ref[index];
         if (client.userid === target.userid) {
-          _results.push(this.clients.splice(index, 1));
-        } else {
-          _results.push(void 0);
+          this.clients.splice(index, 1);
+          return;
         }
       }
-      return _results;
     };
 
     return Server;

@@ -38,10 +38,14 @@
 
     Game.prototype.start = function() {
       this.state = "start";
-      setInterval(this.updateState.bind(this), 16);
-      return this.io.sockets["in"](this.room).emit("start", {
-        "gameid": this.id
-      });
+      return this.updateID = setInterval(this.updateState.bind(this), 16);
+    };
+
+    Game.prototype.end = function() {
+      clearInterval(this.updateID);
+      this.world = null;
+      this.objects = [];
+      return this.players = [];
     };
 
     Game.prototype.handleInput = function(data) {
@@ -71,11 +75,12 @@
     };
 
     Game.prototype.onPlayerAttack = function(player) {
-      var distance, target, _ref;
+      var dir, distance, target, _ref;
       if (player.attack()) {
         _ref = this.getNearestCharacter(player), target = _ref[0], distance = _ref[1];
         if (target !== null && distance < player.attackRange && player.faceDirection === player.realtiveDirection(target)) {
-          return target.gotHit(player.damage, player.faceDirection);
+          dir = player.faceDirection;
+          return target.gotHit(player.damage, player.counterDirection(dir));
         }
       }
     };
@@ -96,14 +101,12 @@
       return player.idle();
     };
 
-    Game.prototype.onRemovePlayer = function(client) {
-      var id, player;
-      id = client.userid;
-      player = this.getPlayerById(id);
+    Game.prototype.onRemovePlayer = function(client_id) {
+      var player;
+      player = this.getPlayerById(client_id);
       if (this.removePlayer(player)) {
-        this.player_count -= 1;
-        client.broadcast.to(this.room).emit("player disconnect", {
-          "id": id,
+        this.io.sockets["in"](this.room).emit("player disconnect", {
+          "id": client_id,
           "player": player
         });
         return true;
@@ -121,9 +124,8 @@
       y = 200;
       id = client.userid;
       player = new Player(id, "firzen", "player", x, y, this.world);
-      this.player_count += 1;
       this.addPlayer(player, this.player_count);
-      client.broadcast.to(this.room).emit("new player", {
+      this.io.sockets["in"](this.room).emit("new player", {
         "id": id,
         "player": player
       });
@@ -205,7 +207,9 @@
         if (player.number == null) {
           player.number = number;
         }
-        this.player_count += 1;
+        if (player.type === "player") {
+          this.player_count += 1;
+        }
         if (this.player_count >= this.min_player) {
           this.start();
         }
@@ -239,6 +243,7 @@
       if (target === null) {
         return false;
       }
+      this.removeObject(target);
       _ref = this.players;
       for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
         player = _ref[index];

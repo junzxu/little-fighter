@@ -50,11 +50,14 @@ class Server
     endGame: (game_id, client_id)->
         for game,index in @games
             if game.id == game_id
-                @util.log 'client ' + @id + ' has disconnected'
+                @util.log 'client ' + client_id + ' has disconnected'
                 game.onRemovePlayer client_id
+                @util.log 'remaining players:' + game.player_count
                 if game.player_count == 0  #no player in the game, so we destroy the game
+                    game.end()
                     @games.splice index,1
                     @game_count -= 1
+                    @util.log 'game ' + game_id + ' destroyed'
                 return true
         return false
 
@@ -65,7 +68,7 @@ class Server
             return
         if game.player_count > game.min_player
             game.active = true
-            game.startUpdate()
+            game.start()
 
 
 
@@ -85,5 +88,6 @@ class Server
         for client,index in @clients
             if client.userid == target.userid
                 @clients.splice index,1
+                return
 #####################################################
 module.exports = Server

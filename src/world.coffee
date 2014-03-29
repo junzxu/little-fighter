@@ -7,8 +7,8 @@ class window.World
 		@hud = new createjs.Container()
 		@width = @canvas.width
 		@height = @canvas.height - 100
-		@objects
-		@players
+		@objects   #all non-character sprites
+		@players   #player characters and robots
 		@init()
 
 	init: ->
@@ -62,10 +62,21 @@ class window.World
 				@objects.splice index,1
 
 	removePlayer:(target) ->
-		for player,index in @playerss
+		for player,index in @players
 			if player.id == target.id
-				@world.removeChild object.get()
+				@world.removeChild player.get()
 				@players.splice index,1
+
+	removeById:(id) ->
+		player = @getPlayer id
+		if player != null
+			@removePlayer player
+			return true
+		object = @getObject id
+		if object != null
+			@removeObject object
+			return true
+		return false
 
 	getPlayer: (id) ->
 		for player in @players

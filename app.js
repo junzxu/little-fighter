@@ -3,6 +3,7 @@
 
         io = require('socket.io'),
         express = require('express'),
+        url = require('url'),
         UUID = require('node-uuid'),
         Server = require('./server/js/game_server.js')
         http = require('http'),
@@ -34,12 +35,16 @@
         });
     });
 
-    app.get('/^id?=.*/', function(req, res) {
-        var id = req.params[0];
-        console.log('trying to load %s', __dirname + '/index.html');
-        res.sendfile('/index.html', {
-            root: __dirname
-        });
+    app.get('/*', function(req, res) {
+        if (req.query.id) {
+            var id = req.params.id;
+            console.log('trying to load %s', __dirname + '/index.html');
+            res.sendfile('/index.html', {
+                root: __dirname
+            });
+        } else {
+            res.status(404).send('Not found');
+        }
     });
 
 
@@ -59,9 +64,13 @@
         sio.set('log level', 0);
 
         sio.set('authorization', function(handshake, callback) {
-            if (handshake.url !== "/") {
-                id = handshake.url.slice(1);
-                handshake.gameid = id;
+            // var url_parts = url.parse(handshake.url, true);
+            // var query = url_parts.query;
+            console.log('Auth: ', handshake.query);
+            if (handshake.query.id != null) {
+                // id = handshake.url.slice(1);
+                // id = query.id
+                handshake.gameid = handshake.query.id;
             } else {
                 handshake.gameid = UUID();
             }
@@ -115,12 +124,9 @@
         client.on('disconnect', function() {
 
             //Useful to know when soomeone disconnects
-            console.log('\t socket.io:: client disconnected ' + client.userid + ' ' + client.gameid);
+            // console.log('\t socket.io:: client disconnected ' + client.userid + ' ' + client.gameid);
 
-            //If the client was in a game, set by game_server.findGame,
-            //we can tell the game server to update that game state.
-
-            //player leaving a game should destroy that game
+            //all players leaving a game should destroy that game
             game_server.endGame(client.gameid, client.userid);
             game_server.removeClient(client)
             client.leave(client.gameid)

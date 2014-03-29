@@ -94,18 +94,33 @@
 
     World.prototype.removePlayer = function(target) {
       var index, player, _i, _len, _ref, _results;
-      _ref = this.playerss;
+      _ref = this.players;
       _results = [];
       for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
         player = _ref[index];
         if (player.id === target.id) {
-          this.world.removeChild(object.get());
+          this.world.removeChild(player.get());
           _results.push(this.players.splice(index, 1));
         } else {
           _results.push(void 0);
         }
       }
       return _results;
+    };
+
+    World.prototype.removeById = function(id) {
+      var object, player;
+      player = this.getPlayer(id);
+      if (player !== null) {
+        this.removePlayer(player);
+        return true;
+      }
+      object = this.getObject(id);
+      if (object !== null) {
+        this.removeObject(object);
+        return true;
+      }
+      return false;
     };
 
     World.prototype.getPlayer = function(id) {

@@ -26,9 +26,13 @@ class Game
 
     start: ->
         @state = "start"
-        setInterval @updateState.bind(@), 16  #60 fps
-        @io.sockets.in(@room).emit "start", {"gameid":@id}
+        @updateID = setInterval @updateState.bind(@), 16  #60 fps
 
+    end: ->
+        clearInterval @updateID
+        @world = null
+        @objects = []
+        @players = []
 
     handleInput: (data) ->
     #handle data send by client
@@ -56,7 +60,8 @@ class Game
         if player.attack()
             [target,distance] = @getNearestCharacter(player)
             if  target != null and distance < player.attackRange and player.faceDirection == player.realtiveDirection(target)
-                target.gotHit(player.damage, player.faceDirection)
+                dir = player.faceDirection
+                target.gotHit(player.damage, player.counterDirection(dir))
 
 
     onPlayerCast: (player) ->
@@ -71,12 +76,10 @@ class Game
     onAnimationend:(player) ->
         player.idle()
 
-    onRemovePlayer: (client)->
-        id = client.userid
-        player = @getPlayerById id
+    onRemovePlayer: (client_id)->
+        player = @getPlayerById client_id
         if @removePlayer player
-            @player_count -= 1
-            client.broadcast.to(@room).emit "player disconnect", {"id":id, "player":player}
+            @io.sockets.in(@room).emit "player disconnect", {"id": client_id , "player":player}
             return true
         return false
 
@@ -90,9 +93,8 @@ class Game
         y = 200
         id = client.userid
         player = new Player id, "firzen", "player", x, y, @world
-        @player_count += 1
         @addPlayer player, @player_count
-        client.broadcast.to(@room).emit "new player", {"id": id, "player": player}
+        @io.sockets.in(@room).emit "new player", {"id": id, "player": player}
         return player
 
 #################################################
@@ -144,7 +146,8 @@ class Game
             @objects.push player
             @players.push player
             player.number ?= number
-            @player_count += 1
+            if player.type == "player"
+                @player_count += 1
             if @player_count >= @min_player
                 @start()
             return true
@@ -165,6 +168,7 @@ class Game
     removePlayer:(target) ->
         if target == null
             return false
+        @removeObject target
         for player,index in @players
             if player.id == target.id
                 @players.splice index,1

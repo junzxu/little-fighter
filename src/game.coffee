@@ -16,7 +16,7 @@ class window.Game
 
     # Server setup
     serverInit: () ->
-        @socket = io.connect "localhost", {port: 3000, transports: ["websocket"],'force new connection': true}
+        @socket = io.connect "192.168.0.17", {port: 3000, transports: ["websocket"],'force new connection': true,  query: "id=123" }
         console.log('\t connected to server')
 
 
@@ -34,7 +34,6 @@ class window.Game
         @socket.on "connected", @onConnected.bind this
         @socket.on "joined", @gameSetup.bind this
         @socket.on "update", @onUpdate.bind this
-        @socket.on "start", @gameStart.bind this
         @socket.on "remove", @onRemove.bind this
         @socket.on "new player", @onNewPlayer.bind this
         @socket.on "player disconnect", @onPlayerDisconnect.bind this
@@ -86,10 +85,6 @@ class window.Game
         console.log('game id is ' + data.gameid)
 
 
-    gameStart: (data) ->
-        console.log("receive game started")
-
-
     gameSetup: (data) ->
         console.log('\t player ' + @id + ' has joined game');
         @gameid = data.gameid
@@ -138,7 +133,9 @@ class window.Game
         ).bind this
 
     onNewPlayer: (data) ->
-        if !(@playerExists data.id)
+        if @localPlayer == null
+            return
+        if not @world.playerExists data.id and data.id != @localPlayer.id
             console.log 'Add new player to stage ' + data.id
             player = @buildCharacter(data.player)
             @world.addPlayer player,@player_count
@@ -149,7 +146,7 @@ class window.Game
     onPlayerDisconnect: (data) ->
         if (@world.playerExists data.id)
             console.log 'player:' + data.id + ' leave the game'
-            @world.removePlayer player
+            @world.removeById data.id
             @player_count -= 1
 
 

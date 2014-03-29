@@ -21,10 +21,11 @@
     };
 
     Game.prototype.serverInit = function() {
-      this.socket = io.connect("localhost", {
+      this.socket = io.connect("192.168.0.17", {
         port: 3000,
         transports: ["websocket"],
-        'force new connection': true
+        'force new connection': true,
+        query: "id=123"
       });
       return console.log('\t connected to server');
     };
@@ -42,7 +43,6 @@
       this.socket.on("connected", this.onConnected.bind(this));
       this.socket.on("joined", this.gameSetup.bind(this));
       this.socket.on("update", this.onUpdate.bind(this));
-      this.socket.on("start", this.gameStart.bind(this));
       this.socket.on("remove", this.onRemove.bind(this));
       this.socket.on("new player", this.onNewPlayer.bind(this));
       this.socket.on("player disconnect", this.onPlayerDisconnect.bind(this));
@@ -103,10 +103,6 @@
       this.gameid = data.gameid;
       console.log('client id is ' + this.id);
       return console.log('game id is ' + data.gameid);
-    };
-
-    Game.prototype.gameStart = function(data) {
-      return console.log("receive game started");
     };
 
     Game.prototype.gameSetup = function(data) {
@@ -171,7 +167,10 @@
 
     Game.prototype.onNewPlayer = function(data) {
       var player;
-      if (!(this.playerExists(data.id))) {
+      if (this.localPlayer === null) {
+        return;
+      }
+      if (!this.world.playerExists(data.id && data.id !== this.localPlayer.id)) {
         console.log('Add new player to stage ' + data.id);
         player = this.buildCharacter(data.player);
         this.world.addPlayer(player, this.player_count);
@@ -182,7 +181,7 @@
     Game.prototype.onPlayerDisconnect = function(data) {
       if (this.world.playerExists(data.id)) {
         console.log('player:' + data.id + ' leave the game');
-        this.world.removePlayer(player);
+        this.world.removeById(data.id);
         return this.player_count -= 1;
       }
     };
