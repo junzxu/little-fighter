@@ -60,12 +60,14 @@ class window.World
 			if object.id == target.id
 				@world.removeChild object.get()
 				@objects.splice index,1
+				return
 
 	removePlayer:(target) ->
 		for player,index in @players
 			if player.id == target.id
 				@world.removeChild player.get()
 				@players.splice index,1
+				return
 
 	removeById:(id) ->
 		player = @getPlayer id

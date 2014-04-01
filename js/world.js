@@ -77,35 +77,29 @@
     };
 
     World.prototype.removeObject = function(target) {
-      var index, object, _i, _len, _ref, _results;
+      var index, object, _i, _len, _ref;
       _ref = this.objects;
-      _results = [];
       for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
         object = _ref[index];
         if (object.id === target.id) {
           this.world.removeChild(object.get());
-          _results.push(this.objects.splice(index, 1));
-        } else {
-          _results.push(void 0);
+          this.objects.splice(index, 1);
+          return;
         }
       }
-      return _results;
     };
 
     World.prototype.removePlayer = function(target) {
-      var index, player, _i, _len, _ref, _results;
+      var index, player, _i, _len, _ref;
       _ref = this.players;
-      _results = [];
       for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
         player = _ref[index];
         if (player.id === target.id) {
           this.world.removeChild(player.get());
-          _results.push(this.players.splice(index, 1));
-        } else {
-          _results.push(void 0);
+          this.players.splice(index, 1);
+          return;
         }
       }
-      return _results;
     };
 
     World.prototype.removeById = function(id) {

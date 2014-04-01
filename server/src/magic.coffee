@@ -12,10 +12,10 @@ class Magic extends object
         @damage = 10
         @collisionHeight = 0
         @collisionWidth = 0
-        @width = 40
-        @height = 40
+        @width = 126
+        @height = 55
         @state = "run"
-        @magicSheetInfo = player_schema.magicSheetInfo
+        @info = {'id':@id, 'name':@name, 'type':@type,'width':@width,'height':@height, 'originSpeed':@originSpeed } 
 
 
     collisionHandler: (o)->
@@ -39,6 +39,14 @@ class Magic extends object
                 @y += speed
             when "up"
                 @y -= speed
+
+    getStatus: ->
+        @info.x = @x
+        @info.y = @y
+        @info.state = @state
+        @info.direction = @direction
+        @info.characterID = @characterID
+        return @info
 
 ################################################################
 module.exports = Magic

@@ -3,6 +3,7 @@ class object
         @id
         @type
         @hp
+        @maxhp
         @mass = 1
         @speed = 0  #current speed
         @originSpeed = 2
@@ -17,7 +18,8 @@ class object
         @state = "idle"
         @direction = "No"
         @width
-        @height 
+        @height
+        @info = {'id':@id,'name':@name, 'type':@type,'width':@width,'height':@height, 'originSpeed':@originSpeed, 'maxhp': @maxhp } 
 
 
     counterDirection: (direction) ->
@@ -56,6 +58,8 @@ class object
         if speed == null
             speed = @speed
         switch direction
+            when "no"
+                return
             when "left"
                 @direction = "left"
                 if(@x - speed > bound['x1'])
@@ -139,6 +143,14 @@ class object
             return "left"
         if object.x >= @x
             return "right"
+
+    getStatus: ->
+        @info.x = @x
+        @info.y = @y
+        @info.state = @state
+        @info.direction = @direction
+        @info.hp = @hp
+        return @info
 
 ################################ Collision ###########################        
     collide: (direction) ->

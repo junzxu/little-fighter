@@ -32,7 +32,7 @@ class Server
         @game_count += 1
         @games.push game
         #tell client they have joined a game
-        client.emit 'joined', { id: client.userid, gameid: client.gameid, world: game.world, character:player}
+        client.emit 'joined', { id: client.userid, gameid: client.gameid, world: game.world, character:player, players:game.players}
         console.log("player " + client.userid + ' has joined game ' +  client.gameid)
 
 
@@ -41,7 +41,7 @@ class Server
             if game.id == client.gameid and game.player_count < game.max_player
                 player = game.onNewPlayer(client)
                 #tell client they have joined a game
-                client.emit 'joined', { id: client.userid, gameid: client.gameid, world: game.world, character:player}
+                client.emit 'joined', { id: client.userid, gameid: client.gameid, world: game.world, character: player, players:game.players}
                 @startGame(game)
                 return true
         return false

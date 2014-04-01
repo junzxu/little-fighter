@@ -2,6 +2,7 @@ class window.Game
     init: ->
         @keysDown = {}
         @players = []
+        @magics = {}  #store spritesheets info of all magics
         @player_count = 1
         @stageInit()
         @serverInit()
@@ -40,6 +41,7 @@ class window.Game
         createjs.Ticker.addEventListener "tick", @onTick.bind this
         # createjs.Ticker.addEventListener "tick", @world.detectCollision.bind @world
 
+
     # update game from server data
     onUpdate: (data) ->
         for object in data.objects          
@@ -47,21 +49,18 @@ class window.Game
                 player = @world.getPlayer(object.id)
                 if player != null
                     player.update(object)
-                else
-                    #create a new character
-                    character = @buildCharacter(object)
-                    console.log(character)
-                    @world.addPlayer character, @player_count
-                    @player_count += 1
             if object.type == "magic"
                 magic = @world.getObject(object.id)
                 if magic == null
-                    magic = new Magic object.id, object.name, object.x, object.y, @world, object.characterID, object.direction, object.magicSheetInfo
+                    magicName = object.name
+                    magicSheetInfo = @magics[magicName]
+                    magic = new Magic object.id, object.name, object.x, object.y, @world, object.characterID, object.direction, magicSheetInfo
                 else
                     magic.get().x = object.x
                     magic.get().y = object.y
         #change render order
             @world.get().sortChildren(@renderOrder)
+
 
     renderOrder:(obj1, obj2) ->
         #object near top get rendered first 
@@ -86,16 +85,26 @@ class window.Game
 
 
     gameSetup: (data) ->
-        console.log('\t player ' + @id + ' has joined game');
         @gameid = data.gameid
         @world.build(data.world)
         createjs.Ticker.addEventListener "tick", @world.stage
+        #add local player
         character = @buildCharacter(data.character)
-        console.log(character)
         @world.addPlayer character, @player_count
-        @player_count += 1
-
         @localPlayer = character
+        @addPlayerUI(@localPlayer, @player_count)
+        @player_count += 1
+        console.log(character.name + ' has joined game')
+        #add other players
+        for player in data.players
+            if player.id == @localPlayer.id
+                continue
+            character = @buildCharacter(player)
+            @world.addPlayer character, @player_count
+            @addPlayerUI(player, @player_count)
+            @player_count += 1
+            console.log(character.name + ' also joined game')
+
         createjs.Ticker.addEventListener "tick", ((evt) ->
         ).bind this
 
@@ -139,7 +148,7 @@ class window.Game
             console.log 'Add new player to stage ' + data.id
             player = @buildCharacter(data.player)
             @world.addPlayer player,@player_count
-            # @addPlayerUI(@player_count)
+            @addPlayerUI(player, @player_count)
             @player_count += 1
 
 
@@ -211,5 +220,18 @@ class window.Game
 
     buildCharacter: (object) =>
         character = new Character object.id, object.name, object.type, object.x, object.y , @world
+        character.faceDirection = object.faceDirection
+        character.maxhp = object.maxhp
         character.build(object.spriteSheetInfo, object.magicSheetInfo)
+        # build magic book
+        magicSheetInfo = object.magicSheetInfo
+        magicName = magicSheetInfo.name
+        @magics[magicName] = magicSheetInfo
         return character
+
+    addPlayerUI :(player,number) ->
+        imgURL = '"assets/spritesheets/' + player.name + '/profile.png"'
+        img = '<img src=' + imgURL + ' class="my-thumbnail"/>'
+        pnumber = "#player" + number
+        $('#hud > .row > ' + pnumber + ' > .row >#profile').append(img)
+        $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').html(player.maxhp)     

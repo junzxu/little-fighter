@@ -1,7 +1,8 @@
 class window.Character extends object
     constructor: (@id, @name, @type, @x, @y, @world) ->
         super(@id, @name, @type, @x, @y, @world)
-        @hp = 100
+        @maxhp
+        @hp
         @cd = 300
         @attackRange = 50
         @number
@@ -24,6 +25,8 @@ class window.Character extends object
         @character.name = @name
         @character.x = @x
         @character.y = @y
+        if @faceDirection == 'left'
+            @get().scaleX = -@get().scaleX
         @character.gotoAndPlay "idle"
 
 
@@ -83,9 +86,10 @@ class window.Character extends object
         @state = "hurt"
 
 
-    setHPBar: (hp) ->
+    setHPBar: (hp) =>
          pnumber = "#player" + @number
-         $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').css("width", hp+"%")
+         percent = 100*(hp/@maxhp)
+         $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').css("width", percent+"%")
          $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').html(hp)
 
  

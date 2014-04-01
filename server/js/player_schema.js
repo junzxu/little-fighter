@@ -14,7 +14,7 @@ player_schema = {
                 frequency: 10
             },
             cast: {
-                frames: [10, 11],
+                frames: [70, 71, 72],
                 frequency: 10
             },
             hurt: {
@@ -30,7 +30,7 @@ player_schema = {
                 frames: [34]
             }
         },
-        images: ["assets/spritesheets/firzen.png"],
+        images: ["assets/spritesheets/firzen/firzen.png", "assets/spritesheets/firzen/firzen_cast.png"],
         frames: {
             height: 80,
             width: 80,
@@ -39,18 +39,19 @@ player_schema = {
         }
     },
     magicSheetInfo: {
+        name: 'wave',
         animations: {
             cast: {
-                frames: [0, 1, 2, 3],
+                frames: [0, 1],
                 frequency: 10
             }
         },
-        images: ["assets/spritesheets/magic.png"],
+        images: ["assets/spritesheets/magic/p1b.png"],
         frames: {
-            height: 40,
-            width: 40,
-            regX: 20,
-            regY: 20
+            height: 55,
+            width: 126,
+            regX: 63,
+            regY: 27
         }
     }
 }

@@ -70,7 +70,7 @@ class Game
             width = bound.x2-bound.x1
             id = UUID()
             x  = if (player.faceDirection == 'right') then bound.x2  else bound.x1
-            m = new Magic id, 'blue', x, player.y, @world, player.id, player.faceDirection
+            m = new Magic id, 'wave', x, player.y, @world, player.id, player.faceDirection
             @addObject m
 
     onAnimationend:(player) ->
@@ -107,23 +107,27 @@ class Game
     detectCollision: (object) ->
         rect1 = object.getCollisionRect()
         for otherObject in @objects
-          if object.id == otherObject.id or otherObject.state == "die"
-             continue
-          rect2 = otherObject.getCollisionRect()
-          if !((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2 ) || (rect2.y1 > rect1.y2 ) || (rect2.y2 < rect1.y1))
-            dir = object.counterDirection(object.direction)
-            object.collisionHandler otherObject, dir
+            if object.id == otherObject.id or otherObject.state == "die"
+                continue
+            if object.type == otherObject.type == "magic"
+                continue
+            rect2 = otherObject.getCollisionRect()
+            if !((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2 ) || (rect2.y1 > rect1.y2 ) || (rect2.y2 < rect1.y1))
+                dir = object.counterDirection(object.direction)
+                object.collisionHandler otherObject, dir
 
 
 #################################################
 #player state update
     updateState: ->
+        object_status = []  #only send status data of objects
         len = @objects.length - 1
         while len >= 0
             object = @objects[len]
             len -= 1
             if @is_outofBound(object)
                 @removeObject object
+                continue
             if object.type == 'robot'
                 object.update(@)
             switch object.state
@@ -136,7 +140,9 @@ class Game
                     break
                 when "removed"
                     @removeObject object
-        @io.sockets.in(@room).emit "update", {objects: @objects}
+                    continue
+            object_status.push object.getStatus()
+        @io.sockets.in(@room).emit "update", {objects: object_status}
 
 
 #################################################

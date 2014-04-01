@@ -14,6 +14,7 @@
       this.id;
       this.type;
       this.hp;
+      this.maxhp;
       this.mass = 1;
       this.speed = 0;
       this.originSpeed = 2;
@@ -28,7 +29,16 @@
       this.state = "idle";
       this.direction = "No";
       this.width;
-      return this.height;
+      this.height;
+      return this.info = {
+        'id': this.id,
+        'name': this.name,
+        'type': this.type,
+        'width': this.width,
+        'height': this.height,
+        'originSpeed': this.originSpeed,
+        'maxhp': this.maxhp
+      };
     };
 
     object.prototype.counterDirection = function(direction) {
@@ -78,6 +88,8 @@
         speed = this.speed;
       }
       switch (direction) {
+        case "no":
+          break;
         case "left":
           this.direction = "left";
           if (this.x - speed > bound['x1']) {
@@ -198,6 +210,15 @@
       if (object.x >= this.x) {
         return "right";
       }
+    };
+
+    object.prototype.getStatus = function() {
+      this.info.x = this.x;
+      this.info.y = this.y;
+      this.info.state = this.state;
+      this.info.direction = this.direction;
+      this.info.hp = this.hp;
+      return this.info;
     };
 
     object.prototype.collide = function(direction) {

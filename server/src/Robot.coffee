@@ -4,14 +4,15 @@ robot_schema = require("./robot_schema.js")
 class Robot extends object
     constructor: (@id, @name, @type, @x, @y, @world) ->
         super(@name, @type, @x, @y, @world)
-        @hp = 100
+        @maxhp = 300
+        @hp = @maxhp
         @cd = 300
         @damage = 15
         @attackRange = 50
-        @sightRange = 150
+        @sightRange = 200
         @originSpeed = 1
         @number
-        @faceDirection = "right"
+        @faceDirection = "left"
         @currentDestination = [@x,@y]
         @waitTime = 0
         @oldtime = new Date().getTime()
@@ -24,6 +25,7 @@ class Robot extends object
         @height = 80
         @spriteSheetInfo = robot_schema.spriteSheetInfo
         @magicSheetInfo = robot_schema.magicSheetInfo
+        @info = {'id':@id,'name':@name,'type':@type,'width':@width,'height':@height, 'originSpeed':@originSpeed,'maxhp': @maxhp }
 
 
     move: (direction) ->
@@ -66,7 +68,7 @@ class Robot extends object
         bound = @world.getBound()
         @x = Math.floor(Math.random() * bound.x2)
         @y = Math.floor(Math.random() * bound.y2)
-        @hp = 100
+        @hp = @maxhp
 
 
     idle: ->
@@ -118,7 +120,7 @@ class Robot extends object
             when 'hurt'
                 return 800
             when 'attack'
-                return 1500
+                return 1000
             when 'cast'
                 return 500
             when 'die'
@@ -128,22 +130,32 @@ class Robot extends object
             else
                 return null
 
+    getStatus: ->
+        @info.x = @x
+        @info.y = @y
+        @info.state = @state
+        @info.direction = @direction
+        @info.faceDirection = @faceDirection
+        @info.hp = @hp
+        return @info
+
 ################### ai component ###################################
-    moveTo: (dest = null)->
-        if dest != null
-            @currentDestination = dest
-        @setState 'run'
-        @speed = @originSpeed
+    moveTo: (dest) =>
+        @currentDestination = dest
         count = 0
-        if @x < @currentDestination[0]
+        if @x < dest[0]
             count += 1
-        else
+        if @x > dest[0]
             count += 2
-        if @y < @currentDestination[1]
+        if @y < dest[1]
             count += 4
-        else
+        if @y > dest[1]
             count += 8
         switch count
+            # when 0
+            #     @direction = 'no'
+            #     @idle()
+            #     return
             when 1
                 @direction = 'right'
             when 2
@@ -160,6 +172,8 @@ class Robot extends object
                 @direction = 'ur'
             when 10
                 @direction = 'ul'
+        @setState 'run'
+        @speed = @originSpeed
         @faceDirection = if @direction in ["left","ul",'dl'] then "left" else "right" 
 
 
@@ -210,6 +224,11 @@ class Robot extends object
             @moveTo([target.x,target.y])
 
     update: (game)->
+        if @state == 'hurt'
+            #change target
+            target = @enemyInRange(game.players)
+            if target != null
+                @currentDestination = [target.x,target.y]
         if not @checkState()
             return
         target = @enemyInRange(game.players) #find target in sight

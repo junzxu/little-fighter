@@ -10,6 +10,7 @@
     Game.prototype.init = function() {
       this.keysDown = {};
       this.players = [];
+      this.magics = {};
       this.player_count = 1;
       this.stageInit();
       this.serverInit();
@@ -50,7 +51,7 @@
     };
 
     Game.prototype.onUpdate = function(data) {
-      var character, magic, object, player, _i, _len, _ref, _ref1, _results;
+      var magic, magicName, magicSheetInfo, object, player, _i, _len, _ref, _ref1, _results;
       _ref = data.objects;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -59,17 +60,14 @@
           player = this.world.getPlayer(object.id);
           if (player !== null) {
             player.update(object);
-          } else {
-            character = this.buildCharacter(object);
-            console.log(character);
-            this.world.addPlayer(character, this.player_count);
-            this.player_count += 1;
           }
         }
         if (object.type === "magic") {
           magic = this.world.getObject(object.id);
           if (magic === null) {
-            magic = new Magic(object.id, object.name, object.x, object.y, this.world, object.characterID, object.direction, object.magicSheetInfo);
+            magicName = object.name;
+            magicSheetInfo = this.magics[magicName];
+            magic = new Magic(object.id, object.name, object.x, object.y, this.world, object.characterID, object.direction, magicSheetInfo);
           } else {
             magic.get().x = object.x;
             magic.get().y = object.y;
@@ -106,16 +104,28 @@
     };
 
     Game.prototype.gameSetup = function(data) {
-      var character;
-      console.log('\t player ' + this.id + ' has joined game');
+      var character, player, _i, _len, _ref;
       this.gameid = data.gameid;
       this.world.build(data.world);
       createjs.Ticker.addEventListener("tick", this.world.stage);
       character = this.buildCharacter(data.character);
-      console.log(character);
       this.world.addPlayer(character, this.player_count);
-      this.player_count += 1;
       this.localPlayer = character;
+      this.addPlayerUI(this.localPlayer, this.player_count);
+      this.player_count += 1;
+      console.log(character.name + ' has joined game');
+      _ref = data.players;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        player = _ref[_i];
+        if (player.id === this.localPlayer.id) {
+          continue;
+        }
+        character = this.buildCharacter(player);
+        this.world.addPlayer(character, this.player_count);
+        this.addPlayerUI(player, this.player_count);
+        this.player_count += 1;
+        console.log(character.name + ' also joined game');
+      }
       createjs.Ticker.addEventListener("tick", (function(evt) {}).bind(this));
       window.addEventListener("keydown", (function(e) {
         return this.keysDown[e.keyCode] = true;
@@ -174,6 +184,7 @@
         console.log('Add new player to stage ' + data.id);
         player = this.buildCharacter(data.player);
         this.world.addPlayer(player, this.player_count);
+        this.addPlayerUI(player, this.player_count);
         return this.player_count += 1;
       }
     };
@@ -296,10 +307,24 @@
     };
 
     Game.prototype.buildCharacter = function(object) {
-      var character;
+      var character, magicName, magicSheetInfo;
       character = new Character(object.id, object.name, object.type, object.x, object.y, this.world);
+      character.faceDirection = object.faceDirection;
+      character.maxhp = object.maxhp;
       character.build(object.spriteSheetInfo, object.magicSheetInfo);
+      magicSheetInfo = object.magicSheetInfo;
+      magicName = magicSheetInfo.name;
+      this.magics[magicName] = magicSheetInfo;
       return character;
+    };
+
+    Game.prototype.addPlayerUI = function(player, number) {
+      var img, imgURL, pnumber;
+      imgURL = '"assets/spritesheets/' + player.name + '/profile.png"';
+      img = '<img src=' + imgURL + ' class="my-thumbnail"/>';
+      pnumber = "#player" + number;
+      $('#hud > .row > ' + pnumber + ' > .row >#profile').append(img);
+      return $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').html(player.maxhp);
     };
 
     return Game;

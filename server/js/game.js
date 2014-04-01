@@ -92,7 +92,7 @@
         width = bound.x2 - bound.x1;
         id = UUID();
         x = player.faceDirection === 'right' ? bound.x2 : bound.x1;
-        m = new Magic(id, 'blue', x, player.y, this.world, player.id, player.faceDirection);
+        m = new Magic(id, 'wave', x, player.y, this.world, player.id, player.faceDirection);
         return this.addObject(m);
       }
     };
@@ -148,13 +148,16 @@
     };
 
     Game.prototype.detectCollision = function(object) {
-      var dir, otherObject, rect1, rect2, _i, _len, _ref, _results;
+      var dir, otherObject, rect1, rect2, _i, _len, _ref, _ref1, _results;
       rect1 = object.getCollisionRect();
       _ref = this.objects;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         otherObject = _ref[_i];
         if (object.id === otherObject.id || otherObject.state === "die") {
+          continue;
+        }
+        if ((object.type === (_ref1 = otherObject.type) && _ref1 === "magic")) {
           continue;
         }
         rect2 = otherObject.getCollisionRect();
@@ -169,13 +172,15 @@
     };
 
     Game.prototype.updateState = function() {
-      var len, object;
+      var len, object, object_status;
+      object_status = [];
       len = this.objects.length - 1;
       while (len >= 0) {
         object = this.objects[len];
         len -= 1;
         if (this.is_outofBound(object)) {
           this.removeObject(object);
+          continue;
         }
         if (object.type === 'robot') {
           object.update(this);
@@ -190,10 +195,12 @@
             break;
           case "removed":
             this.removeObject(object);
+            continue;
         }
+        object_status.push(object.getStatus());
       }
       return this.io.sockets["in"](this.room).emit("update", {
-        objects: this.objects
+        objects: object_status
       });
     };
 

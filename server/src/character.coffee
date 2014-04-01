@@ -4,8 +4,9 @@ player_schema = require("./player_schema.js")
 class Player extends object
     constructor: (@id, @name, @type, @x, @y, @world) ->
         super(@name, @type, @x, @y, @world)
-        @hp = 100
-        @cd = 300
+        @maxhp = 100
+        @hp = @maxhp
+        @cd = 1000
         @damage = 15
         @attackRange = 70
         @number
@@ -18,6 +19,7 @@ class Player extends object
         @height = 80
         @spriteSheetInfo = player_schema.spriteSheetInfo
         @magicSheetInfo = player_schema.magicSheetInfo
+        @info = {'id':@id,'name':@name,'type':@type,'width':@width,'height':@height, 'originSpeed':@originSpeed,'maxhp': @maxhp } 
 
 
     move: (direction) ->
@@ -56,7 +58,7 @@ class Player extends object
         bound = @world.getBound()
         @x = Math.floor(Math.random() * bound.x2)
         @y = Math.floor(Math.random() * bound.y2)
-        @hp = 100
+        @hp = @maxhp
 
 
     idle: ->
@@ -110,5 +112,13 @@ class Player extends object
         else
             true
 
+    getStatus: ->
+        @info.x = @x
+        @info.y = @y
+        @info.state = @state
+        @info.direction = @direction
+        @info.faceDirection = @faceDirection
+        @info.hp = @hp
+        return @info
 ################################################################
 module.exports = Player

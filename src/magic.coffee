@@ -18,6 +18,8 @@ class window.Magic extends object
         @cast()
 
     cast:() ->
+        if @direction == "left"
+            @get().scaleX = -@get().scaleX
         @world.addObject @
         @magic.gotoAndPlay "cast"
 

@@ -19,8 +19,9 @@
       this.y = y;
       this.world = world;
       Player.__super__.constructor.call(this, this.name, this.type, this.x, this.y, this.world);
-      this.hp = 100;
-      this.cd = 300;
+      this.maxhp = 100;
+      this.hp = this.maxhp;
+      this.cd = 1000;
       this.damage = 15;
       this.attackRange = 70;
       this.number;
@@ -32,7 +33,16 @@
       this.width = 80;
       this.height = 80;
       this.spriteSheetInfo = player_schema.spriteSheetInfo;
-      return this.magicSheetInfo = player_schema.magicSheetInfo;
+      this.magicSheetInfo = player_schema.magicSheetInfo;
+      return this.info = {
+        'id': this.id,
+        'name': this.name,
+        'type': this.type,
+        'width': this.width,
+        'height': this.height,
+        'originSpeed': this.originSpeed,
+        'maxhp': this.maxhp
+      };
     };
 
     Player.prototype.move = function(direction) {
@@ -79,7 +89,7 @@
       bound = this.world.getBound();
       this.x = Math.floor(Math.random() * bound.x2);
       this.y = Math.floor(Math.random() * bound.y2);
-      return this.hp = 100;
+      return this.hp = this.maxhp;
     };
 
     Player.prototype.idle = function() {
@@ -144,6 +154,16 @@
       } else {
         return true;
       }
+    };
+
+    Player.prototype.getStatus = function() {
+      this.info.x = this.x;
+      this.info.y = this.y;
+      this.info.state = this.state;
+      this.info.direction = this.direction;
+      this.info.faceDirection = this.faceDirection;
+      this.info.hp = this.hp;
+      return this.info;
     };
 
     return Player;

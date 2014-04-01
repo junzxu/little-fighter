@@ -45,7 +45,8 @@
         id: client.userid,
         gameid: client.gameid,
         world: game.world,
-        character: player
+        character: player,
+        players: game.players
       });
       return console.log("player " + client.userid + ' has joined game ' + client.gameid);
     };
@@ -61,7 +62,8 @@
             id: client.userid,
             gameid: client.gameid,
             world: game.world,
-            character: player
+            character: player,
+            players: game.players
           });
           this.startGame(game);
           return true;

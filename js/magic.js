@@ -35,6 +35,9 @@
     };
 
     Magic.prototype.cast = function() {
+      if (this.direction === "left") {
+        this.get().scaleX = -this.get().scaleX;
+      }
       this.world.addObject(this);
       return this.magic.gotoAndPlay("cast");
     };

@@ -30,10 +30,17 @@
       this.damage = 10;
       this.collisionHeight = 0;
       this.collisionWidth = 0;
-      this.width = 40;
-      this.height = 40;
+      this.width = 126;
+      this.height = 55;
       this.state = "run";
-      return this.magicSheetInfo = player_schema.magicSheetInfo;
+      return this.info = {
+        'id': this.id,
+        'name': this.name,
+        'type': this.type,
+        'width': this.width,
+        'height': this.height,
+        'originSpeed': this.originSpeed
+      };
     };
 
     Magic.prototype.collisionHandler = function(o) {
@@ -66,6 +73,15 @@
         case "up":
           return this.y -= speed;
       }
+    };
+
+    Magic.prototype.getStatus = function() {
+      this.info.x = this.x;
+      this.info.y = this.y;
+      this.info.state = this.state;
+      this.info.direction = this.direction;
+      this.info.characterID = this.characterID;
+      return this.info;
     };
 
     return Magic;

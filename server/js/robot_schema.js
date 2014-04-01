@@ -10,7 +10,7 @@ robot_schema = {
                 frequency: 10
             },
             attack: {
-                frames: [10, 11, 12, 13, 14, 15, 16, 17],
+                frames: [50, 51, 52, 53],
                 next: "idle",
                 frequency: 10
             },
@@ -28,7 +28,7 @@ robot_schema = {
                 frames: [14]
             }
         },
-        images: ["assets/spritesheets/julian.png"],
+        images: ["assets/spritesheets/julian/julian.png", "assets/spritesheets/julian/Attack.png"],
         frames: {
             height: 100,
             width: 80,
@@ -37,13 +37,14 @@ robot_schema = {
         }
     },
     magicSheetInfo: {
+        name: 'blue',
         animations: {
             cast: {
                 frames: [20, 21, 22],
                 frequency: 5
             }
         },
-        images: ["assets/spritesheets/magic.png"],
+        images: ["assets/spritesheets/magic/magic.png"],
         frames: {
             height: 40,
             width: 40,
