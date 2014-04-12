@@ -7,7 +7,7 @@
 
   object = require("./object.js");
 
-  robot_schema = require("./robot_schema.js");
+  robot_schema = require("./characters/julian.js");
 
   Robot = (function(_super) {
     __extends(Robot, _super);
@@ -21,13 +21,8 @@
       this.world = world;
       this.moveTo = __bind(this.moveTo, this);
       Robot.__super__.constructor.call(this, this.name, this.type, this.x, this.y, this.world);
-      this.maxhp = 300;
+      this.setupInfo(robot_schema.info);
       this.hp = this.maxhp;
-      this.cd = 300;
-      this.damage = 15;
-      this.attackRange = 50;
-      this.sightRange = 200;
-      this.originSpeed = 1;
       this.number;
       this.faceDirection = "left";
       this.currentDestination = [this.x, this.y];
@@ -37,19 +32,8 @@
 
     Robot.prototype.init = function() {
       Robot.__super__.init.apply(this, arguments);
-      this.width = 80;
-      this.height = 80;
       this.spriteSheetInfo = robot_schema.spriteSheetInfo;
-      this.magicSheetInfo = robot_schema.magicSheetInfo;
-      return this.info = {
-        'id': this.id,
-        'name': this.name,
-        'type': this.type,
-        'width': this.width,
-        'height': this.height,
-        'originSpeed': this.originSpeed,
-        'maxhp': this.maxhp
-      };
+      return this.magicSheetInfo = robot_schema.magicSheetInfo;
     };
 
     Robot.prototype.move = function(direction) {
@@ -96,6 +80,17 @@
       return false;
     };
 
+    Robot.prototype.teleport = function(x, y) {
+      this.state === "disabled";
+      return setTimeout(((function(_this) {
+        return function() {
+          _this.x = x;
+          _this.y = y;
+          return _this.idle();
+        };
+      })(this)).bind(this), this.animationTime("teleport"));
+    };
+
     Robot.prototype.rebirth = function() {
       var bound;
       if (this.state !== "die") {
@@ -128,8 +123,16 @@
       }
     };
 
-    Robot.prototype.setState = function(state) {
+    Robot.prototype.setState = function(state, animation) {
+      if (animation == null) {
+        animation = null;
+      }
       this.state = state;
+      if (animation !== null) {
+        this.animation = animation;
+      } else {
+        this.animation = state;
+      }
       switch (state) {
         case "idle":
           return idle();
@@ -172,11 +175,13 @@
         case 'attack':
           return 1000;
         case 'cast':
-          return 500;
+          return 1100;
         case 'die':
           return 3000;
         case 'collided':
           return 100;
+        case 'teleport':
+          return 500;
         default:
           return null;
       }
@@ -186,6 +191,7 @@
       this.info.x = this.x;
       this.info.y = this.y;
       this.info.state = this.state;
+      this.info.animation = this.animation;
       this.info.direction = this.direction;
       this.info.faceDirection = this.faceDirection;
       this.info.hp = this.hp;
@@ -300,7 +306,11 @@
       if (this.distanceTo(target) < this.attackRange) {
         return this.attack(target);
       } else {
-        return this.moveTo([target.x, target.y]);
+        if (this.distanceTo(target) > 100 && Math.random() < 0.02) {
+          return this.setState("cast");
+        } else {
+          return this.moveTo([target.x, target.y]);
+        }
       }
     };
 
@@ -311,6 +321,9 @@
         if (target !== null) {
           this.currentDestination = [target.x, target.y];
         }
+      }
+      if (this.state === "cast") {
+        return;
       }
       if (!this.checkState()) {
         return;

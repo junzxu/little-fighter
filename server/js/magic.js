@@ -12,27 +12,27 @@
   Magic = (function(_super) {
     __extends(Magic, _super);
 
-    function Magic(id, name, x, y, world, characterID, direction) {
+    function Magic(id, info, x, y, world, characterID, direction) {
       this.id = id;
-      this.name = name;
+      this.info = info;
       this.x = x;
       this.y = y;
       this.world = world;
       this.characterID = characterID;
       this.direction = direction;
       this.moveStep = __bind(this.moveStep, this);
-      Magic.__super__.constructor.call(this, this.name, 'magic', this.x, this.y, this.world);
+      Magic.__super__.constructor.call(this, this.info.name, 'magic', this.x, this.y, this.world);
     }
 
     Magic.prototype.init = function() {
       this.originSpeed = 5;
       this.speed = this.originSpeed;
-      this.damage = 10;
+      this.damage = this.info.damage;
       this.collisionHeight = 0;
       this.collisionWidth = 0;
-      this.width = 126;
-      this.height = 55;
-      this.state = "run";
+      this.width = this.info.frames.width;
+      this.height = this.info.frames.height;
+      this.setState("run");
       return this.info = {
         'id': this.id,
         'name': this.name,
@@ -75,10 +75,23 @@
       }
     };
 
+    Magic.prototype.setState = function(state, animation) {
+      if (animation == null) {
+        animation = null;
+      }
+      this.state = state;
+      if (animation !== null) {
+        return this.animation = animation;
+      } else {
+        return this.animation = state;
+      }
+    };
+
     Magic.prototype.getStatus = function() {
       this.info.x = this.x;
       this.info.y = this.y;
       this.info.state = this.state;
+      this.info.animation = this.animation;
       this.info.direction = this.direction;
       this.info.characterID = this.characterID;
       return this.info;

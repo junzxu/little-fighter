@@ -32,7 +32,7 @@
       this.objects = [];
       this.players = [];
       id = UUID();
-      robot = new Robot(id, "Julian", "robot", 500, 200, this.world);
+      robot = new Robot(id, "julian", "robot", 500, 200, this.world);
       return this.addPlayer(robot);
     };
 
@@ -88,16 +88,40 @@
     Game.prototype.onPlayerCast = function(player) {
       var bound, id, m, width, x;
       if (player.cast()) {
-        bound = player.getRect();
-        width = bound.x2 - bound.x1;
-        id = UUID();
-        x = player.faceDirection === 'right' ? bound.x2 : bound.x1;
-        m = new Magic(id, 'wave', x, player.y, this.world, player.id, player.faceDirection);
-        return this.addObject(m);
+        if (player.type === "robot") {
+          bound = player.getRect();
+          width = bound.x2 - bound.x1;
+          id = UUID();
+          x = player.faceDirection === 'right' ? bound.x2 : bound.x1;
+          m = new Magic(id, player.magicSheetInfo, x, player.y, this.world, player.id, player.faceDirection);
+          return setTimeout(((function(_this) {
+            return function() {
+              if (player.checkState()) {
+                return _this.addObject(m);
+              }
+            };
+          })(this)).bind(this), player.animationTime("cast"));
+        }
       }
     };
 
     Game.prototype.onAnimationend = function(player) {
+      var bound, dir, distance, id, m, target, width, x, _ref;
+      if (player.state === "cast") {
+        bound = player.getRect();
+        width = bound.x2 - bound.x1;
+        id = UUID();
+        x = player.faceDirection === 'right' ? bound.x2 : bound.x1;
+        m = new Magic(id, player.magicSheetInfo, x, player.y, this.world, player.id, player.faceDirection);
+        this.addObject(m);
+      }
+      if (player.state === "attack") {
+        _ref = this.getNearestCharacter(player), target = _ref[0], distance = _ref[1];
+        if (target !== null && distance < player.attackRange && player.faceDirection === player.realtiveDirection(target)) {
+          dir = player.faceDirection;
+          target.gotHit(2 * player.damage, player.counterDirection(dir));
+        }
+      }
       return player.idle();
     };
 
@@ -192,6 +216,9 @@
           case "run":
             object.moveStep();
             this.detectCollision(object);
+            break;
+          case "cast":
+            this.onPlayerCast(object);
             break;
           case "removed":
             this.removeObject(object);

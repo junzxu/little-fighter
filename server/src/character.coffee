@@ -1,25 +1,19 @@
 object = require("./object.js")
-player_schema = require("./player_schema.js")
+player_schema = require("./characters/firzen.js")
 
 class Player extends object
     constructor: (@id, @name, @type, @x, @y, @world) ->
         super(@name, @type, @x, @y, @world)
-        @maxhp = 100
+        @setupInfo(player_schema.info)
         @hp = @maxhp
-        @cd = 1000
-        @damage = 15
-        @attackRange = 70
         @number
         @faceDirection = "right"
 
     init:() ->
         super
         #should load schema from database
-        @width = 80
-        @height = 80
         @spriteSheetInfo = player_schema.spriteSheetInfo
-        @magicSheetInfo = player_schema.magicSheetInfo
-        @info = {'id':@id,'name':@name,'type':@type,'width':@width,'height':@height, 'originSpeed':@originSpeed,'maxhp': @maxhp } 
+        @magicSheetInfo = player_schema.magicSheetInfo 
 
 
     move: (direction) ->
@@ -79,8 +73,12 @@ class Player extends object
             @moveStep(@counterDirection(direction))
 
 
-    setState: (state) ->
+    setState: (state, animation = null) ->
         @state = state
+        if animation != null
+            @animation = animation
+        else
+            @animation = state
         switch state
             when "idle"
                 @idle()
@@ -102,6 +100,8 @@ class Player extends object
                 return 3000
             when 'collided'
                 return 100
+            when 'cast'
+                return 600
             else
                 return null
 
@@ -116,6 +116,7 @@ class Player extends object
         @info.x = @x
         @info.y = @y
         @info.state = @state
+        @info.animation = @animation
         @info.direction = @direction
         @info.faceDirection = @faceDirection
         @info.hp = @hp

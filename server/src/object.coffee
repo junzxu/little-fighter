@@ -2,24 +2,35 @@ class object
 	constructor: (@name, @type, @x, @y, @world) ->
         @id
         @type
-        @hp
-        @maxhp
-        @mass = 1
-        @speed = 0  #current speed
-        @originSpeed = 2
-        @collisionHeight = 20
-        @collisionWidth = 30
         @spriteSheetInfo
         @magicState = "ready"
         @init()
 
     init:() ->
     	#load spriteSheet, do extra init in child class
+        #default setting
         @state = "idle"
+        @animation = "idle"
         @direction = "No"
         @width
-        @height
-        @info = {'id':@id,'name':@name, 'type':@type,'width':@width,'height':@height, 'originSpeed':@originSpeed, 'maxhp': @maxhp } 
+        @height 
+        @maxhp = 100
+        @hp = @maxhp
+        @mass = 1
+        @speed = 0  #current speed
+        @originSpeed = 0
+        @collisionHeight = 20
+        @collisionWidth = 30
+
+    setupInfo: (info)->
+        for k,v of info
+            Object.defineProperty(@, k, {
+              enumerable: true,
+              configurable: true,
+              writable: true,
+              value: v
+            })
+        @info = {'id':@id,'name':@name,'type':@type,'width':@width,'height':@height, 'originSpeed':@originSpeed,'maxhp': @maxhp }
 
 
     counterDirection: (direction) ->

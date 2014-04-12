@@ -1,16 +1,11 @@
 object = require("./object.js")
-robot_schema = require("./robot_schema.js")
+robot_schema = require("./characters/julian.js")
 
 class Robot extends object
     constructor: (@id, @name, @type, @x, @y, @world) ->
         super(@name, @type, @x, @y, @world)
-        @maxhp = 300
+        @setupInfo(robot_schema.info)
         @hp = @maxhp
-        @cd = 300
-        @damage = 15
-        @attackRange = 50
-        @sightRange = 200
-        @originSpeed = 1
         @number
         @faceDirection = "left"
         @currentDestination = [@x,@y]
@@ -21,11 +16,8 @@ class Robot extends object
     init:() ->
         super
         #should load schema from database
-        @width = 80
-        @height = 80
         @spriteSheetInfo = robot_schema.spriteSheetInfo
         @magicSheetInfo = robot_schema.magicSheetInfo
-        @info = {'id':@id,'name':@name,'type':@type,'width':@width,'height':@height, 'originSpeed':@originSpeed,'maxhp': @maxhp }
 
 
     move: (direction) ->
@@ -61,6 +53,14 @@ class Robot extends object
         return false
 
 
+    teleport: (x,y)->
+        @state == "disabled"
+        setTimeout ( => 
+            @x = x
+            @y = y
+            @idle()
+        ).bind(this), @animationTime("teleport")           
+
     rebirth: ->
         if @state != "die"
             return
@@ -89,8 +89,12 @@ class Robot extends object
             @moveStep(@counterDirection(direction))
 
 
-    setState: (state) ->
+    setState: (state, animation = null) ->
         @state = state
+        if animation != null
+            @animation = animation
+        else
+            @animation = state
         switch state
             when "idle"
                 idle()
@@ -99,7 +103,7 @@ class Robot extends object
             when "die"
                 setTimeout ( => 
                     @rebirth()
-                ).bind(this), @animationTime("die")      
+                ).bind(this), @animationTime("die")                
             else
                 setTimeout ( ->
                     if @hp > 0  
@@ -122,11 +126,13 @@ class Robot extends object
             when 'attack'
                 return 1000
             when 'cast'
-                return 500
+                return 1100
             when 'die'
                 return 3000
             when 'collided'
                 return 100
+            when 'teleport'
+                return 500
             else
                 return null
 
@@ -134,6 +140,7 @@ class Robot extends object
         @info.x = @x
         @info.y = @y
         @info.state = @state
+        @info.animation = @animation
         @info.direction = @direction
         @info.faceDirection = @faceDirection
         @info.hp = @hp
@@ -221,7 +228,10 @@ class Robot extends object
         if @distanceTo(target) < @attackRange
             @attack(target)
         else
-            @moveTo([target.x,target.y])
+            if @distanceTo(target)>100 and Math.random() < 0.02
+                @setState "cast"
+            else
+                @moveTo([target.x,target.y])
 
     update: (game)->
         if @state == 'hurt'
@@ -229,6 +239,8 @@ class Robot extends object
             target = @enemyInRange(game.players)
             if target != null
                 @currentDestination = [target.x,target.y]
+        if @state == "cast"
+            return
         if not @checkState()
             return
         target = @enemyInRange(game.players) #find target in sight

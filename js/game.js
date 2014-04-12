@@ -22,7 +22,7 @@
     };
 
     Game.prototype.serverInit = function() {
-      this.socket = io.connect("192.168.0.17", {
+      this.socket = io.connect("localhost", {
         port: 3000,
         transports: ["websocket"],
         'force new connection': true,
@@ -300,7 +300,7 @@
       if (player === null) {
         return false;
       }
-      if ((_ref = player.state) === 'collided' || _ref === 'disabled' || _ref === 'hurt' || _ref === 'attack' || _ref === "die") {
+      if ((_ref = player.state) === 'collided' || _ref === 'disabled' || _ref === 'hurt' || _ref === "die") {
         return false;
       }
       return true;

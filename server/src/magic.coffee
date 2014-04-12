@@ -2,19 +2,19 @@ object = require("./object.js")
 player_schema = require("./player_schema.js")
 
 class Magic extends object
-    constructor: (@id, @name, @x, @y, @world, @characterID, @direction) ->
-        super(@name, 'magic', @x, @y, @world)
+    constructor: (@id, @info, @x, @y, @world, @characterID, @direction) ->
+        super(@info.name, 'magic', @x, @y, @world)
 
     init:() ->
         #load spritesheet info from db
         @originSpeed = 5
         @speed = @originSpeed
-        @damage = 10
+        @damage = @info.damage
         @collisionHeight = 0
         @collisionWidth = 0
-        @width = 126
-        @height = 55
-        @state = "run"
+        @width = @info.frames.width
+        @height = @info.frames.height
+        @setState "run"
         @info = {'id':@id, 'name':@name, 'type':@type,'width':@width,'height':@height, 'originSpeed':@originSpeed } 
 
 
@@ -40,10 +40,19 @@ class Magic extends object
             when "up"
                 @y -= speed
 
+
+    setState: (state, animation = null) ->
+        @state = state
+        if animation != null
+            @animation = animation
+        else
+            @animation = state
+
     getStatus: ->
         @info.x = @x
         @info.y = @y
         @info.state = @state
+        @info.animation = @animation
         @info.direction = @direction
         @info.characterID = @characterID
         return @info

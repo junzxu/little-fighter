@@ -13,13 +13,6 @@
       this.moveStep = __bind(this.moveStep, this);
       this.id;
       this.type;
-      this.hp;
-      this.maxhp;
-      this.mass = 1;
-      this.speed = 0;
-      this.originSpeed = 2;
-      this.collisionHeight = 20;
-      this.collisionWidth = 30;
       this.spriteSheetInfo;
       this.magicState = "ready";
       this.init();
@@ -27,9 +20,30 @@
 
     object.prototype.init = function() {
       this.state = "idle";
+      this.animation = "idle";
       this.direction = "No";
       this.width;
       this.height;
+      this.maxhp = 100;
+      this.hp = this.maxhp;
+      this.mass = 1;
+      this.speed = 0;
+      this.originSpeed = 0;
+      this.collisionHeight = 20;
+      return this.collisionWidth = 30;
+    };
+
+    object.prototype.setupInfo = function(info) {
+      var k, v;
+      for (k in info) {
+        v = info[k];
+        Object.defineProperty(this, k, {
+          enumerable: true,
+          configurable: true,
+          writable: true,
+          value: v
+        });
+      }
       return this.info = {
         'id': this.id,
         'name': this.name,

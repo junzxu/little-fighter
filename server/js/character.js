@@ -6,7 +6,7 @@
 
   object = require("./object.js");
 
-  player_schema = require("./player_schema.js");
+  player_schema = require("./characters/firzen.js");
 
   Player = (function(_super) {
     __extends(Player, _super);
@@ -19,30 +19,16 @@
       this.y = y;
       this.world = world;
       Player.__super__.constructor.call(this, this.name, this.type, this.x, this.y, this.world);
-      this.maxhp = 100;
+      this.setupInfo(player_schema.info);
       this.hp = this.maxhp;
-      this.cd = 1000;
-      this.damage = 15;
-      this.attackRange = 70;
       this.number;
       this.faceDirection = "right";
     }
 
     Player.prototype.init = function() {
       Player.__super__.init.apply(this, arguments);
-      this.width = 80;
-      this.height = 80;
       this.spriteSheetInfo = player_schema.spriteSheetInfo;
-      this.magicSheetInfo = player_schema.magicSheetInfo;
-      return this.info = {
-        'id': this.id,
-        'name': this.name,
-        'type': this.type,
-        'width': this.width,
-        'height': this.height,
-        'originSpeed': this.originSpeed,
-        'maxhp': this.maxhp
-      };
+      return this.magicSheetInfo = player_schema.magicSheetInfo;
     };
 
     Player.prototype.move = function(direction) {
@@ -112,8 +98,16 @@
       }
     };
 
-    Player.prototype.setState = function(state) {
+    Player.prototype.setState = function(state, animation) {
+      if (animation == null) {
+        animation = null;
+      }
       this.state = state;
+      if (animation !== null) {
+        this.animation = animation;
+      } else {
+        this.animation = state;
+      }
       switch (state) {
         case "idle":
           return this.idle();
@@ -142,6 +136,8 @@
           return 3000;
         case 'collided':
           return 100;
+        case 'cast':
+          return 600;
         default:
           return null;
       }
@@ -160,6 +156,7 @@
       this.info.x = this.x;
       this.info.y = this.y;
       this.info.state = this.state;
+      this.info.animation = this.animation;
       this.info.direction = this.direction;
       this.info.faceDirection = this.faceDirection;
       this.info.hp = this.hp;

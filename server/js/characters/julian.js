@@ -1,4 +1,14 @@
 robot_schema = {
+    info: {
+        maxhp: 300,
+        cd: 500,
+        damage: 15,
+        attackRange: 50,
+        width: 80,
+        height: 100,
+        originSpeed: 1,
+        sightRange: 200
+    },
     spriteSheetInfo: {
         animations: {
             idle: {
@@ -14,6 +24,11 @@ robot_schema = {
                 next: "idle",
                 frequency: 10
             },
+            cast: {
+                frames: [71, 72, 73, 74, 75, 76, 77, 78],
+                next: "idle",
+                frequency: 10
+            },
             hurt: {
                 frames: [41, 42, 43, 44],
                 next: "idle",
@@ -26,9 +41,14 @@ robot_schema = {
             },
             lay: {
                 frames: [14]
+            },
+            teleport: {
+                frames: [60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70],
+                next: "idle",
+                frequency: 10
             }
         },
-        images: ["assets/spritesheets/julian/julian.png", "assets/spritesheets/julian/Attack.png"],
+        images: ["assets/spritesheets/julian/julian.png", "assets/spritesheets/julian/Attack.png", "assets/spritesheets/julian/teleport.png", "assets/spritesheets/julian/cast.png"],
         frames: {
             height: 100,
             width: 80,
@@ -37,19 +57,20 @@ robot_schema = {
         }
     },
     magicSheetInfo: {
-        name: 'blue',
+        name: 'death',
+        damage: 30,
         animations: {
             cast: {
-                frames: [20, 21, 22],
-                frequency: 5
+                frames: [0, 3],
+                frequency: 8
             }
         },
-        images: ["assets/spritesheets/magic/magic.png"],
+        images: ["assets/spritesheets/magic/death.png"],
         frames: {
-            height: 40,
-            width: 40,
-            regX: 20,
-            regY: 20
+            height: 42,
+            width: 62,
+            regX: 31,
+            regY: 21
         }
     }
 }

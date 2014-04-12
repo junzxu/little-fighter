@@ -21,7 +21,7 @@ class Game
         @players = []
         # add a robot to game
         id = UUID()
-        robot = new Robot id, "Julian", "robot", 500, 200, @world
+        robot = new Robot id, "julian", "robot", 500, 200, @world
         @addPlayer robot
 
     start: ->
@@ -66,14 +66,31 @@ class Game
 
     onPlayerCast: (player) ->
         if player.cast()
+            if player.type == "robot"
+                bound = player.getRect()
+                width = bound.x2-bound.x1
+                id = UUID()
+                x  = if (player.faceDirection == 'right') then bound.x2  else bound.x1
+                m = new Magic id, player.magicSheetInfo, x, player.y, @world, player.id, player.faceDirection
+                setTimeout ( =>
+                    if player.checkState()
+                        @addObject m
+                ).bind(this), player.animationTime("cast")  
+
+    onAnimationend:(player) ->
+        if player.state == "cast"
             bound = player.getRect()
             width = bound.x2-bound.x1
             id = UUID()
             x  = if (player.faceDirection == 'right') then bound.x2  else bound.x1
-            m = new Magic id, 'wave', x, player.y, @world, player.id, player.faceDirection
+            m = new Magic id, player.magicSheetInfo, x, player.y, @world, player.id, player.faceDirection
             @addObject m
-
-    onAnimationend:(player) ->
+        if player.state == "attack"
+            #finish attack action will have more damage
+            [target,distance] = @getNearestCharacter(player)
+            if  target != null and distance < player.attackRange and player.faceDirection == player.realtiveDirection(target)
+                dir = player.faceDirection
+                target.gotHit(2*player.damage, player.counterDirection(dir))             
         player.idle()
 
     onRemovePlayer: (client_id)->
@@ -138,6 +155,8 @@ class Game
                     object.moveStep()
                     @detectCollision(object)
                     break
+                when "cast"
+                    @onPlayerCast(object)
                 when "removed"
                     @removeObject object
                     continue

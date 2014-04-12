@@ -1,4 +1,13 @@
 player_schema = {
+    info: {
+        maxhp: 100,
+        cd: 1000,
+        damage: 15,
+        attackRange: 70,
+        width: 80,
+        height: 80,
+        originSpeed: 2
+    },
     spriteSheetInfo: {
         animations: {
             idle: {
@@ -40,6 +49,7 @@ player_schema = {
     },
     magicSheetInfo: {
         name: 'wave',
+        damage: 10,
         animations: {
             cast: {
                 frames: [0, 1],
