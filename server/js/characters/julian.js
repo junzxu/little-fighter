@@ -1,7 +1,6 @@
 robot_schema = {
     info: {
         maxhp: 300,
-        cd: 500,
         damage: 15,
         attackRange: 50,
         width: 80,
@@ -54,23 +53,6 @@ robot_schema = {
             width: 80,
             regX: 40,
             regY: 40
-        }
-    },
-    magicSheetInfo: {
-        name: 'death',
-        damage: 30,
-        animations: {
-            cast: {
-                frames: [0, 3],
-                frequency: 8
-            }
-        },
-        images: ["assets/spritesheets/magic/death.png"],
-        frames: {
-            height: 42,
-            width: 62,
-            regX: 31,
-            regY: 21
         }
     }
 }

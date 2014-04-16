@@ -1,9 +1,10 @@
 class window.Character extends object
     constructor: (@id, @name, @type, @x, @y, @world) ->
         super(@id, @name, @type, @x, @y, @world)
+        @isLocal = false
         @maxhp
         @hp
-        @cd = 300
+        @cd
         @attackRange = 50
         @number
         @character
@@ -64,6 +65,7 @@ class window.Character extends object
             @character.gotoAndPlay "cast"
         @state = "cast"
 
+
     die: ->
         if @state != "die"
             if @character.currentAnimation != "die"
@@ -71,10 +73,11 @@ class window.Character extends object
                 @state = "die"
                 
 
-    idle: ->
+    idle: () ->
         @speed = 0
         @direction = "No"
         @state = "idle"
+        animation = @animation
         if (@character.currentAnimation != "idle")
             @character.gotoAndPlay "idle"
 
@@ -94,13 +97,28 @@ class window.Character extends object
 
  
     update: (object) ->
+        @animation = object.animation
+        if @animation == "invisible"
+            #handle player invisble
+            if @isLocal == true
+                @get().alpha = 0.5
+            else
+                @get().visible = false
+        else
+            if @isLocal == true
+                @get().alpha = 1
+            else
+                @get().visible = true
+
         if @state == "die" and object.state != "die"
+            #rebirth
             @character.x = object.x
             @character.y = object.y
             @hp = object.hp
             @setHPBar(@hp)
-            # @world.get().addChild @character
+
         switch object.state
+            #update player animation
             when 'die'
                 @setHPBar(0)
                 @die()

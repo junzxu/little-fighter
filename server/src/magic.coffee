@@ -1,5 +1,4 @@
 object = require("./object.js")
-player_schema = require("./player_schema.js")
 
 class Magic extends object
     constructor: (@id, @info, @x, @y, @world, @characterID, @direction) ->
@@ -7,13 +6,13 @@ class Magic extends object
 
     init:() ->
         #load spritesheet info from db
-        @originSpeed = 5
+        @originSpeed = @info.originSpeed
         @speed = @originSpeed
         @damage = @info.damage
         @collisionHeight = 0
         @collisionWidth = 0
-        @width = @info.frames.width
-        @height = @info.frames.height
+        @width = @info.width
+        @height = @info.height
         @setState "run"
         @info = {'id':@id, 'name':@name, 'type':@type,'width':@width,'height':@height, 'originSpeed':@originSpeed } 
 

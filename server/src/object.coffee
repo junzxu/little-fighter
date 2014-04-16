@@ -161,6 +161,7 @@ class object
         @info.state = @state
         @info.direction = @direction
         @info.hp = @hp
+        @info.animation = @animation
         return @info
 
 ################################ Collision ###########################        

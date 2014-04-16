@@ -13,7 +13,6 @@ class Player extends object
         super
         #should load schema from database
         @spriteSheetInfo = player_schema.spriteSheetInfo
-        @magicSheetInfo = player_schema.magicSheetInfo 
 
 
     move: (direction) ->
@@ -78,7 +77,8 @@ class Player extends object
         if animation != null
             @animation = animation
         else
-            @animation = state
+            if state not in ["idle","run"]
+                @animation = state
         switch state
             when "idle"
                 @idle()

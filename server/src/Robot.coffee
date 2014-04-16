@@ -1,11 +1,13 @@
 object = require("./object.js")
 robot_schema = require("./characters/julian.js")
+magic_schema = require("./magics/death.js")
 
 class Robot extends object
     constructor: (@id, @name, @type, @x, @y, @world) ->
         super(@name, @type, @x, @y, @world)
         @setupInfo(robot_schema.info)
         @hp = @maxhp
+        @cd = 400
         @number
         @faceDirection = "left"
         @currentDestination = [@x,@y]
@@ -17,7 +19,8 @@ class Robot extends object
         super
         #should load schema from database
         @spriteSheetInfo = robot_schema.spriteSheetInfo
-        @magicSheetInfo = robot_schema.magicSheetInfo
+        @magicSheetInfo = magic_schema.magicSheetInfo
+        @magicInfo = magic_schema.info
 
 
     move: (direction) ->
@@ -94,7 +97,8 @@ class Robot extends object
         if animation != null
             @animation = animation
         else
-            @animation = state
+            if state not in ["idle","run"]
+                @animation = state
         switch state
             when "idle"
                 idle()
@@ -213,7 +217,7 @@ class Robot extends object
         target = null
         distance = Infinity
         for player in players
-            if player.id == @id
+            if player.id == @id or player.animation == "invisible"
                 continue
             if player.inRange(sightRange)
                 d = @distanceTo(player)

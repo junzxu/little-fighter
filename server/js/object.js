@@ -232,6 +232,7 @@
       this.info.state = this.state;
       this.info.direction = this.direction;
       this.info.hp = this.hp;
+      this.info.animation = this.animation;
       return this.info;
     };
 

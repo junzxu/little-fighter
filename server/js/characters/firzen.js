@@ -1,7 +1,6 @@
 player_schema = {
     info: {
         maxhp: 100,
-        cd: 1000,
         damage: 15,
         attackRange: 70,
         width: 80,
@@ -37,6 +36,14 @@ player_schema = {
             },
             lay: {
                 frames: [34]
+            },
+            idle_invisible: {
+                frames: [73, 74, 75, 76, 75],
+                frequency: 10
+            },
+            run_invisible: {
+                frames: [93, 94, 95, 94],
+                frequency: 10
             }
         },
         images: ["assets/spritesheets/firzen/firzen.png", "assets/spritesheets/firzen/firzen_cast.png"],
@@ -45,23 +52,6 @@ player_schema = {
             width: 80,
             regX: 40,
             regY: 40
-        }
-    },
-    magicSheetInfo: {
-        name: 'wave',
-        damage: 10,
-        animations: {
-            cast: {
-                frames: [0, 1],
-                frequency: 10
-            }
-        },
-        images: ["assets/spritesheets/magic/p1b.png"],
-        frames: {
-            height: 55,
-            width: 126,
-            regX: 63,
-            regY: 27
         }
     }
 }

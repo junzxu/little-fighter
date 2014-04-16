@@ -60,7 +60,7 @@
           case "cast":
             return this.onPlayerCast(player);
           case "keyup":
-            if (player.state = "run") {
+            if (player.state === "run") {
               return player.idle();
             }
             break;
@@ -93,7 +93,7 @@
           width = bound.x2 - bound.x1;
           id = UUID();
           x = player.faceDirection === 'right' ? bound.x2 : bound.x1;
-          m = new Magic(id, player.magicSheetInfo, x, player.y, this.world, player.id, player.faceDirection);
+          m = new Magic(id, player.magicInfo, x, player.y, this.world, player.id, player.faceDirection);
           return setTimeout(((function(_this) {
             return function() {
               if (player.checkState()) {
@@ -106,14 +106,10 @@
     };
 
     Game.prototype.onAnimationend = function(player) {
-      var bound, dir, distance, id, m, target, width, x, _ref;
+      var dir, distance, id, target, _ref;
       if (player.state === "cast") {
-        bound = player.getRect();
-        width = bound.x2 - bound.x1;
         id = UUID();
-        x = player.faceDirection === 'right' ? bound.x2 : bound.x1;
-        m = new Magic(id, player.magicSheetInfo, x, player.y, this.world, player.id, player.faceDirection);
-        this.addObject(m);
+        player.magic(this, player, id);
       }
       if (player.state === "attack") {
         _ref = this.getNearestCharacter(player), target = _ref[0], distance = _ref[1];
@@ -139,7 +135,7 @@
     };
 
     Game.prototype.onNewPlayer = function(client) {
-      var bound, id, player, x, y;
+      var bound, id, magic_schema, player, x, y;
       if (this.player_count >= this.max_player) {
         return null;
       }
@@ -148,6 +144,11 @@
       y = 200;
       id = client.userid;
       player = new Player(id, "firzen", "player", x, y, this.world);
+      magic_schema = require("./magics/invisible.js");
+      player.magicSheetInfo = magic_schema.magicSheetInfo;
+      player.magicInfo = magic_schema.info;
+      player.magic = magic_schema.magic;
+      player.cd = magic_schema.info.cd;
       this.addPlayer(player, this.player_count);
       this.io.sockets["in"](this.room).emit("new player", {
         "id": id,
@@ -256,6 +257,12 @@
       return this.objects.push(object);
     };
 
+    Game.prototype.addMagic = function(id, info, x, y, world, characterID, faceDirection) {
+      var m;
+      m = new Magic(id, info, x, y, world, characterID, faceDirection);
+      return this.addObject(m);
+    };
+
     Game.prototype.removeObject = function(target) {
       var index, object, _i, _len, _ref;
       _ref = this.objects;
@@ -318,7 +325,7 @@
       _ref = this.players;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         player = _ref[_i];
-        if (player.id === character.id) {
+        if (player.id === character.id || player.animation === "invisible") {
           continue;
         }
         d = character.distanceTo(player);

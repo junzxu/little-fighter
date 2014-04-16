@@ -111,6 +111,7 @@
       character = this.buildCharacter(data.character);
       this.world.addPlayer(character, this.player_count);
       this.localPlayer = character;
+      this.localPlayer.isLocal = true;
       this.addPlayerUI(this.localPlayer, this.player_count);
       this.player_count += 1;
       console.log(character.name + ' has joined game');
@@ -133,7 +134,7 @@
       window.addEventListener("keyup", (function(e) {
         this.keysDown[e.keyCode] = false;
         if (!this.keysDown[Constant.KEYCODE_RIGHT] && !this.keysDown[Constant.KEYCODE_LEFT] && !this.keysDown[Constant.KEYCODE_UP] && !this.keysDown[Constant.KEYCODE_DOWN]) {
-          if (this.localPlayer.get().currentAnimation === "run") {
+          if (this.localPlayer.state === "run") {
             return this.socket.emit("update", {
               id: this.id,
               action: "keyup"
@@ -313,7 +314,7 @@
       character.maxhp = object.maxhp;
       character.build(object.spriteSheetInfo, object.magicSheetInfo);
       magicSheetInfo = object.magicSheetInfo;
-      magicName = magicSheetInfo.name;
+      magicName = object.magicInfo.name;
       this.magics[magicName] = magicSheetInfo;
       return character;
     };

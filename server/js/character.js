@@ -27,8 +27,7 @@
 
     Player.prototype.init = function() {
       Player.__super__.init.apply(this, arguments);
-      this.spriteSheetInfo = player_schema.spriteSheetInfo;
-      return this.magicSheetInfo = player_schema.magicSheetInfo;
+      return this.spriteSheetInfo = player_schema.spriteSheetInfo;
     };
 
     Player.prototype.move = function(direction) {
@@ -106,7 +105,9 @@
       if (animation !== null) {
         this.animation = animation;
       } else {
-        this.animation = state;
+        if (state !== "idle" && state !== "run") {
+          this.animation = state;
+        }
       }
       switch (state) {
         case "idle":

@@ -92,6 +92,7 @@ class window.Game
         character = @buildCharacter(data.character)
         @world.addPlayer character, @player_count
         @localPlayer = character
+        @localPlayer.isLocal = true
         @addPlayerUI(@localPlayer, @player_count)
         @player_count += 1
         console.log(character.name + ' has joined game')
@@ -115,8 +116,7 @@ class window.Game
         window.addEventListener "keyup", ((e) ->
             @keysDown[e.keyCode] = false
             if (!@keysDown[Constant.KEYCODE_RIGHT] && !@keysDown[Constant.KEYCODE_LEFT] && !@keysDown[Constant.KEYCODE_UP] && !@keysDown[Constant.KEYCODE_DOWN])
-                if (@localPlayer.get().currentAnimation == "run")
-                    # player.character.gotoAndPlay 'idle'
+                if @localPlayer.state == "run"
                     @socket.emit "update", {id:@id, action:"keyup"}
         ).bind this
 
@@ -208,8 +208,6 @@ class window.Game
         bound = @world.getBound()
         return object.x > bound['x2'] or object.x < 0 or object.y > bound['y2'] or object.y < 0
 
-    # addPlayerUI: (number) ->
-
 
     checkState:(player) ->
         if player == null
@@ -225,7 +223,7 @@ class window.Game
         character.build(object.spriteSheetInfo, object.magicSheetInfo)
         # build magic book
         magicSheetInfo = object.magicSheetInfo
-        magicName = magicSheetInfo.name
+        magicName = object.magicInfo.name
         @magics[magicName] = magicSheetInfo
         return character
 

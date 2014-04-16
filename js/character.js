@@ -16,9 +16,10 @@
       this.world = world;
       this.setHPBar = __bind(this.setHPBar, this);
       Character.__super__.constructor.call(this, this.id, this.name, this.type, this.x, this.y, this.world);
+      this.isLocal = false;
       this.maxhp;
       this.hp;
-      this.cd = 300;
+      this.cd;
       this.attackRange = 50;
       this.number;
       this.character;
@@ -96,9 +97,11 @@
     };
 
     Character.prototype.idle = function() {
+      var animation;
       this.speed = 0;
       this.direction = "No";
       this.state = "idle";
+      animation = this.animation;
       if (this.character.currentAnimation !== "idle") {
         return this.character.gotoAndPlay("idle");
       }
@@ -121,6 +124,20 @@
     };
 
     Character.prototype.update = function(object) {
+      this.animation = object.animation;
+      if (this.animation === "invisible") {
+        if (this.isLocal === true) {
+          this.get().alpha = 0.5;
+        } else {
+          this.get().visible = false;
+        }
+      } else {
+        if (this.isLocal === true) {
+          this.get().alpha = 1;
+        } else {
+          this.get().visible = true;
+        }
+      }
       if (this.state === "die" && object.state !== "die") {
         this.character.x = object.x;
         this.character.y = object.y;

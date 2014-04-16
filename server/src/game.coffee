@@ -46,7 +46,7 @@ class Game
                 when "cast"
                     @onPlayerCast(player)
                 when "keyup"
-                    if player.state = "run"
+                    if player.state == "run"
                         player.idle()
                 when "animationend"
                     @onAnimationend(player)
@@ -71,7 +71,7 @@ class Game
                 width = bound.x2-bound.x1
                 id = UUID()
                 x  = if (player.faceDirection == 'right') then bound.x2  else bound.x1
-                m = new Magic id, player.magicSheetInfo, x, player.y, @world, player.id, player.faceDirection
+                m = new Magic id, player.magicInfo, x, player.y, @world, player.id, player.faceDirection
                 setTimeout ( =>
                     if player.checkState()
                         @addObject m
@@ -79,12 +79,8 @@ class Game
 
     onAnimationend:(player) ->
         if player.state == "cast"
-            bound = player.getRect()
-            width = bound.x2-bound.x1
-            id = UUID()
-            x  = if (player.faceDirection == 'right') then bound.x2  else bound.x1
-            m = new Magic id, player.magicSheetInfo, x, player.y, @world, player.id, player.faceDirection
-            @addObject m
+            id = UUID();
+            player.magic(@, player,id)
         if player.state == "attack"
             #finish attack action will have more damage
             [target,distance] = @getNearestCharacter(player)
@@ -101,7 +97,7 @@ class Game
         return false
 
     onNewPlayer: (client) ->
-        # Create new player instance, return newly created player
+        #Create new player instance, return newly created player
         #notify other player a new player has joined
         if @player_count >= @max_player
             return null
@@ -110,6 +106,15 @@ class Game
         y = 200
         id = client.userid
         player = new Player id, "firzen", "player", x, y, @world
+
+        #pick a random magic for player
+        magic_schema = require("./magics/invisible.js")
+        player.magicSheetInfo = magic_schema.magicSheetInfo
+        player.magicInfo = magic_schema.info
+        player.magic =  magic_schema.magic
+        player.cd = magic_schema.info.cd
+
+        #add player to the game
         @addPlayer player, @player_count
         @io.sockets.in(@room).emit "new player", {"id": id, "player": player}
         return player
@@ -182,6 +187,11 @@ class Game
     addObject: (object) ->
         @objects.push object
 
+    addMagic:(id, info, x, y, world, characterID, faceDirection) ->
+        #create a magic instance and add to game
+        m = new Magic(id, info, x, y, world, characterID, faceDirection)
+        @addObject(m)
+
     removeObject:(target) ->
         for object,index in @objects
             if object.id == target.id
@@ -218,7 +228,7 @@ class Game
         index = 0
         target = null
         for player in @players
-            if player.id == character.id
+            if player.id == character.id or player.animation == "invisible"
                 continue
             d = character.distanceTo(player)
             if d < distance
