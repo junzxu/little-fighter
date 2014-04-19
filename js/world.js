@@ -21,7 +21,12 @@
       this.stage = new createjs.Stage(this.canvas);
       this.statusBar = new createjs.DOMElement(this.bar);
       this.hud.addChild(this.statusBar);
-      return this.stage.addChild(this.hud);
+      this.stage.addChild(this.hud);
+      this.helpText = new createjs.Text("Waiting for player...", "20px Arial", "#ff7700");
+      this.helpText.x = 300;
+      this.helpText.y = 100;
+      this.helpText.textBaseline = "alphabetic";
+      return this.world.addChild(this.helpText);
     };
 
     World.prototype.build = function(world) {

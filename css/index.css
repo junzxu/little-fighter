@@ -1,6 +1,5 @@
 html , body {
 	background: #212121; 
-	color: #fff; 
 	font-family: Helvetica;
 	margin: 0; 
 	padding: 0;
@@ -15,6 +14,7 @@ html , body {
 #GameArea {
 /*	margin-left: auto;
 	margin-right: auto;*/
+	color: #666464; 
 	width: 800px;
 	height: 500px;
 	margin-top: 0;

@@ -43,6 +43,7 @@
     Game.prototype.addEventHandlers = function() {
       this.socket.on("connected", this.onConnected.bind(this));
       this.socket.on("joined", this.gameSetup.bind(this));
+      this.socket.on("start", this.gameStart.bind(this));
       this.socket.on("update", this.onUpdate.bind(this));
       this.socket.on("remove", this.onRemove.bind(this));
       this.socket.on("new player", this.onNewPlayer.bind(this));
@@ -105,6 +106,9 @@
 
     Game.prototype.gameSetup = function(data) {
       var character, player, _i, _len, _ref;
+      if (data.gamestate) {
+        this.gameStart();
+      }
       this.gameid = data.gameid;
       this.world.build(data.world);
       createjs.Ticker.addEventListener("tick", this.world.stage);
@@ -125,7 +129,7 @@
         this.world.addPlayer(character, this.player_count);
         this.addPlayerUI(player, this.player_count);
         this.player_count += 1;
-        console.log(character.name + ' also joined game');
+        console.log(character.name + ' has joined game');
       }
       createjs.Ticker.addEventListener("tick", (function(evt) {}).bind(this));
       window.addEventListener("keydown", (function(e) {
@@ -174,6 +178,11 @@
           }
         };
       })(this)).bind(this));
+    };
+
+    Game.prototype.gameStart = function() {
+      this.ready = true;
+      return this.world.get().removeChild(this.world.helpText);
     };
 
     Game.prototype.onNewPlayer = function(data) {
@@ -298,7 +307,7 @@
 
     Game.prototype.checkState = function(player) {
       var _ref;
-      if (player === null) {
+      if (player === null || this.ready === false) {
         return false;
       }
       if ((_ref = player.state) === 'collided' || _ref === 'disabled' || _ref === 'hurt' || _ref === "die") {

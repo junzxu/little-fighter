@@ -28,7 +28,6 @@ class Server
     createGame:(client) ->
         game = new Game client.gameid, @io
         player = game.onNewPlayer(client) #create a game character and add to player list
-        @startGame(game.id)
         @game_count += 1
         @games.push game
         #tell client they have joined a game
@@ -39,10 +38,10 @@ class Server
     joinGame:(client) ->
         for game in @games
             if game.id == client.gameid and game.player_count < game.max_player
+                #add player to game, game will start if has enough players
                 player = game.onNewPlayer(client)
                 #tell client they have joined a game
-                client.emit 'joined', { id: client.userid, gameid: client.gameid, world: game.world, character: player, players:game.players}
-                @startGame(game)
+                client.emit 'joined', { id: client.userid, gameid: client.gameid, gamestate: game.active, world: game.world, character: player, players:game.players}
                 return true
         return false
 
@@ -60,16 +59,6 @@ class Server
                     @util.log 'game ' + game_id + ' destroyed'
                 return true
         return false
-
-
-    startGame: (game) ->
-        #we have enough players for a game
-        if game.active == true
-            return
-        if game.player_count > game.min_player
-            game.active = true
-            game.start()
-
 
 
     onUpdate: (client,data) ->

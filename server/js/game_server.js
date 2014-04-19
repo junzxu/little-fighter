@@ -38,7 +38,6 @@
       var game, player;
       game = new Game(client.gameid, this.io);
       player = game.onNewPlayer(client);
-      this.startGame(game.id);
       this.game_count += 1;
       this.games.push(game);
       client.emit('joined', {
@@ -61,11 +60,11 @@
           client.emit('joined', {
             id: client.userid,
             gameid: client.gameid,
+            gamestate: game.active,
             world: game.world,
             character: player,
             players: game.players
           });
-          this.startGame(game);
           return true;
         }
       }
@@ -91,16 +90,6 @@
         }
       }
       return false;
-    };
-
-    Server.prototype.startGame = function(game) {
-      if (game.active === true) {
-        return;
-      }
-      if (game.player_count > game.min_player) {
-        game.active = true;
-        return game.start();
-      }
     };
 
     Server.prototype.onUpdate = function(client, data) {

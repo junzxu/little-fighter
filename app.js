@@ -11,16 +11,18 @@
         server = http.createServer(app);
 
     /* Express server set up. */
-
+    app.set('views', __dirname + '/views')
+    app.set('view engine', 'jade')
     //The express server handles passing our content to the browser,
     //As well as routing users where they need to go. This example is bare bones
     //and will serve any file the user requests from the root of your web server (where you launch the script from)
     //so keep this in mind - this is not a production script but a development teaching tool.
-
     app.use("/css", express.static(__dirname + '/css'));
     app.use("/lib", express.static(__dirname + '/lib'));
     app.use("/js", express.static(__dirname + '/js'));
     app.use("/assets", express.static(__dirname + '/assets'));
+    app.use(express.json()); // to support JSON-encoded bodies
+    app.use(express.urlencoded()); // to support URL-encoded bodies
     //Tell the server to listen for incoming connections
     server.listen(gameport)
 
@@ -29,25 +31,34 @@
 
     //By default, we forward the / path to index.html automatically.
     app.get('/', function(req, res) {
-        console.log('trying to load %s', __dirname + '/index.html');
-        res.sendfile('/index.html', {
-            root: __dirname
-        });
+        res.render('index', {
+            title: 'Home'
+        })
     });
 
     app.get('/*', function(req, res) {
         if (req.query.id) {
             var id = req.params.id;
-            console.log('trying to load %s', __dirname + '/index.html');
-            res.sendfile('/index.html', {
+            res.sendfile('index.html', {
                 root: __dirname
             });
         } else {
-            res.status(404).send('Not found');
+            res.status(404).send('Game not found');
         }
+        // res.sendfile('/index.html', {
+        //     root: __dirname
+        // });
     });
 
-
+    app.post('/signup', function(req, res) {
+        var username = req.body.username;
+        var minplayer = req.body.minplayer;
+        var maxplayer = req.body.maxplayer;
+        console.log("post received: %s %s %s", username, minplayer, maxplayer);
+        res.render('game', {
+            name: username
+        })
+    });
 
     /* Socket.IO server set up. */
 
@@ -72,7 +83,7 @@
                 // id = query.id
                 handshake.gameid = handshake.query.id;
             } else {
-                handshake.gameid = UUID();
+                handshake.gameid = null;
             }
             callback(null, true); // error first callback style
         });
@@ -107,9 +118,19 @@
 
         //now we can find them a game to play with someone.
         //if no game exists with someone waiting, they create one and wait.
-        game_server.findGame(client);
+        if (client.gameid != null) {
+            game_server.findGame(client);
 
-        console.log('\t socket.io:: found a game for player ' + client.userid);
+            console.log('\t socket.io:: found a game for player ' + client.userid);
+        }
+
+
+        client.on('newGame', function(message) {
+
+            game_server.createGame(client);
+
+        });
+
         //Now we want to handle some of the messages that clients will send.
         //They send messages here, and we send them to the game_server to handle.
         client.on('update', function(message) {

@@ -11,7 +11,7 @@ class Game
         @player_count = 0
         @min_player = 1
         @max_player = 4
-        @state = "preparing"
+        @active = false
         @init()
 
 
@@ -25,8 +25,9 @@ class Game
         @addPlayer robot
 
     start: ->
-        @state = "start"
+        @active = true
         @updateID = setInterval @updateState.bind(@), 16  #60 fps
+        @io.sockets.in(@room).emit "start", {"gameid": @id}
 
     end: ->
         clearInterval @updateID
@@ -178,7 +179,7 @@ class Game
             player.number ?= number
             if player.type == "player"
                 @player_count += 1
-            if @player_count >= @min_player
+            if @player_count >= @min_player and @active == false
                 @start()
             return true
         return false

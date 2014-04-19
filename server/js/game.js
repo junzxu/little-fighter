@@ -22,7 +22,7 @@
       this.player_count = 0;
       this.min_player = 1;
       this.max_player = 4;
-      this.state = "preparing";
+      this.active = false;
       this.init();
     }
 
@@ -37,8 +37,11 @@
     };
 
     Game.prototype.start = function() {
-      this.state = "start";
-      return this.updateID = setInterval(this.updateState.bind(this), 16);
+      this.active = true;
+      this.updateID = setInterval(this.updateState.bind(this), 16);
+      return this.io.sockets["in"](this.room).emit("start", {
+        "gameid": this.id
+      });
     };
 
     Game.prototype.end = function() {
@@ -245,7 +248,7 @@
         if (player.type === "player") {
           this.player_count += 1;
         }
-        if (this.player_count >= this.min_player) {
+        if (this.player_count >= this.min_player && this.active === false) {
           this.start();
         }
         return true;

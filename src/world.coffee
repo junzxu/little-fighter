@@ -16,7 +16,13 @@ class window.World
 		@statusBar = new createjs.DOMElement(@bar)
 		@hud.addChild(@statusBar)
 		@stage.addChild @hud
-		# @build()
+		#add a help text to screen
+		@helpText = new createjs.Text("Waiting for player...", "20px Arial", "#ff7700")
+		@helpText.x = 300
+		@helpText.y = 100
+		@helpText.textBaseline = "alphabetic"
+		@world.addChild @helpText
+
 
 	build: (world) ->
 		#should build world from server data

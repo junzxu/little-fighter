@@ -9,7 +9,8 @@
         "mongodb": "1.2.x",
         "mongoose": "3.8.x",
         "node-uuid": "1.4.1",
-        "socket.io": "0.9.16"
+        "socket.io": "0.9.16",
+        "jade": "*"
     },
 
     "license": "MIT",

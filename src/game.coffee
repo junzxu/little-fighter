@@ -9,7 +9,7 @@ class window.Game
         @localPlayer = null
 
         createjs.Ticker.setFPS 60
-        @ready = false
+        @ready = false  #if game has started
 
         @lastKeyPress = new Date()
         @addEventHandlers()
@@ -34,6 +34,7 @@ class window.Game
     addEventHandlers: () ->
         @socket.on "connected", @onConnected.bind this
         @socket.on "joined", @gameSetup.bind this
+        @socket.on "start", @gameStart.bind this
         @socket.on "update", @onUpdate.bind this
         @socket.on "remove", @onRemove.bind this
         @socket.on "new player", @onNewPlayer.bind this
@@ -85,6 +86,8 @@ class window.Game
 
 
     gameSetup: (data) ->
+        if data.gamestate
+            @gameStart()
         @gameid = data.gameid
         @world.build(data.world)
         createjs.Ticker.addEventListener "tick", @world.stage
@@ -104,7 +107,7 @@ class window.Game
             @world.addPlayer character, @player_count
             @addPlayerUI(player, @player_count)
             @player_count += 1
-            console.log(character.name + ' also joined game')
+            console.log(character.name + ' has joined game')
 
         createjs.Ticker.addEventListener "tick", ((evt) ->
         ).bind this
@@ -140,6 +143,12 @@ class window.Game
                 else
                     @localPlayer.idle()
         ).bind this
+
+
+    gameStart:->
+        @ready = true
+        @world.get().removeChild @world.helpText
+
 
     onNewPlayer: (data) ->
         if @localPlayer == null
@@ -210,7 +219,7 @@ class window.Game
 
 
     checkState:(player) ->
-        if player == null
+        if player == null or @ready == false
             return false
         if player.state in ['collided', 'disabled','hurt',"die"]
             return false
