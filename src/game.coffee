@@ -93,6 +93,10 @@ class window.Game
     onConnectionFail: (data) ->
         console.log "connection failed"
         @socket.disconnect()
+        imgURL = '/404'
+        $('#hud').replaceWith('<div id="hud"></div>');
+        $('#gameCanvas').replaceWith('<img id= "notfound" src=' + imgURL + ' />');
+
 
     gameSetup: (data) ->
         if data.gamestate

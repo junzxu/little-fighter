@@ -112,8 +112,12 @@
     };
 
     Game.prototype.onConnectionFail = function(data) {
+      var imgURL;
       console.log("connection failed");
-      return this.socket.disconnect();
+      this.socket.disconnect();
+      imgURL = '/404';
+      $('#hud').replaceWith('<div id="hud"></div>');
+      return $('#gameCanvas').replaceWith('<img id= "notfound" src=' + imgURL + ' />');
     };
 
     Game.prototype.gameSetup = function(data) {

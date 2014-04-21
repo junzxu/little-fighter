@@ -50,3 +50,10 @@ html , body {
     font-size: 18px;
     color: #666464; 
 }
+
+#notfound {
+	width: 500px;
+	height:500px;
+	margin-top: 50px;
+	margin-left: 150px;
+}

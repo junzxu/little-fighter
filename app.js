@@ -36,10 +36,17 @@
         })
     });
 
+    app.get('/404', function(req, res, next) {
+
+        var file = 'assets/img/404.png';
+        res.sendfile(__dirname + '/' + file);
+    });
+
     app.get('/*', function(req, res) {
         // send 404 page
         res.status(404).send('Game not found');
     });
+
 
     app.post('/signup', function(req, res) {
         var username = "\"" + req.body.username + "\"";
