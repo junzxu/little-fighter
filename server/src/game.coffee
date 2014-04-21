@@ -107,7 +107,7 @@ class Game
         y = 200
         id = client.userid
         player = new Player id, "firzen", "player", x, y, @world
-
+        player.username = client.username
         #pick a random magic for player
         magic_schema = require("./magics/invisible.js")
         player.magicSheetInfo = magic_schema.magicSheetInfo
@@ -133,6 +133,8 @@ class Game
             if object.id == otherObject.id or otherObject.state == "die"
                 continue
             if object.type == otherObject.type == "magic"
+                continue
+            if object.id == otherObject.characterID
                 continue
             rect2 = otherObject.getCollisionRect()
             if !((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2 ) || (rect2.y1 > rect1.y2 ) || (rect2.y2 < rect1.y1))

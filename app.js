@@ -37,27 +37,21 @@
     });
 
     app.get('/*', function(req, res) {
-        if (req.query.id) {
-            var id = req.params.id;
-            res.sendfile('index.html', {
-                root: __dirname
-            });
-        } else {
-            res.status(404).send('Game not found');
-        }
-        // res.sendfile('/index.html', {
-        //     root: __dirname
-        // });
+        // send 404 page
+        res.status(404).send('Game not found');
     });
 
     app.post('/signup', function(req, res) {
-        var username = req.body.username;
+        var username = "\"" + req.body.username + "\"";
         var minplayer = req.body.minplayer;
-        var maxplayer = req.body.maxplayer;
-        console.log("post received: %s %s %s", username, minplayer, maxplayer);
+        var gameid = req.body.gameid;
+        if (gameid == '') {
+            gameid = "null";
+        }
         res.render('game', {
-            name: username
-        })
+            "name": username,
+            "id": gameid
+        });
     });
 
     /* Socket.IO server set up. */
@@ -78,9 +72,8 @@
             // var url_parts = url.parse(handshake.url, true);
             // var query = url_parts.query;
             console.log('Auth: ', handshake.query);
-            if (handshake.query.id != null) {
-                // id = handshake.url.slice(1);
-                // id = query.id
+            handshake.username = handshake.query.name;
+            if (handshake.query.id) {
                 handshake.gameid = handshake.query.id;
             } else {
                 handshake.gameid = null;
@@ -105,8 +98,8 @@
         //and store this on their socket/connection
         client.userid = UUID();
         client.gameid = client.handshake.gameid;
-        client.join(client.gameid);
-        game_server.clients.push(client);
+        client.username = client.handshake.username
+
         //tell the player they connected, giving them their id
         client.emit('connected', {
             id: client.userid,
@@ -119,17 +112,21 @@
         //now we can find them a game to play with someone.
         //if no game exists with someone waiting, they create one and wait.
         if (client.gameid != null) {
-            game_server.findGame(client);
-
-            console.log('\t socket.io:: found a game for player ' + client.userid);
+            client.join(client.gameid);
+            var found = game_server.findGame(client);
+            game_server.clients.push(client);
+            if (found == true) {
+                console.log('\t socket.io:: found a game for player ' + client.userid);
+            } else {
+                client.emit('fail');
+            }
+        } else {
+            client.gameid = UUID();
+            client.join(client.gameid);
+            game_server.clients.push(client);
+            game_server.createGame(client);
         }
 
-
-        client.on('newGame', function(message) {
-
-            game_server.createGame(client);
-
-        });
 
         //Now we want to handle some of the messages that clients will send.
         //They send messages here, and we send them to the game_server to handle.

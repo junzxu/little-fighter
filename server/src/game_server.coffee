@@ -1,11 +1,13 @@
 Game = require("./game.js")
 Player = require("./character.js")
+UUID = require('node-uuid')
 
 class Server
     constructor: (@io)->
         @util =  require ("util")
         @games = []
         @game_count = 0
+        @max_gameCount = 10
         @clients = []
         @init()
 
@@ -21,9 +23,7 @@ class Server
         joined = false
         if @game_count > 0 and client.gameid != null
             joined = @joinGame(client)
-        if joined  == false
-            @createGame(client)
-
+        return joined
 
     createGame:(client) ->
         game = new Game client.gameid, @io

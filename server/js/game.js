@@ -147,6 +147,7 @@
       y = 200;
       id = client.userid;
       player = new Player(id, "firzen", "player", x, y, this.world);
+      player.username = client.username;
       magic_schema = require("./magics/invisible.js");
       player.magicSheetInfo = magic_schema.magicSheetInfo;
       player.magicInfo = magic_schema.info;
@@ -186,6 +187,9 @@
           continue;
         }
         if ((object.type === (_ref1 = otherObject.type) && _ref1 === "magic")) {
+          continue;
+        }
+        if (object.id === otherObject.characterID) {
           continue;
         }
         rect2 = otherObject.getCollisionRect();

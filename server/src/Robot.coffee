@@ -9,6 +9,7 @@ class Robot extends object
         @hp = @maxhp
         @cd = 400
         @number
+        @username = "robot"
         @faceDirection = "left"
         @currentDestination = [@x,@y]
         @waitTime = 0

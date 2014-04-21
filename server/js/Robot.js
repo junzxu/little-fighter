@@ -27,6 +27,7 @@
       this.hp = this.maxhp;
       this.cd = 400;
       this.number;
+      this.username = "robot";
       this.faceDirection = "left";
       this.currentDestination = [this.x, this.y];
       this.waitTime = 0;

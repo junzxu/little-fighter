@@ -22,11 +22,17 @@
     };
 
     Game.prototype.serverInit = function() {
-      this.socket = io.connect("localhost", {
+      var connectURL, q;
+      if (this.id === null) {
+        q = "?name=" + this.username;
+      } else {
+        q = "?id=" + this.id + "&name=" + this.username;
+      }
+      connectURL = "localhost/" + q;
+      this.socket = io.connect(connectURL, {
         port: 3000,
         transports: ["websocket"],
-        'force new connection': true,
-        query: "id=123"
+        'force new connection': true
       });
       return console.log('\t connected to server');
     };
@@ -42,6 +48,7 @@
 
     Game.prototype.addEventHandlers = function() {
       this.socket.on("connected", this.onConnected.bind(this));
+      this.socket.on("fail", this.onConnectionFail.bind(this));
       this.socket.on("joined", this.gameSetup.bind(this));
       this.socket.on("start", this.gameStart.bind(this));
       this.socket.on("update", this.onUpdate.bind(this));
@@ -98,10 +105,15 @@
     };
 
     Game.prototype.onConnected = function(data) {
-      this.id = data.id;
-      this.gameid = data.gameid;
-      console.log('client id is ' + this.id);
-      return console.log('game id is ' + data.gameid);
+      this.userid = data.id;
+      this.id = data.gameid;
+      console.log('client id is ' + this.userid);
+      return console.log('game id is ' + this.gameid);
+    };
+
+    Game.prototype.onConnectionFail = function(data) {
+      console.log("connection failed");
+      return this.socket.disconnect();
     };
 
     Game.prototype.gameSetup = function(data) {
@@ -109,13 +121,14 @@
       if (data.gamestate) {
         this.gameStart();
       }
-      this.gameid = data.gameid;
+      this.id = data.gameid;
       this.world.build(data.world);
       createjs.Ticker.addEventListener("tick", this.world.stage);
       character = this.buildCharacter(data.character);
       this.world.addPlayer(character, this.player_count);
       this.localPlayer = character;
       this.localPlayer.isLocal = true;
+      this.localPlayer.username = this.username;
       this.addPlayerUI(this.localPlayer, this.player_count);
       this.player_count += 1;
       console.log(character.name + ' has joined game');
@@ -140,7 +153,7 @@
         if (!this.keysDown[Constant.KEYCODE_RIGHT] && !this.keysDown[Constant.KEYCODE_LEFT] && !this.keysDown[Constant.KEYCODE_UP] && !this.keysDown[Constant.KEYCODE_DOWN]) {
           if (this.localPlayer.state === "run") {
             return this.socket.emit("update", {
-              id: this.id,
+              id: this.userid,
               action: "keyup"
             });
           }
@@ -157,19 +170,19 @@
               break;
             case 'attack':
               _this.socket.emit("update", {
-                id: _this.id,
+                id: _this.userid,
                 action: "animationend"
               });
               return _this.localPlayer.idle();
             case 'hurt':
               _this.socket.emit("update", {
-                id: _this.id,
+                id: _this.userid,
                 action: "animationend"
               });
               return _this.localPlayer.idle();
             case 'cast':
               _this.socket.emit("update", {
-                id: _this.id,
+                id: _this.userid,
                 action: "animationend"
               });
               return _this.localPlayer.idle();
@@ -211,7 +224,7 @@
       if (this.checkState(this.localPlayer)) {
         if (this.keysDown[Constant.KEYCODE_J]) {
           this.socket.emit("update", {
-            id: this.id,
+            id: this.userid,
             action: 'attack'
           });
           this.localPlayer.state = "attack";
@@ -219,7 +232,7 @@
         }
         if (this.keysDown[Constant.KEYCODE_K]) {
           this.socket.emit("update", {
-            id: this.id,
+            id: this.userid,
             action: 'cast'
           });
           this.localPlayer.state = "cast";
@@ -227,7 +240,7 @@
         }
         if (this.keysDown[Constant.KEYCODE_RIGHT] && this.keysDown[Constant.KEYCODE_UP]) {
           this.socket.emit("update", {
-            id: this.id,
+            id: this.userid,
             action: 'run',
             dir: 'ur'
           });
@@ -235,7 +248,7 @@
         }
         if (this.keysDown[Constant.KEYCODE_LEFT] && this.keysDown[Constant.KEYCODE_UP]) {
           this.socket.emit("update", {
-            id: this.id,
+            id: this.userid,
             action: 'run',
             dir: 'ul'
           });
@@ -243,7 +256,7 @@
         }
         if (this.keysDown[Constant.KEYCODE_RIGHT] && this.keysDown[Constant.KEYCODE_DOWN]) {
           this.socket.emit("update", {
-            id: this.id,
+            id: this.userid,
             action: 'run',
             dir: 'dr'
           });
@@ -251,7 +264,7 @@
         }
         if (this.keysDown[Constant.KEYCODE_LEFT] && this.keysDown[Constant.KEYCODE_DOWN]) {
           this.socket.emit("update", {
-            id: this.id,
+            id: this.userid,
             action: 'run',
             dir: 'dl'
           });
@@ -259,7 +272,7 @@
         }
         if (this.keysDown[Constant.KEYCODE_RIGHT]) {
           this.socket.emit("update", {
-            id: this.id,
+            id: this.userid,
             action: 'run',
             dir: 'right'
           });
@@ -267,7 +280,7 @@
         }
         if (this.keysDown[Constant.KEYCODE_LEFT]) {
           this.socket.emit("update", {
-            id: this.id,
+            id: this.userid,
             action: 'run',
             dir: 'left'
           });
@@ -275,7 +288,7 @@
         }
         if (this.keysDown[Constant.KEYCODE_UP]) {
           this.socket.emit("update", {
-            id: this.id,
+            id: this.userid,
             action: 'run',
             dir: 'up'
           });
@@ -283,7 +296,7 @@
         }
         if (this.keysDown[Constant.KEYCODE_DOWN]) {
           this.socket.emit("update", {
-            id: this.id,
+            id: this.userid,
             action: 'run',
             dir: 'down'
           });
@@ -333,6 +346,7 @@
       imgURL = '"assets/spritesheets/' + player.name + '/profile.png"';
       img = '<img src=' + imgURL + ' class="my-thumbnail"/>';
       pnumber = "#player" + number;
+      $('#hud > .row >' + pnumber + ' > .row >#stats >#name >h4').html(player.username);
       $('#hud > .row > ' + pnumber + ' > .row >#profile').append(img);
       return $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').html(player.maxhp);
     };

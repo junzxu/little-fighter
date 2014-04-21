@@ -41,3 +41,12 @@ html , body {
 	max-width: 80px;
 	max-height: 100px;
 }
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    height: 60px;
+    width: 100%;
+    font-size: 18px;
+    color: #666464; 
+}

@@ -16,16 +16,15 @@ html(lang="en")
     //
        Bootstrap 
     script(src='lib/bootstrap.min.js')
-    //
-       We also provide hosted minified versions of all CreateJS libraries.
-          http://code.createjs.com 
     link(href='css/bootstrap.min.css', rel='stylesheet', media='screen')
     script(type='text/javascript').
       function init() {
-      var game = new Game()
-      game.init()
+        var game = new Game()
+        game.id = !{id}
+        game.username = !{name}
+        game.init()
       }
-  body(onload='init();')
+  body(onload='init()')
     #GameArea
       #hud.container
         .row.clearfix

@@ -7,7 +7,6 @@ class window.Game
         @stageInit()
         @serverInit()
         @localPlayer = null
-
         createjs.Ticker.setFPS 60
         @ready = false  #if game has started
 
@@ -17,7 +16,12 @@ class window.Game
 
     # Server setup
     serverInit: () ->
-        @socket = io.connect "localhost", {port: 3000, transports: ["websocket"],'force new connection': true,  query: "id=123" }
+        if @id == null
+            q = "?name=" + @username
+        else
+            q = "?id=" + @id + "&name=" + @username
+        connectURL = "localhost/" + q
+        @socket = io.connect connectURL, {port: 3000, transports: ["websocket"],'force new connection': true }
         console.log('\t connected to server')
 
 
@@ -33,6 +37,7 @@ class window.Game
 
     addEventHandlers: () ->
         @socket.on "connected", @onConnected.bind this
+        @socket.on "fail", @onConnectionFail.bind this
         @socket.on "joined", @gameSetup.bind this
         @socket.on "start", @gameStart.bind this
         @socket.on "update", @onUpdate.bind this
@@ -79,16 +84,20 @@ class window.Game
 
     # Connected to Server
     onConnected: (data) ->
-        @id = data.id
-        @gameid = data.gameid
-        console.log('client id is ' + @id)
-        console.log('game id is ' + data.gameid)
+        @userid = data.id
+        @id = data.gameid
+        console.log('client id is ' + @userid)
+        console.log('game id is ' + @gameid)
 
+
+    onConnectionFail: (data) ->
+        console.log "connection failed"
+        @socket.disconnect()
 
     gameSetup: (data) ->
         if data.gamestate
             @gameStart()
-        @gameid = data.gameid
+        @id = data.gameid
         @world.build(data.world)
         createjs.Ticker.addEventListener "tick", @world.stage
         #add local player
@@ -96,6 +105,7 @@ class window.Game
         @world.addPlayer character, @player_count
         @localPlayer = character
         @localPlayer.isLocal = true
+        @localPlayer.username = @username
         @addPlayerUI(@localPlayer, @player_count)
         @player_count += 1
         console.log(character.name + ' has joined game')
@@ -120,7 +130,7 @@ class window.Game
             @keysDown[e.keyCode] = false
             if (!@keysDown[Constant.KEYCODE_RIGHT] && !@keysDown[Constant.KEYCODE_LEFT] && !@keysDown[Constant.KEYCODE_UP] && !@keysDown[Constant.KEYCODE_DOWN])
                 if @localPlayer.state == "run"
-                    @socket.emit "update", {id:@id, action:"keyup"}
+                    @socket.emit "update", {id:@userid, action:"keyup"}
         ).bind this
 
         @localPlayer.get().addEventListener "animationend", ((evt) =>
@@ -132,13 +142,13 @@ class window.Game
                 when 'collided'
                     break
                 when 'attack'
-                    @socket.emit "update", {id:@id, action:"animationend"}
+                    @socket.emit "update", {id:@userid, action:"animationend"}
                     @localPlayer.idle()
                 when 'hurt'
-                    @socket.emit "update", {id:@id, action:"animationend"}
+                    @socket.emit "update", {id:@userid, action:"animationend"}
                     @localPlayer.idle()
                 when 'cast'
-                    @socket.emit "update", {id:@id, action:"animationend"}
+                    @socket.emit "update", {id:@userid, action:"animationend"}
                     @localPlayer.idle()
                 else
                     @localPlayer.idle()
@@ -173,36 +183,36 @@ class window.Game
         # Check which key is been pressed
         if @checkState(@localPlayer)
             if @keysDown[Constant.KEYCODE_J]
-                @socket.emit "update", {id:@id, action:'attack'}
+                @socket.emit "update", {id:@userid, action:'attack'}
                 @localPlayer.state = "attack"
                 return
             if @keysDown[Constant.KEYCODE_K]
-                @socket.emit "update", {id:@id, action:'cast'}
+                @socket.emit "update", {id:@userid, action:'cast'}
                 @localPlayer.state = "cast"
                 return
             if @keysDown[Constant.KEYCODE_RIGHT] and @keysDown[Constant.KEYCODE_UP]
-                @socket.emit "update", {id:@id, action:'run', dir:'ur'}
+                @socket.emit "update", {id:@userid, action:'run', dir:'ur'}
                 return
             if @keysDown[Constant.KEYCODE_LEFT] and @keysDown[Constant.KEYCODE_UP]
-                @socket.emit "update", {id:@id, action:'run', dir:'ul'}
+                @socket.emit "update", {id:@userid, action:'run', dir:'ul'}
                 return
             if @keysDown[Constant.KEYCODE_RIGHT] and @keysDown[Constant.KEYCODE_DOWN]
-                @socket.emit "update", {id:@id, action:'run', dir:'dr'}
+                @socket.emit "update", {id:@userid, action:'run', dir:'dr'}
                 return
             if @keysDown[Constant.KEYCODE_LEFT] and @keysDown[Constant.KEYCODE_DOWN]
-                @socket.emit "update", {id:@id, action:'run', dir:'dl'}
+                @socket.emit "update", {id:@userid, action:'run', dir:'dl'}
                 return
             if @keysDown[Constant.KEYCODE_RIGHT]
-                @socket.emit "update", {id:@id, action:'run', dir:'right'}
+                @socket.emit "update", {id:@userid, action:'run', dir:'right'}
                 return
             if @keysDown[Constant.KEYCODE_LEFT]
-                @socket.emit "update", {id:@id, action:'run', dir:'left'}
+                @socket.emit "update", {id:@userid, action:'run', dir:'left'}
                 return
             if @keysDown[Constant.KEYCODE_UP]
-                @socket.emit "update", {id:@id, action:'run', dir:'up'}
+                @socket.emit "update", {id:@userid, action:'run', dir:'up'}
                 return
             if @keysDown[Constant.KEYCODE_DOWN]
-                @socket.emit "update", {id:@id, action:'run', dir:'down'}
+                @socket.emit "update", {id:@userid, action:'run', dir:'down'}
                 return
 
     onKeyDown: (e) ->
@@ -240,5 +250,6 @@ class window.Game
         imgURL = '"assets/spritesheets/' + player.name + '/profile.png"'
         img = '<img src=' + imgURL + ' class="my-thumbnail"/>'
         pnumber = "#player" + number
+        $('#hud > .row >' + pnumber + ' > .row >#stats >#name >h4').html(player.username)
         $('#hud > .row > ' + pnumber + ' > .row >#profile').append(img)
         $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').html(player.maxhp)     

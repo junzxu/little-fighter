@@ -8,29 +8,32 @@ html(lang="en")
     link(rel='stylesheet', href='/css/bootstrap.min.css', media="screen")
 
   body
-    #GameArea
+    #wrap
+      #main.container
+        #GameArea
+          center
+            h2 Tiny Fighter
+          #hud.container
+            .row.clearfix
+
+          center
+            form.form-horizontal(role='form', action="signup", method="post")
+              .form-group
+                label.col-sm-2.control-label(for='input1') Your Name
+                .col-sm-10
+                  input#input1.form-control(type='text', name = "username", placeholder='name')
+              .form-group
+                label.col-sm-2.control-label(for='input2') Minimal Player
+                .col-sm-10
+                  input#input2.form-control(type='number', name = "minplayer", placeholder='minplayer', min="1" max="4")
+              .form-group
+                label.col-sm-2.control-label(for='input3') GameID
+                .col-sm-10
+                  input#input3.form-control(type='text', name = "gameid", placeholder='(optional)The game to join')
+              .form-group
+                  center
+                    button.btn.btn-lg.btn-danger(type='submit') Start
+
+    .footer
       center
-        h2 Tiny Fighter
-      #hud.container
-        .row.clearfix
-
-      center
-        form.form-horizontal(role='form', action="signup", method="post")
-          .form-group
-            label.col-sm-2.control-label(for='input1') Your Name
-            .col-sm-10
-              input#input1.form-control(type='text', name = "username", placeholder='name')
-          .form-group
-            label.col-sm-2.control-label(for='input2') Minimal Player
-            .col-sm-10
-              input#input2.form-control(type='number', name = "minplayer", placeholder='minplayer')
-          .form-group
-            label.col-sm-2.control-label(for='input3') Maximal Player
-            .col-sm-10
-              input#input3.form-control(type='number', name = "maxplayer", placeholder='maxplayer')
-          .form-group
-              center
-                button.btn.btn-lg.btn-danger(type='submit') Start
-
-
-    footer
+        p.muted.credit Developed by Junzhe Xu
