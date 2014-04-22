@@ -1,39 +1,27 @@
-class window.Magic extends Object
-    constructor: (@name,@type, @x, @y, @world, @character, @spriteSheetInfo, @direction) ->
-        super
+class window.Magic extends object
+    constructor: (@id, @name, @x, @y, @world, @characterID, @direction, @spriteSheetInfo) ->
+        super(@id, @name, "magic" , @x, @y, @world)
         @magic
+        @damage = 10
+        @init()
 
     init:() ->
         @SpriteSheet = new createjs.SpriteSheet @spriteSheetInfo
         @magic = new createjs.BitmapAnimation @SpriteSheet
         @magic.x = @x
         @magic.y = @y
+        @magic.name = @name
+        @collisionHeight = 0
+        @collisionWidth = 0
+        @originSpeed = 5
         @speed = @originSpeed
+        @cast()
 
     cast:() ->
-        console.log('cast magic on '+@direction)
-        @magic.addEventListener("tick", @move);
-        @world.get().addChild @magic
+        if @direction == "left"
+            @get().scaleX = -@get().scaleX
+        @world.addObject @
         @magic.gotoAndPlay "cast"
-
-
-    move: (event)=>
-        magic = event.target
-        bound = @world.getBound()
-        if @direction == "right"
-            magic.x += @speed
-        else 
-            magic.x -= @speed
-        @detectCollision false
-        if magic.x > bound['x2'] or magic.x < 0
-            @world.get().removeChild magic
-
-
-    collisionHandler: (o)->
-        o.gotHit(@direction)
-        console.log('hit player'+o.id)
-        @get().removeAllEventListeners();
-        @world.get().removeChild @get()
 
 
     get: ->

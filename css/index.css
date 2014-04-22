@@ -1,0 +1,59 @@
+html , body {
+	background: #212121; 
+	font-family: Helvetica;
+	margin: 0; 
+	padding: 0;
+}
+
+#gameCanvas {
+	border:solid 1px #333;
+	margin-left: auto;
+	margin-right: auto;
+	z-index:100;
+}
+#GameArea {
+/*	margin-left: auto;
+	margin-right: auto;*/
+	color: #666464; 
+	width: 800px;
+	height: 500px;
+	margin-top: 0;
+	margin-left: auto;
+	margin-right: auto;
+	left:0; right:0; top:0; bottom:0;
+	position: absolute;
+	z-index:100;
+}
+#hud {
+/*	margin-left: auto;
+	margin-right: auto;*/
+	width: 800px;
+	height: 100px;
+	margin: auto;
+	z-index:100;
+}
+
+#playerName {
+	color: #FBFBEF; 
+}
+
+.my-thumbnail {
+	max-width: 80px;
+	max-height: 100px;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    height: 60px;
+    width: 100%;
+    font-size: 18px;
+    color: #666464; 
+}
+
+#notfound {
+	width: 500px;
+	height:500px;
+	margin-top: 50px;
+	margin-left: 150px;
+}

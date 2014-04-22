@@ -1,4 +1,4 @@
 Little Fighter
 ===
-This is a test game for a framework. Developed by Junzhe
+An online multiplayer fighting game.  Support 1 to 4 players. Kill others or collect coins to win.
 

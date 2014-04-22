@@ -1,0 +1,39 @@
+doctype html
+html(lang="en")
+  head
+    title #{title} - Little Fighter
+    link(rel='stylesheet', href='/css/index.css', media="screen", type="text/css")
+    script(type='text/javascript', src="lib/jquery-1.10.2.min.js")
+    script(type='text/javascript', src='lib/bootstrap.min.js')
+    link(rel='stylesheet', href='/css/bootstrap.min.css', media="screen")
+
+  body
+    #wrap
+      #main.container
+        #GameArea
+          center
+            h2 Tiny Fighter
+          #hud.container
+            .row.clearfix
+
+          center
+            form.form-horizontal(role='form', action="signup", method="post")
+              .form-group
+                label.col-sm-2.control-label(for='input1') Your Name
+                .col-sm-10
+                  input#input1.form-control(type='text', name = "username", placeholder='name')
+              .form-group
+                label.col-sm-2.control-label(for='input2') Minimal Player
+                .col-sm-10
+                  input#input2.form-control(type='number', name = "minplayer", placeholder='minplayer', min="1" max="4")
+              .form-group
+                label.col-sm-2.control-label(for='input3') GameID
+                .col-sm-10
+                  input#input3.form-control(type='text', name = "gameid", placeholder='(optional)The game to join')
+              .form-group
+                  center
+                    button.btn.btn-lg.btn-danger(type='submit') Start
+
+    .footer
+      center
+        p.muted.credit Developed by Junzhe Xu

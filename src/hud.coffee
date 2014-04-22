@@ -25,11 +25,6 @@ class window.Hud
 
 	init: ->
 		@container.addChild @shape
-		
-
-
-
-
 		@stage.addChild @container
 
 

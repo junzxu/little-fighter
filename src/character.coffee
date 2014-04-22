@@ -1,42 +1,35 @@
-class window.Character extends Object
-    constructor: (@name, @type, @x, @y, @world) ->
-        super
-        @hp = 100
-        @cd = 300
+class window.Character extends object
+    constructor: (@id, @name, @type, @x, @y, @world) ->
+        super(@id, @name, @type, @x, @y, @world)
+        @isLocal = false
+        @maxhp
+        @hp
+        @cd
+        @attackRange = 50
+        @number
         @character
         @faceDirection = "right"
+        @init()
 
     init:() ->
         super
         #should load schema from database
         @state = "idle"
         @direction = "No"
-        if @type == "robot"
-            data = eval(robot_schema)
-        else
-            data = eval(player_schema)
 
-        @spriteSheetInfo = data.spriteSheetInfo
-        @magicSheetInfo = data.magicSheetInfo
 
-        console.log 'init'
+    build:(spriteSheetInfo, magicSheetInfo) ->
+        @spriteSheetInfo = spriteSheetInfo
+        @magicSheetInfo = magicSheetInfo
         @SpriteSheet = new createjs.SpriteSheet @spriteSheetInfo
         @character = new createjs.BitmapAnimation @SpriteSheet
+        @character.name = @name
         @character.x = @x
         @character.y = @y
+        if @faceDirection == 'left'
+            @get().scaleX = -@get().scaleX
         @character.gotoAndPlay "idle"
 
-        @character.addEventListener "animationend", ((evt) ->
-            switch @state
-                when 'die'
-                    @setState 'idle'
-                    @rebirth()
-                    break
-                when 'disabled'
-                    break
-                else
-                    @idle()
-        ).bind this
 
 
     addToWorld: (world) ->
@@ -47,6 +40,7 @@ class window.Character extends Object
         return @character
 
     changeFaceDirection: (direction) ->
+        #direction is left or right
         if @faceDirection == direction
             return
         else
@@ -54,85 +48,97 @@ class window.Character extends Object
             @get().scaleX = -@get().scaleX
 
     run: (direction) ->
-        if not @checkState()
-            return
         if (@character.currentAnimation != "run")
             @character.gotoAndPlay "run"
-        @setState "run"
-        @speed = @originSpeed
-        @moveStep(direction)
-        if direction in ["left","right"]
-            @changeFaceDirection(direction)
-        @detectCollision()
+        @direction = direction
+        @state = "run"
 
 
     attack: ->
-        if @checkState()
+        if @character.currentAnimation != "attack"
             @character.gotoAndPlay "attack"
+        @state = "attack"
+
 
     cast: ->
-        if @checkState() and @magicState == 'ready'
-            bound = @getRect()
-            width = bound.x2-bound.x1
-            x  = if (@faceDirection == 'right') then @x+width  else @x-width
-            m = new Magic 'blue','magic', x, @y, @world, @character, @magicSheetInfo, @faceDirection
-            m.cast()
-            @magicState = 'preparing'
-            createjs.Tween.get @character, {loop:false} 
-            .wait(@cd) 
-            .call(
-                (=> 
-                    @magicState = "ready"
-                ))
-
-    rebirth: ->
-        @world.get().removeChild @character
-        bound = @world.getBound()
-        x = Math.floor(Math.random() * bound.x2)
-        y = Math.floor(Math.random() * bound.y2)
-        @character.x = x
-        @character.y = y
-        @updateCoords()
-        @hp = 100
-        createjs.Tween.get @character, {loop:false} 
-        .wait(3000) 
-        .call(
-            (=> 
-                @world.get().addChild @character
-                @character.gotoAndPlay "idle")
-            )
+        if @character.currentAnimation != "cast"
+            @character.gotoAndPlay "cast"
+        @state = "cast"
 
 
-    idle: ->
-        @setState 'idle'
+    die: ->
+        if @state != "die"
+            if @character.currentAnimation != "die"
+                @character.gotoAndPlay "die"
+                @state = "die"
+                
+
+    idle: () ->
         @speed = 0
         @direction = "No"
+        @state = "idle"
+        animation = @animation
         if (@character.currentAnimation != "idle")
             @character.gotoAndPlay "idle"
 
-    gotHit: (direction,damage = 10) ->
-        console.log('current hp: ' + @hp)
-        @hp -= damage
-        if @hp <= 0
-            @character.gotoAndPlay "die"
-            @setState 'die'
-        else
-            @setState 'hurt'
-            @changeFaceDirection @counterDirection(direction)
+    gotHit: (direction) ->
+        #direction indicates where the hit come from
+        @changeFaceDirection direction
+        if @character.currentAnimation != "hurt"
             @character.gotoAndPlay "hurt"
-            bound = @world.getBound()
-            @moveStep(direction)
+        @state = "hurt"
 
 
-    setState: (state) ->
-        @state = state
+    setHPBar: (hp) =>
+         pnumber = "#player" + @number
+         percent = 100*(hp/@maxhp)
+         $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').css("width", percent+"%")
+         $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').html(hp)
 
-
-    checkState: ->
-        if @state == "disabled" or @character.currentAnimation in ["hurt","attack"]
-            false
+ 
+    update: (object) ->
+        @animation = object.animation
+        if @animation == "invisible"
+            #handle player invisble
+            if @isLocal == true
+                @get().alpha = 0.5
+            else
+                @get().visible = false
         else
-            true
+            if @isLocal == true
+                @get().alpha = 1
+            else
+                @get().visible = true
 
+        if @state == "die" and object.state != "die"
+            #rebirth
+            @character.x = object.x
+            @character.y = object.y
+            @hp = object.hp
+            @setHPBar(@hp)
+
+        switch object.state
+            #update player animation
+            when 'die'
+                @setHPBar(0)
+                @die()
+            when 'hurt'
+                @gotHit(object.faceDirection)
+                @hp = object.hp
+                @setHPBar(@hp)
+            when 'run'
+                @changeFaceDirection(object.faceDirection)
+                @run(object.direction)
+                @get().x = object.x
+                @get().y = object.y
+            when 'collided'
+                @get().x = object.x
+                @get().y = object.y
+            when 'attack'
+                @attack()
+            when 'cast'
+                @cast()
+            when 'idle'
+                @idle()
 
 
