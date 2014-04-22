@@ -196,6 +196,7 @@ class Game
         @addObject(m)
 
     removeObject:(target) ->
+        # to remove player, use removePlayer
         for object,index in @objects
             if object.id == target.id
                 @objects.splice index,1
