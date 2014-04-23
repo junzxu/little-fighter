@@ -9,15 +9,15 @@ item_schema = {
     spriteSheetInfo: {
         animations: {
             idle: {
-                frames: [0, 1, 2, 3, 2],
+                frames: [0, 0, 0],
                 frequency: 10
             },
             run: {
-                frames: [4, 5, 6, 7],
+                frames: [0, 0, 0],
                 frequency: 10
             },
             hurt: {
-                frames: [41, 42, 43, 44],
+                frames: [0, 0, 0],
                 next: "idle",
                 frequency: 10
             }
