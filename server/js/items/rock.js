@@ -13,21 +13,21 @@ item_schema = {
                 frequency: 10
             },
             run: {
-                frames: [0, 0, 0],
-                frequency: 10
+                frames: [0, 1, 2],
+                frequency: 20
             },
             hurt: {
                 frames: [0, 0, 0],
                 next: "idle",
-                frequency: 10
+                frequency: 20
             }
         },
         images: ["assets/spritesheets/items/rock.png"],
         frames: {
-            height: 100,
-            width: 100,
-            regX: 50,
-            regY: 50
+            height: 50,
+            width: 55,
+            regX: 27,
+            regY: 25
         }
     }
 }

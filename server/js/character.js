@@ -11,14 +11,14 @@
   Player = (function(_super) {
     __extends(Player, _super);
 
-    function Player(id, name, type, x, y, world) {
+    function Player(id, name, type, x, y, bound) {
       this.id = id;
       this.name = name;
       this.type = type;
       this.x = x;
       this.y = y;
-      this.world = world;
-      Player.__super__.constructor.call(this, this.name, this.type, this.x, this.y, this.world);
+      this.bound = bound;
+      Player.__super__.constructor.call(this, this.name, this.type, this.x, this.y, this.bound);
       this.setupInfo(player_schema.info);
       this.hp = this.maxhp;
       this.number;
@@ -69,11 +69,9 @@
     };
 
     Player.prototype.rebirth = function() {
-      var bound;
       this.idle();
-      bound = this.world.getBound();
-      this.x = Math.floor(Math.random() * bound.x2);
-      this.y = Math.floor(Math.random() * bound.y2);
+      this.x = Math.floor(Math.random() * this.bound.x2);
+      this.y = Math.floor(Math.random() * this.bound.y2);
       return this.hp = this.maxhp;
     };
 

@@ -1,8 +1,8 @@
 object = require("./object.js")
 
 class Magic extends object
-    constructor: (@id, @info, @x, @y, @world, @characterID, @direction) ->
-        super(@info.name, 'magic', @x, @y, @world)
+    constructor: (@id, @info, @x, @y, @characterID, @direction) ->
+        super(@info.name, 'magic', @x, @y, null)
 
     init:() ->
         #load spritesheet info from db

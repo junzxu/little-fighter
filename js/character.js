@@ -16,21 +16,16 @@
       this.world = world;
       this.setHPBar = __bind(this.setHPBar, this);
       Character.__super__.constructor.call(this, this.id, this.name, this.type, this.x, this.y, this.world);
-      this.isLocal = false;
-      this.maxhp;
-      this.hp;
       this.cd;
-      this.attackRange = 50;
       this.number;
       this.character;
-      this.faceDirection = "right";
-      this.init();
     }
 
     Character.prototype.init = function() {
       Character.__super__.init.apply(this, arguments);
-      this.state = "idle";
-      return this.direction = "No";
+      this.faceDirection = "right";
+      this.attackRange = 50;
+      return this.isLocal = false;
     };
 
     Character.prototype.build = function(spriteSheetInfo, magicSheetInfo) {

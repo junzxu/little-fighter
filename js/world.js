@@ -30,18 +30,15 @@
     };
 
     World.prototype.build = function(world) {
-      var AnimatedObject, object, spriteSheet, _i, _len, _ref;
+      var item, object, _i, _len, _ref;
       this.background = new createjs.Bitmap(world.backgroundURL);
       this.background.name = "background";
       this.world.addChild(this.background);
       _ref = world.objects;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         object = _ref[_i];
-        spriteSheet = new createjs.SpriteSheet(object.spriteSheetInfo);
-        AnimatedObject = new createjs.BitmapAnimation(spriteSheet);
-        AnimatedObject.x = object.x;
-        AnimatedObject.y = object.y;
-        this.world.addChild(AnimatedObject);
+        item = new window.object(object.id, object.name, "item", object.x, object.y, this);
+        item.build(object.spriteSheetInfo);
       }
       return this.stage.addChild(this.world);
     };

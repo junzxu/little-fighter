@@ -1,5 +1,5 @@
 class object
-	constructor: (@name, @type, @x, @y, @world) ->
+	constructor: (@name, @type, @x, @y, @bound) ->
         @id
         @type
         @spriteSheetInfo
@@ -63,7 +63,6 @@ class object
 
 
     moveStep: (direction = null, speed = null) =>
-        bound = @world.getBound()
         if direction == null
             direction = @direction
         if speed == null
@@ -73,56 +72,55 @@ class object
                 return
             when "left"
                 @direction = "left"
-                if(@x - speed > bound['x1'])
+                if(@x - speed > @bound['x1'])
                     @x -= speed
                 else
                     @x += speed
             when "right"
                 @direction = "right"
-                if(@x + speed < bound['x2'])
+                if(@x + speed < @bound['x2'])
                     @x += speed
                 else
                     @x -= speed
             when "down"
                 @direction = "down"
-                if(@y + speed < bound['y2'])
+                if(@y + speed < @bound['y2'])
                     @y += speed
                 else
                     @y -= speed
             when "up"
                 @direction = "up"
-                if(@y - speed > bound['y1'])
+                if(@y - speed > @bound['y1'])
                     @y -= speed
                 else
                     @y += speed
             when "ur"
                 @direction = "ur"
-                if(@y - speed > bound['y1'])
+                if(@y - speed > @bound['y1'])
                     @y -= speed
-                if(@x + speed < bound['x2'])
+                if(@x + speed < @bound['x2'])
                     @x += speed
             when "ul"
                 @direction = "ul"
-                if(@y - speed > bound['y1'])
+                if(@y - speed > @bound['y1'])
                     @y -= speed
-                if( @x - speed > bound['x1'])
+                if( @x - speed > @bound['x1'])
                     @x -= speed
             when "dr"
                 @direction = "dr"
-                if(@y + speed < bound['y2'])
+                if(@y + speed < @bound['y2'])
                     @y += speed
-                if(@x + speed < bound['x2'])
+                if(@x + speed < @bound['x2'])
                     @x += speed
             when "dl"
                 @direction = "dl"
-                if(@y + speed < bound['y2'])
+                if(@y + speed < @bound['y2'])
                     @y += speed
-                if(@x - speed > bound['x1'])
+                if(@x - speed > @bound['x1'])
                     @x -= speed
 
     moveTo: (x,y)->
-        bound = @world.getBound()
-        if (x  > bound['x1'] and x < bound['x2'] and y  > bound['y1'] and y < bound['y2'])
+        if (x  > @bound['x1'] and x < @bound['x2'] and y  > @bound['y1'] and y < @bound['y2'])
             @x = x
             @y = y
         else

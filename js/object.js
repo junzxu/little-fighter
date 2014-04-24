@@ -11,27 +11,38 @@
       this.y = y;
       this.world = world;
       this.moveStep = __bind(this.moveStep, this);
-      this.id;
-      this.type;
       this.hp;
+      this.maxhp;
+      this.spriteSheetInfo;
+      this.SpriteSheet;
+      this.sprite;
+      this.init();
+    }
+
+    object.prototype.init = function() {
       this.mass = 1;
       this.speed = 0;
       this.originSpeed = 2;
       this.collisionHeight = 20;
       this.collisionWidth = 30;
-      this.spriteSheetInfo;
-      this.SpriteSheet;
-      this.sprite = null;
-      this.objectSpriteSheet;
-      this.direction;
-      this.world;
       this.magicState = "ready";
-    }
+      this.direction = "No";
+      return this.state = "idle";
+    };
 
-    object.prototype.init = function() {
-      if (this.spriteSheetInfo) {
-        return this.SpriteSheet = new createjs.SpriteSheet(this.spriteSheetInfo);
+    object.prototype.build = function(spriteSheetInfo) {
+      if (!this.spriteSheetInfo) {
+        this.spriteSheetInfo = spriteSheetInfo;
       }
+      this.SpriteSheet = new createjs.SpriteSheet(this.spriteSheetInfo);
+      this.sprite = new createjs.BitmapAnimation(this.SpriteSheet);
+      this.sprite.x = this.x;
+      this.sprite.y = this.y;
+      if (this.direction === "left") {
+        this.get().scaleX = -this.get().scaleX;
+      }
+      this.world.addObject(this);
+      return this.sprite.gotoAndPlay("idle");
     };
 
     object.prototype.get = function() {
@@ -146,7 +157,56 @@
     };
 
     object.prototype.gotHit = function(direction) {
-      return console.log("got hit");
+      if (this.sprite.currentAnimation !== "hurt") {
+        this.sprite.gotoAndPlay("hurt");
+      }
+      return this.state = "hurt";
+    };
+
+    object.prototype.run = function(direction) {
+      if (this.sprite.currentAnimation !== "run") {
+        this.sprite.gotoAndPlay("run");
+      }
+      this.direction = direction;
+      return this.state = "run";
+    };
+
+    object.prototype.die = function() {
+      if (this.state !== "die") {
+        if (this.sprite.currentAnimation !== "die") {
+          this.sprite.gotoAndPlay("die");
+          return this.state = "die";
+        }
+      }
+    };
+
+    object.prototype.idle = function() {
+      this.speed = 0;
+      this.direction = "No";
+      this.state = "idle";
+      if (this.sprite.currentAnimation !== "idle") {
+        return this.sprite.gotoAndPlay("idle");
+      }
+    };
+
+    object.prototype.update = function(object) {
+      switch (object.state) {
+        case 'die':
+          return this.die();
+        case 'hurt':
+          this.gotHit(object.faceDirection);
+          return this.hp = object.hp;
+        case 'run':
+          this.changeFaceDirection(object.faceDirection);
+          this.run(object.direction);
+          this.get().x = object.x;
+          return this.get().y = object.y;
+        case 'collided':
+          this.get().x = object.x;
+          return this.get().y = object.y;
+        case 'idle':
+          return this.idle();
+      }
     };
 
     return object;

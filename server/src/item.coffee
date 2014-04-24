@@ -2,8 +2,8 @@ object = require("./object.js")
 item_schema = require("./items/rock.js")
 
 class Item extends object
-    constructor: (@id, @name, @type, @x, @y, @world) ->
-        super(@name, @type, @x, @y, @world)
+    constructor: (@id, @name, @x, @y, @bound) ->
+        super(@name, "item", @x, @y, @bound)
         @setupInfo(item_schema.info)
         @hp = @maxhp
         @faceDirection = "right"
@@ -42,6 +42,17 @@ class Item extends object
             @setState 'hurt'
             @faceDirection = direction
             @moveStep(@counterDirection(direction))
+
+
+    collide: (direction) ->
+        #override default collide behavior
+        if @direction == "No"
+           @direction = direction
+        else
+            @reverseDirection()
+            @moveStep()
+        @speed = 0.5
+        @setState 'collided'
 
 
     setState: (state, animation = null) ->

@@ -2,8 +2,8 @@ object = require("./object.js")
 player_schema = require("./characters/firzen.js")
 
 class Player extends object
-    constructor: (@id, @name, @type, @x, @y, @world) ->
-        super(@name, @type, @x, @y, @world)
+    constructor: (@id, @name, @type, @x, @y, @bound) ->
+        super(@name, @type, @x, @y, @bound)
         @setupInfo(player_schema.info)
         @hp = @maxhp
         @number
@@ -48,9 +48,8 @@ class Player extends object
 
     rebirth: ->
         @idle()
-        bound = @world.getBound()
-        @x = Math.floor(Math.random() * bound.x2)
-        @y = Math.floor(Math.random() * bound.y2)
+        @x = Math.floor(Math.random() * @bound.x2)
+        @y = Math.floor(Math.random() * @bound.y2)
         @hp = @maxhp
 
 

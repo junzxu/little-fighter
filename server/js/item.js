@@ -11,15 +11,14 @@
   Item = (function(_super) {
     __extends(Item, _super);
 
-    function Item(id, name, x, y, world) {
+    function Item(id, name, x, y, bound) {
       this.id = id;
       this.name = name;
       this.x = x;
       this.y = y;
-      this.world = world;
-      Item.__super__.constructor.call(this, this.name, "item", this.x, this.y, this.world);
+      this.bound = bound;
+      Item.__super__.constructor.call(this, this.name, "item", this.x, this.y, this.bound);
       this.setupInfo(item_schema.info);
-      this.info.spriteSheetInfo = this.spriteSheetInfo;
       this.hp = this.maxhp;
       this.faceDirection = "right";
     }
@@ -59,6 +58,17 @@
         this.faceDirection = direction;
         return this.moveStep(this.counterDirection(direction));
       }
+    };
+
+    Item.prototype.collide = function(direction) {
+      if (this.direction === "No") {
+        this.direction = direction;
+      } else {
+        this.reverseDirection();
+        this.moveStep();
+      }
+      this.speed = 0.5;
+      return this.setState('collided');
     };
 
     Item.prototype.setState = function(state, animation) {

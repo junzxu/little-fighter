@@ -14,15 +14,15 @@
   Robot = (function(_super) {
     __extends(Robot, _super);
 
-    function Robot(id, name, type, x, y, world) {
+    function Robot(id, name, type, x, y, bound) {
       this.id = id;
       this.name = name;
       this.type = type;
       this.x = x;
       this.y = y;
-      this.world = world;
+      this.bound = bound;
       this.moveTo = __bind(this.moveTo, this);
-      Robot.__super__.constructor.call(this, this.name, this.type, this.x, this.y, this.world);
+      Robot.__super__.constructor.call(this, this.name, this.type, this.x, this.y, this.bound);
       this.setupInfo(robot_schema.info);
       this.hp = this.maxhp;
       this.cd = 400;
@@ -97,14 +97,12 @@
     };
 
     Robot.prototype.rebirth = function() {
-      var bound;
       if (this.state !== "die") {
         return;
       }
       this.idle();
-      bound = this.world.getBound();
-      this.x = Math.floor(Math.random() * bound.x2);
-      this.y = Math.floor(Math.random() * bound.y2);
+      this.x = Math.floor(Math.random() * this.bound.x2);
+      this.y = Math.floor(Math.random() * this.bound.y2);
       return this.hp = this.maxhp;
     };
 
@@ -258,7 +256,7 @@
     };
 
     Robot.prototype.randomWalk = function() {
-      var bound, time, x, y;
+      var time, x, y;
       time = new Date().getTime();
       if (this.state === "idle" && time - this.oldtime < this.waitTime) {
         return;
@@ -266,9 +264,8 @@
       if (!(Math.abs(this.x - this.currentDestination[0]) <= this.originSpeed && Math.abs(this.y - this.currentDestination[1]) <= this.originSpeed)) {
         return this.moveTo(this.currentDestination);
       } else {
-        bound = this.world.getBound();
-        x = Math.floor(Math.random() * (bound.x2 - this.width / 2));
-        y = Math.floor(Math.random() * (bound.y2 - this.height / 2));
+        x = Math.floor(Math.random() * (this.bound.x2 - this.width / 2));
+        y = Math.floor(Math.random() * (this.bound.y2 - this.height / 2));
         this.currentDestination = [x, y];
         return this.wait(2000);
       }

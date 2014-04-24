@@ -1,7 +1,10 @@
+Item = require("./item.js")
+UUID = require('node-uuid')
+
 class World
 	#this class is responsible for build the game world from database and send it to clients
 	constructor: (@name) ->
-		@objects = [] #static objects, no ai, cannot-move
+		@objects = [] #objects initally exist
 		@init()
 
 	init: ->
@@ -9,6 +12,11 @@ class World
 		@width = 800
 		@height = 400
 		@backgroundURL = "/assets/background/1.png"
+
+		item_id = UUID()
+		bound = @getBound() 
+		rock = new Item item_id, "rock", 300, 300, bound
+		@objects.push rock
 
 	getBound: ->
 		#playing area

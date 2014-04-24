@@ -10,16 +10,15 @@
   Magic = (function(_super) {
     __extends(Magic, _super);
 
-    function Magic(id, info, x, y, world, characterID, direction) {
+    function Magic(id, info, x, y, characterID, direction) {
       this.id = id;
       this.info = info;
       this.x = x;
       this.y = y;
-      this.world = world;
       this.characterID = characterID;
       this.direction = direction;
       this.moveStep = __bind(this.moveStep, this);
-      Magic.__super__.constructor.call(this, this.info.name, 'magic', this.x, this.y, this.world);
+      Magic.__super__.constructor.call(this, this.info.name, 'magic', this.x, this.y, null);
     }
 
     Magic.prototype.init = function() {

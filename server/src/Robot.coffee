@@ -3,8 +3,8 @@ robot_schema = require("./characters/julian.js")
 magic_schema = require("./magics/death.js")
 
 class Robot extends object
-    constructor: (@id, @name, @type, @x, @y, @world) ->
-        super(@name, @type, @x, @y, @world)
+    constructor: (@id, @name, @type, @x, @y, @bound) ->
+        super(@name, @type, @x, @y, @bound)
         @setupInfo(robot_schema.info)
         @hp = @maxhp
         @cd = 400
@@ -69,9 +69,8 @@ class Robot extends object
         if @state != "die"
             return
         @idle()
-        bound = @world.getBound()
-        @x = Math.floor(Math.random() * bound.x2)
-        @y = Math.floor(Math.random() * bound.y2)
+        @x = Math.floor(Math.random() * @bound.x2)
+        @y = Math.floor(Math.random() * @bound.y2)
         @hp = @maxhp
 
 
@@ -202,9 +201,8 @@ class Robot extends object
         if not (Math.abs(@x - @currentDestination[0]) <= @originSpeed and Math.abs(@y - @currentDestination[1]) <= @originSpeed)
             @moveTo(@currentDestination)
         else
-            bound = @world.getBound()
-            x = Math.floor(Math.random() * (bound.x2 - @width/2))
-            y = Math.floor(Math.random() * (bound.y2 - @height/2))
+            x = Math.floor(Math.random() * (@bound.x2 - @width/2))
+            y = Math.floor(Math.random() * (@bound.y2 - @height/2))
             @currentDestination = [x,y]
             @wait(2000)
 

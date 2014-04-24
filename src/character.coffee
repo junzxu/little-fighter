@@ -1,21 +1,16 @@
 class window.Character extends object
     constructor: (@id, @name, @type, @x, @y, @world) ->
         super(@id, @name, @type, @x, @y, @world)
-        @isLocal = false
-        @maxhp
-        @hp
         @cd
-        @attackRange = 50
         @number
         @character
-        @faceDirection = "right"
-        @init()
 
     init:() ->
         super
         #should load schema from database
-        @state = "idle"
-        @direction = "No"
+        @faceDirection = "right"
+        @attackRange = 50
+        @isLocal = false
 
 
     build:(spriteSheetInfo, magicSheetInfo) ->
