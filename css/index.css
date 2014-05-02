@@ -16,7 +16,7 @@ html , body {
 	margin-right: auto;*/
 	color: #666464; 
 	width: 800px;
-	height: 500px;
+	height: 550px;
 	margin-top: 0;
 	margin-left: auto;
 	margin-right: auto;
@@ -28,7 +28,7 @@ html , body {
 /*	margin-left: auto;
 	margin-right: auto;*/
 	width: 800px;
-	height: 100px;
+	height: 150px;
 	margin: auto;
 	z-index:100;
 }
@@ -37,9 +37,14 @@ html , body {
 	color: #FBFBEF; 
 }
 
+#playerScore {
+	color: #FBFBEF; 
+}
+
 .my-thumbnail {
 	max-width: 80px;
 	max-height: 100px;
+	margin-top: 20px;
 }
 
 .footer {

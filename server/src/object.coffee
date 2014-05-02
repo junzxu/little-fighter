@@ -14,13 +14,9 @@ class object
         @direction = "No"
         @width
         @height 
-        @maxhp = 100
-        @hp = @maxhp
         @mass = 1
         @speed = 0  #current speed
         @originSpeed = 0
-        @collisionHeight = 20
-        @collisionWidth = 30
 
     setupInfo: (info)->
         for k,v of info
@@ -84,7 +80,7 @@ class object
                     @x -= speed
             when "down"
                 @direction = "down"
-                if(@y + speed < @bound['y2'])
+                if(@y + @height/2 + speed < @bound['y2'])
                     @y += speed
                 else
                     @y -= speed
@@ -108,13 +104,13 @@ class object
                     @x -= speed
             when "dr"
                 @direction = "dr"
-                if(@y + speed < @bound['y2'])
+                if(@y + @height/2 + speed < @bound['y2'])
                     @y += speed
                 if(@x + speed < @bound['x2'])
                     @x += speed
             when "dl"
                 @direction = "dl"
-                if(@y + speed < @bound['y2'])
+                if(@y + @height/2 + speed < @bound['y2'])
                     @y += speed
                 if(@x - speed > @bound['x1'])
                     @x -= speed

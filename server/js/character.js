@@ -21,6 +21,7 @@
       Player.__super__.constructor.call(this, this.name, this.type, this.x, this.y, this.bound);
       this.setupInfo(player_schema.info);
       this.hp = this.maxhp;
+      this.score = 0;
       this.number;
       this.faceDirection = "right";
     }
@@ -70,8 +71,8 @@
 
     Player.prototype.rebirth = function() {
       this.idle();
-      this.x = Math.floor(Math.random() * this.bound.x2);
-      this.y = Math.floor(Math.random() * this.bound.y2);
+      this.x = this.bound.x1 + Math.floor(Math.random() * (this.bound.x2 - this.bound.x1 - this.width));
+      this.y = this.bound.y1 + Math.floor(Math.random() * (this.bound.y2 - this.bound.y1 - this.height));
       return this.hp = this.maxhp;
     };
 
@@ -87,7 +88,8 @@
       }
       this.hp -= damage;
       if (this.hp <= 0) {
-        return this.setState('die');
+        this.setState('die');
+        return this.score -= 10;
       } else {
         this.setState('hurt');
         this.faceDirection = direction;
@@ -151,6 +153,15 @@
       }
     };
 
+    Player.prototype.collisionHandler = function(object, direction) {
+      if (object.name !== "coin") {
+        this.collide(direction);
+      }
+      if (object.state !== "collided") {
+        return object.collisionHandler(this, this.counterDirection(direction));
+      }
+    };
+
     Player.prototype.getStatus = function() {
       this.info.x = this.x;
       this.info.y = this.y;
@@ -159,6 +170,8 @@
       this.info.direction = this.direction;
       this.info.faceDirection = this.faceDirection;
       this.info.hp = this.hp;
+      this.info.cd = this.cd;
+      this.info.score = this.score;
       return this.info;
     };
 

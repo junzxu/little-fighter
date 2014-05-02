@@ -8,10 +8,10 @@
       this.objects = objects != null ? objects : [];
       this.world = new createjs.Container();
       this.world.x = 0;
-      this.world.y = 100;
+      this.world.y = 150;
       this.hud = new createjs.Container();
       this.width = this.canvas.width;
-      this.height = this.canvas.height - 100;
+      this.height = this.canvas.height - 150;
       this.objects;
       this.players;
       this.init();

@@ -3,18 +3,15 @@ object = require("./object.js")
 class Magic extends object
     constructor: (@id, @info, @x, @y, @characterID, @direction) ->
         super(@info.name, 'magic', @x, @y, null)
+        @info.characterID = @characterID
 
     init:() ->
         #load spritesheet info from db
-        @originSpeed = @info.originSpeed
+        @setupInfo(@info)
         @speed = @originSpeed
-        @damage = @info.damage
         @collisionHeight = 0
         @collisionWidth = 0
-        @width = @info.width
-        @height = @info.height
         @setState "run"
-        @info = {'id':@id, 'name':@name, 'type':@type,'width':@width,'height':@height, 'originSpeed':@originSpeed } 
 
 
     collisionHandler: (o)->
@@ -53,7 +50,6 @@ class Magic extends object
         @info.state = @state
         @info.animation = @animation
         @info.direction = @direction
-        @info.characterID = @characterID
         return @info
 
 ################################################################

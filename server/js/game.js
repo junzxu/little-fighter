@@ -29,7 +29,7 @@
     }
 
     Game.prototype.init = function() {
-      var bound, object, robot, robot_id, _i, _len, _ref;
+      var object, robot, robot_id, _i, _len, _ref;
       this.world = new World("basic");
       this.objects = [];
       this.players = [];
@@ -39,14 +39,22 @@
         this.objects.push(object);
       }
       robot_id = UUID();
-      bound = this.world.getBound();
-      robot = new Robot(robot_id, "julian", "robot", 500, 200, bound);
+      this.bound = this.world.getBound();
+      robot = new Robot(robot_id, "julian", "robot", 500, 200, this.bound);
       return this.addPlayer(robot);
     };
 
     Game.prototype.start = function() {
       this.active = true;
       this.updateID = setInterval(this.updateState.bind(this), 16);
+      this.generateCoin = setInterval((function() {
+        var coin, item_id, x, y;
+        item_id = UUID();
+        x = this.bound.x1 + Math.floor(Math.random() * (this.bound.x2 - this.bound.x1 - 50));
+        y = this.bound.y1 + Math.floor(Math.random() * (this.bound.y2 - this.bound.y1 - 50));
+        coin = new Item(item_id, "coin", x, y, this.bound);
+        return this.addObject(coin);
+      }).bind(this), 5000);
       return this.io.sockets["in"](this.room).emit("start", {
         "gameid": this.id
       });
@@ -54,6 +62,7 @@
 
     Game.prototype.end = function() {
       clearInterval(this.updateID);
+      clearInterval(this.generateCoin);
       this.world = null;
       this.objects = [];
       return this.players = [];
@@ -123,7 +132,7 @@
         player.magic(this, player, id);
       }
       if (player.state === "attack") {
-        _ref = this.getNearestCharacter(player), target = _ref[0], distance = _ref[1];
+        _ref = this.getNearestObject(player), target = _ref[0], distance = _ref[1];
         if (target !== null && distance < player.attackRange && player.faceDirection === player.realtiveDirection(target)) {
           dir = player.faceDirection;
           target.gotHit(2 * player.damage, player.counterDirection(dir));
@@ -156,7 +165,7 @@
       id = client.userid;
       player = new Player(id, "firzen", "player", x, y, this.world.getBound());
       player.username = client.username;
-      magic_schema = require("./magics/invisible.js");
+      magic_schema = require("./magics/wave.js");
       player.magicSheetInfo = magic_schema.magicSheetInfo;
       player.magicInfo = magic_schema.info;
       player.magic = magic_schema.magic;
@@ -197,7 +206,7 @@
         if ((object.type === (_ref1 = otherObject.type) && _ref1 === "magic")) {
           continue;
         }
-        if (object.id === otherObject.characterID) {
+        if (object.id === otherObject.characterID || object.characterID === otherObject.id) {
           continue;
         }
         rect2 = otherObject.getCollisionRect();
@@ -277,9 +286,9 @@
       }
     };
 
-    Game.prototype.addMagic = function(id, info, x, y, world, characterID, faceDirection) {
+    Game.prototype.addMagic = function(id, info, x, y, characterID, faceDirection) {
       var m;
-      m = new Magic(id, info, x, y, world, characterID, faceDirection);
+      m = new Magic(id, info, x, y, characterID, faceDirection);
       return this.addObject(m);
     };
 
@@ -365,6 +374,9 @@
       _ref = this.objects;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         object = _ref[_i];
+        if (object.id === character.id) {
+          continue;
+        }
         d = character.distanceTo(object);
         if (d < distance) {
           distance = d;

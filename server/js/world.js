@@ -28,7 +28,7 @@
       return {
         "x1": 0,
         "x2": this.width,
-        "y1": 0,
+        "y1": 150,
         "y2": this.height
       };
     };

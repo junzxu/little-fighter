@@ -3,10 +3,10 @@ class window.World
 		# Root container
 		@world = new createjs.Container()
 		@world.x = 0
-		@world.y = 100
+		@world.y = 150
 		@hud = new createjs.Container()
 		@width = @canvas.width
-		@height = @canvas.height - 100
+		@height = @canvas.height - 150  #minus hud height
 		@objects   #all non-character sprites
 		@players   #player characters and robots
 		@init()

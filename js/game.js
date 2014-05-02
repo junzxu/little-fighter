@@ -352,6 +352,7 @@
       character = new Character(object.id, object.name, object.type, object.x, object.y, this.world);
       character.faceDirection = object.faceDirection;
       character.maxhp = object.maxhp;
+      character.cd = object.cd;
       character.build(object.spriteSheetInfo, object.magicSheetInfo);
       magicSheetInfo = object.magicSheetInfo;
       magicName = object.magicInfo.name;

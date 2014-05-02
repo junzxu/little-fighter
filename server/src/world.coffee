@@ -20,7 +20,7 @@ class World
 
 	getBound: ->
 		#playing area
-		return {"x1":0, "x2":@width, "y1":0, "y2":@height}
+		return {"x1":0, "x2":@width, "y1":150, "y2":@height}
 
 
 module.exports = World

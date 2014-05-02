@@ -24,13 +24,9 @@
       this.direction = "No";
       this.width;
       this.height;
-      this.maxhp = 100;
-      this.hp = this.maxhp;
       this.mass = 1;
       this.speed = 0;
-      this.originSpeed = 0;
-      this.collisionHeight = 20;
-      return this.collisionWidth = 30;
+      return this.originSpeed = 0;
     };
 
     object.prototype.setupInfo = function(info) {
@@ -120,7 +116,7 @@
           break;
         case "down":
           this.direction = "down";
-          if (this.y + speed < this.bound['y2']) {
+          if (this.y + this.height / 2 + speed < this.bound['y2']) {
             return this.y += speed;
           } else {
             return this.y -= speed;
@@ -154,7 +150,7 @@
           break;
         case "dr":
           this.direction = "dr";
-          if (this.y + speed < this.bound['y2']) {
+          if (this.y + this.height / 2 + speed < this.bound['y2']) {
             this.y += speed;
           }
           if (this.x + speed < this.bound['x2']) {
@@ -163,7 +159,7 @@
           break;
         case "dl":
           this.direction = "dl";
-          if (this.y + speed < this.bound['y2']) {
+          if (this.y + this.height / 2 + speed < this.bound['y2']) {
             this.y += speed;
           }
           if (this.x - speed > this.bound['x1']) {

@@ -256,6 +256,7 @@ class window.Game
         character = new Character object.id, object.name, object.type, object.x, object.y , @world
         character.faceDirection = object.faceDirection
         character.maxhp = object.maxhp
+        character.cd = object.cd
         character.build(object.spriteSheetInfo, object.magicSheetInfo)
         # build magic book
         magicSheetInfo = object.magicSheetInfo

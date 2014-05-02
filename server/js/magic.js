@@ -19,25 +19,15 @@
       this.direction = direction;
       this.moveStep = __bind(this.moveStep, this);
       Magic.__super__.constructor.call(this, this.info.name, 'magic', this.x, this.y, null);
+      this.info.characterID = this.characterID;
     }
 
     Magic.prototype.init = function() {
-      this.originSpeed = this.info.originSpeed;
+      this.setupInfo(this.info);
       this.speed = this.originSpeed;
-      this.damage = this.info.damage;
       this.collisionHeight = 0;
       this.collisionWidth = 0;
-      this.width = this.info.width;
-      this.height = this.info.height;
-      this.setState("run");
-      return this.info = {
-        'id': this.id,
-        'name': this.name,
-        'type': this.type,
-        'width': this.width,
-        'height': this.height,
-        'originSpeed': this.originSpeed
-      };
+      return this.setState("run");
     };
 
     Magic.prototype.collisionHandler = function(o) {
@@ -90,7 +80,6 @@
       this.info.state = this.state;
       this.info.animation = this.animation;
       this.info.direction = this.direction;
-      this.info.characterID = this.characterID;
       return this.info;
     };
 

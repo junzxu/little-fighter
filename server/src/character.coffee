@@ -6,6 +6,7 @@ class Player extends object
         super(@name, @type, @x, @y, @bound)
         @setupInfo(player_schema.info)
         @hp = @maxhp
+        @score = 0
         @number
         @faceDirection = "right"
 
@@ -48,8 +49,8 @@ class Player extends object
 
     rebirth: ->
         @idle()
-        @x = Math.floor(Math.random() * @bound.x2)
-        @y = Math.floor(Math.random() * @bound.y2)
+        @x = @bound.x1 + Math.floor(Math.random() * (@bound.x2 - @bound.x1 - @width))
+        @y = @bound.y1 + Math.floor(Math.random() * (@bound.y2 - @bound.y1 - @height))
         @hp = @maxhp
 
 
@@ -65,6 +66,7 @@ class Player extends object
         @hp -= damage
         if @hp <= 0
             @setState 'die'
+            @score -= 10
         else
             @setState 'hurt'
             @faceDirection = direction
@@ -111,6 +113,13 @@ class Player extends object
         else
             true
 
+    collisionHandler: (object, direction) ->
+        #inherited from default method
+        if object.name != "coin"
+            @collide direction
+        if object.state != "collided"
+            object.collisionHandler @, @counterDirection(direction)
+
     getStatus: ->
         @info.x = @x
         @info.y = @y
@@ -119,6 +128,8 @@ class Player extends object
         @info.direction = @direction
         @info.faceDirection = @faceDirection
         @info.hp = @hp
+        @info.cd = @cd
+        @info.score = @score
         return @info
 ################################################################
 module.exports = Player

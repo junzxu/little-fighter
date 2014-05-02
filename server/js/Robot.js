@@ -25,7 +25,7 @@
       Robot.__super__.constructor.call(this, this.name, this.type, this.x, this.y, this.bound);
       this.setupInfo(robot_schema.info);
       this.hp = this.maxhp;
-      this.cd = 400;
+      this.score = 0;
       this.number;
       this.username = "robot";
       this.faceDirection = "left";
@@ -38,7 +38,8 @@
       Robot.__super__.init.apply(this, arguments);
       this.spriteSheetInfo = robot_schema.spriteSheetInfo;
       this.magicSheetInfo = magic_schema.magicSheetInfo;
-      return this.magicInfo = magic_schema.info;
+      this.magicInfo = magic_schema.info;
+      return this.cd = this.magicInfo.cd;
     };
 
     Robot.prototype.move = function(direction) {
@@ -101,8 +102,8 @@
         return;
       }
       this.idle();
-      this.x = Math.floor(Math.random() * this.bound.x2);
-      this.y = Math.floor(Math.random() * this.bound.y2);
+      this.x = this.bound.x1 + Math.floor(Math.random() * (this.bound.x2 - this.bound.x1 - this.width));
+      this.y = this.bound.y1 + Math.floor(Math.random() * (this.bound.y2 - this.bound.y1 - this.height));
       return this.hp = this.maxhp;
     };
 
@@ -118,7 +119,8 @@
       }
       this.hp -= damage;
       if (this.hp <= 0) {
-        return this.setState('die');
+        this.setState('die');
+        return this.score -= 10;
       } else {
         this.setState('hurt');
         this.faceDirection = direction;
@@ -192,6 +194,15 @@
       }
     };
 
+    Robot.prototype.collisionHandler = function(object, direction) {
+      if (object.name !== "coin") {
+        this.collide(direction);
+      }
+      if (object.state !== "collided") {
+        return object.collisionHandler(this, this.counterDirection(direction));
+      }
+    };
+
     Robot.prototype.getStatus = function() {
       this.info.x = this.x;
       this.info.y = this.y;
@@ -200,6 +211,8 @@
       this.info.direction = this.direction;
       this.info.faceDirection = this.faceDirection;
       this.info.hp = this.hp;
+      this.info.cd = this.cd;
+      this.info.score = this.score;
       return this.info;
     };
 
@@ -264,8 +277,8 @@
       if (!(Math.abs(this.x - this.currentDestination[0]) <= this.originSpeed && Math.abs(this.y - this.currentDestination[1]) <= this.originSpeed)) {
         return this.moveTo(this.currentDestination);
       } else {
-        x = Math.floor(Math.random() * (this.bound.x2 - this.width / 2));
-        y = Math.floor(Math.random() * (this.bound.y2 - this.height / 2));
+        x = this.bound.x1 + Math.floor(Math.random() * (this.bound.x2 - this.bound.x1 - this.width));
+        y = this.bound.y1 + Math.floor(Math.random() * (this.bound.y2 - this.bound.y1 - this.height));
         this.currentDestination = [x, y];
         return this.wait(2000);
       }

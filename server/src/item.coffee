@@ -1,5 +1,4 @@
 object = require("./object.js")
-item_schema = require("./items/rock.js")
 
 class Item extends object
     constructor: (@id, @name, @x, @y, @bound) ->
@@ -11,7 +10,15 @@ class Item extends object
     init:() ->
         super
         #should load schema from database
+        path = "./items/" + @name + ".js"
+        item_schema = require(path)
+
         @spriteSheetInfo = item_schema.spriteSheetInfo
+        @gotHit = item_schema.gotHit
+        if item_schema.collide
+            @collide = item_schema.collide
+        if item_schema.collisionHandler
+            @collisionHandler = item_schema.collisionHandler
 
 
     move: (direction) ->
@@ -32,27 +39,11 @@ class Item extends object
 
 
     gotHit: (damage,direction) ->
-        #direction indicates where the hit come from
-        if @state == "removed"
-            return
-        @hp -= damage
-        if @hp <= 0
-            @setState 'removed'
-        else
-            @setState 'hurt'
-            @faceDirection = direction
-            @moveStep(@counterDirection(direction))
+
 
 
     collide: (direction) ->
-        #override default collide behavior
-        if @direction == "No"
-           @direction = direction
-        else
-            @reverseDirection()
-            @moveStep()
-        @speed = 0.5
-        @setState 'collided'
+
 
 
     setState: (state, animation = null) ->
@@ -62,7 +53,7 @@ class Item extends object
         switch state
             when "idle"
                 @idle()
-            when "collided"
+            else
                 setTimeout ( -> 
                     @idle()
                  ).bind(this), @animationTime()
@@ -73,6 +64,8 @@ class Item extends object
             act = @state
         switch act
             when 'collided'
+                return 100
+            when 'hurt'
                 return 100
 
 

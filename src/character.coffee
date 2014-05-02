@@ -3,6 +3,7 @@ class window.Character extends object
         super(@id, @name, @type, @x, @y, @world)
         @cd
         @number
+        @score
         @character
 
     init:() ->
@@ -11,7 +12,7 @@ class window.Character extends object
         @faceDirection = "right"
         @attackRange = 50
         @isLocal = false
-
+        @lastCast = 0
 
     build:(spriteSheetInfo, magicSheetInfo) ->
         @spriteSheetInfo = spriteSheetInfo
@@ -58,6 +59,7 @@ class window.Character extends object
     cast: ->
         if @character.currentAnimation != "cast"
             @character.gotoAndPlay "cast"
+            @startCoolDown()
         @state = "cast"
 
 
@@ -90,7 +92,26 @@ class window.Character extends object
          $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').css("width", percent+"%")
          $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').html(hp)
 
+
+    startCoolDown: ->
+        @lastCast = new Date().getTime()
+        pnumber = "#player" + @number
+        $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #cd').css("width", "0%")
+        setTimeout ( =>
+            pnumber = "#player" + @number
+            $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #cd').css("width", "100%")
+        ), @cd
+
+    setCoolDown:(delta)->
+        percent = Math.floor(100*(delta/@cd))
+        pnumber = "#player" + @number
+        $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #cd').css("width", percent+"%")
  
+    setScore:(score)->
+        pnumber = "#player" + @number
+        text = "Score:" + score
+        $('#hud > .row > ' + pnumber + ' > .row >#stats > .score > #playerScore').html(text)       
+
     update: (object) ->
         @animation = object.animation
         if @animation == "invisible"
@@ -105,6 +126,17 @@ class window.Character extends object
             else
                 @get().visible = true
 
+        #update score
+        if object.score != @score
+            @setScore(object.score)
+
+        #set cool down bar
+        currentTime = new Date().getTime()
+        deltaTime = currentTime - @lastCast
+        if deltaTime < @cd
+            @setCoolDown(deltaTime)
+
+        #rebirth
         if @state == "die" and object.state != "die"
             #rebirth
             @character.x = object.x

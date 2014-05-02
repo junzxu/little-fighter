@@ -18,6 +18,7 @@
       Character.__super__.constructor.call(this, this.id, this.name, this.type, this.x, this.y, this.world);
       this.cd;
       this.number;
+      this.score;
       this.character;
     }
 
@@ -25,7 +26,8 @@
       Character.__super__.init.apply(this, arguments);
       this.faceDirection = "right";
       this.attackRange = 50;
-      return this.isLocal = false;
+      this.isLocal = false;
+      return this.lastCast = 0;
     };
 
     Character.prototype.build = function(spriteSheetInfo, magicSheetInfo) {
@@ -78,6 +80,7 @@
     Character.prototype.cast = function() {
       if (this.character.currentAnimation !== "cast") {
         this.character.gotoAndPlay("cast");
+        this.startCoolDown();
       }
       return this.state = "cast";
     };
@@ -118,7 +121,35 @@
       return $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #hp').html(hp);
     };
 
+    Character.prototype.startCoolDown = function() {
+      var pnumber;
+      this.lastCast = new Date().getTime();
+      pnumber = "#player" + this.number;
+      $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #cd').css("width", "0%");
+      return setTimeout(((function(_this) {
+        return function() {
+          pnumber = "#player" + _this.number;
+          return $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #cd').css("width", "100%");
+        };
+      })(this)), this.cd);
+    };
+
+    Character.prototype.setCoolDown = function(delta) {
+      var percent, pnumber;
+      percent = Math.floor(100 * (delta / this.cd));
+      pnumber = "#player" + this.number;
+      return $('#hud > .row > ' + pnumber + ' > .row >#stats > .progress > #cd').css("width", percent + "%");
+    };
+
+    Character.prototype.setScore = function(score) {
+      var pnumber, text;
+      pnumber = "#player" + this.number;
+      text = "Score:" + score;
+      return $('#hud > .row > ' + pnumber + ' > .row >#stats > .score > #playerScore').html(text);
+    };
+
     Character.prototype.update = function(object) {
+      var currentTime, deltaTime;
       this.animation = object.animation;
       if (this.animation === "invisible") {
         if (this.isLocal === true) {
@@ -132,6 +163,14 @@
         } else {
           this.get().visible = true;
         }
+      }
+      if (object.score !== this.score) {
+        this.setScore(object.score);
+      }
+      currentTime = new Date().getTime();
+      deltaTime = currentTime - this.lastCast;
+      if (deltaTime < this.cd) {
+        this.setCoolDown(deltaTime);
       }
       if (this.state === "die" && object.state !== "die") {
         this.character.x = object.x;

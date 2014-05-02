@@ -26,7 +26,7 @@ magic_schema = {
         bound = player.getRect();
         width = bound.x2 - bound.x1;
         x = player.faceDirection === 'right' ? bound.x2 : bound.x1;
-        game.addMagic(id, player.magicInfo, x, player.y, this.world, player.id, player.faceDirection)
+        game.addMagic(id, player.magicInfo, x, player.y, player.id, player.faceDirection)
     }
 }
 

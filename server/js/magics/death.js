@@ -2,7 +2,7 @@ magic_schema = {
     info: {
         name: 'death',
         damage: 30,
-        cd: 500,
+        cd: 400,
         originSpeed: 5,
         width: 62,
         height: 42

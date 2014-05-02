@@ -6,7 +6,9 @@ robot_schema = {
         width: 80,
         height: 100,
         originSpeed: 1,
-        sightRange: 200
+        sightRange: 200,
+        collisionHeight: 30,
+        collisionWidth: 20
     },
     spriteSheetInfo: {
         animations: {

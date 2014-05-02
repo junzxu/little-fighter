@@ -24,18 +24,26 @@ class Game
             @objects.push object
         # add a robot to game
         robot_id = UUID()
-        bound = @world.getBound()
-        robot = new Robot robot_id, "julian", "robot", 500, 200, bound
+        @bound = @world.getBound()
+        robot = new Robot robot_id, "julian", "robot", 500, 200, @bound
         @addPlayer robot
 
 
     start: ->
         @active = true
         @updateID = setInterval @updateState.bind(@), 16  #60 fps
+        @generateCoin = setInterval (->
+            item_id = UUID()
+            x = @bound.x1 + Math.floor(Math.random() * (@bound.x2 - @bound.x1 - 50))
+            y = @bound.y1 + Math.floor(Math.random() * (@bound.y2 - @bound.y1 - 50))
+            coin = new Item item_id, "coin", x, y, @bound
+            @addObject coin
+            ).bind(@), 5000
         @io.sockets.in(@room).emit "start", {"gameid": @id}
 
     end: ->
         clearInterval @updateID
+        clearInterval @generateCoin
         @world = null
         @objects = []
         @players = []
@@ -87,12 +95,12 @@ class Game
 
     onAnimationend:(player) ->
         if player.state == "cast"
-            id = UUID();
+            id = UUID()
             player.magic(@, player,id)
         if player.state == "attack"
             #finish attack action will have more damage
-            [target,distance] = @getNearestCharacter(player)
-            if  target != null and distance < player.attackRange and player.faceDirection == player.realtiveDirection(target)
+            [target,distance] = @getNearestObject(player)
+            if target != null and distance < player.attackRange and player.faceDirection == player.realtiveDirection(target)
                 dir = player.faceDirection
                 target.gotHit(2*player.damage, player.counterDirection(dir))             
         player.idle()
@@ -116,7 +124,7 @@ class Game
         player = new Player id, "firzen", "player", x, y, @world.getBound()
         player.username = client.username
         #pick a random magic for player
-        magic_schema = require("./magics/invisible.js")
+        magic_schema = require("./magics/wave.js")
         player.magicSheetInfo = magic_schema.magicSheetInfo
         player.magicInfo = magic_schema.info
         player.magic =  magic_schema.magic
@@ -141,7 +149,7 @@ class Game
                 continue
             if object.type == otherObject.type == "magic"
                 continue
-            if object.id == otherObject.characterID
+            if object.id == otherObject.characterID or object.characterID == otherObject.id
                 continue
             rect2 = otherObject.getCollisionRect()
             if !((rect2.x2 < rect1.x1) || (rect2.x1 > rect1.x2 ) || (rect2.y1 > rect1.y2 ) || (rect2.y2 < rect1.y1))
@@ -199,10 +207,10 @@ class Game
         if object.type == "item"
             @io.sockets.in(@room).emit "new object", {"object": object}
 
-    addMagic:(id, info, x, y, world, characterID, faceDirection) ->
+    addMagic:(id, info, x, y, characterID, faceDirection) ->
         #create a magic instance and add to game
-        m = new Magic(id, info, x, y, world, characterID, faceDirection)
-        @addObject(m)
+        m = new Magic(id, info, x, y, characterID, faceDirection)
+        @addObject m
 
     removeObject:(target) ->
         # to remove player, use removePlayer
@@ -255,6 +263,8 @@ class Game
         index = 0
         target = null
         for object in @objects
+            if object.id == character.id
+                continue
             d = character.distanceTo(object)
             if d < distance
                 distance = d
