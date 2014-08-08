@@ -66,7 +66,7 @@ class Player extends object
         @hp -= damage
         if @hp <= 0
             @setState 'die'
-            @score -= 10
+            @score -= 30
         else
             @setState 'hurt'
             @faceDirection = direction

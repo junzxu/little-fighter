@@ -47,14 +47,14 @@
     Game.prototype.start = function() {
       this.active = true;
       this.updateID = setInterval(this.updateState.bind(this), 16);
-      this.generateCoin = setInterval((function() {
-        var coin, item_id, x, y;
+      this.generateHealth = setInterval((function() {
+        var health, item_id, x, y;
         item_id = UUID();
         x = this.bound.x1 + Math.floor(Math.random() * (this.bound.x2 - this.bound.x1 - 50));
         y = this.bound.y1 + Math.floor(Math.random() * (this.bound.y2 - this.bound.y1 - 50));
-        coin = new Item(item_id, "coin", x, y, this.bound);
-        return this.addObject(coin);
-      }).bind(this), 5000);
+        health = new Item(item_id, "health", x, y, this.bound);
+        return this.addObject(health);
+      }).bind(this), 10000);
       return this.io.sockets["in"](this.room).emit("start", {
         "gameid": this.id
       });

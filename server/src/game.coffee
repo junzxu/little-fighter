@@ -30,15 +30,16 @@ class Game
 
 
     start: ->
+        #game start updating
         @active = true
         @updateID = setInterval @updateState.bind(@), 16  #60 fps
-        @generateCoin = setInterval (->
+        @generateHealth = setInterval (->
             item_id = UUID()
             x = @bound.x1 + Math.floor(Math.random() * (@bound.x2 - @bound.x1 - 50))
             y = @bound.y1 + Math.floor(Math.random() * (@bound.y2 - @bound.y1 - 50))
-            coin = new Item item_id, "coin", x, y, @bound
-            @addObject coin
-            ).bind(@), 5000
+            health = new Item item_id, "health", x, y, @bound
+            @addObject health
+            ).bind(@), 10000
         @io.sockets.in(@room).emit "start", {"gameid": @id}
 
     end: ->

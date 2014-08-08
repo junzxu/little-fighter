@@ -89,7 +89,7 @@
       this.hp -= damage;
       if (this.hp <= 0) {
         this.setState('die');
-        return this.score -= 10;
+        return this.score -= 30;
       } else {
         this.setState('hurt');
         this.faceDirection = direction;

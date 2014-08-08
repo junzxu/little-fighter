@@ -161,6 +161,8 @@ class window.Character extends object
             when 'collided'
                 @get().x = object.x
                 @get().y = object.y
+                @hp = object.hp
+                @setHPBar(@hp)
             when 'attack'
                 @attack()
             when 'cast'

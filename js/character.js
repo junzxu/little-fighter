@@ -193,7 +193,9 @@
           return this.get().y = object.y;
         case 'collided':
           this.get().x = object.x;
-          return this.get().y = object.y;
+          this.get().y = object.y;
+          this.hp = object.hp;
+          return this.setHPBar(this.hp);
         case 'attack':
           return this.attack();
         case 'cast':
