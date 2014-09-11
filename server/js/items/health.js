@@ -33,6 +33,9 @@ item_schema = {
     collisionHandler: function(o) {
         if (o.type == "player" || o.type == "robot") {
             o.hp += 10;
+            if (o.hp > o.maxhp) {
+                o.hp = o.maxhp;
+            }
         }
         this.state = "removed";
     }
