@@ -16,9 +16,6 @@
       this.direction = direction;
       this.spriteSheetInfo = spriteSheetInfo;
       Magic.__super__.constructor.call(this, this.id, this.name, "magic", this.x, this.y, this.world);
-      this.magic;
-      this.damage = 10;
-      this.init();
     }
 
     Magic.prototype.init = function() {

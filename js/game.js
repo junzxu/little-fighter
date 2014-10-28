@@ -54,12 +54,13 @@
       this.socket.on("update", this.onUpdate.bind(this));
       this.socket.on("remove", this.onRemove.bind(this));
       this.socket.on("new player", this.onNewPlayer.bind(this));
+      this.socket.on("new object", this.onNewObject.bind(this));
       this.socket.on("player disconnect", this.onPlayerDisconnect.bind(this));
       return createjs.Ticker.addEventListener("tick", this.onTick.bind(this));
     };
 
     Game.prototype.onUpdate = function(data) {
-      var magic, magicName, magicSheetInfo, object, player, _i, _len, _ref, _ref1, _results;
+      var item, magic, magicName, magicSheetInfo, object, player, _i, _len, _ref, _ref1, _results;
       _ref = data.objects;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -79,6 +80,12 @@
           } else {
             magic.get().x = object.x;
             magic.get().y = object.y;
+          }
+        }
+        if (object.type === "item") {
+          item = this.world.getObject(object.id);
+          if (item !== null) {
+            item.update(object);
           }
         }
         _results.push(this.world.get().sortChildren(this.renderOrder));
@@ -216,6 +223,13 @@
       }
     };
 
+    Game.prototype.onNewObject = function(data) {
+      var item, object;
+      object = data.object;
+      item = new window.object(object.id, object.name, "item", object.x, object.y, this.world);
+      return item.build(object.spriteSheetInfo);
+    };
+
     Game.prototype.onPlayerDisconnect = function(data) {
       if (this.world.playerExists(data.id)) {
         console.log('player:' + data.id + ' leave the game');
@@ -338,6 +352,7 @@
       character = new Character(object.id, object.name, object.type, object.x, object.y, this.world);
       character.faceDirection = object.faceDirection;
       character.maxhp = object.maxhp;
+      character.cd = object.cd;
       character.build(object.spriteSheetInfo, object.magicSheetInfo);
       magicSheetInfo = object.magicSheetInfo;
       magicName = object.magicInfo.name;

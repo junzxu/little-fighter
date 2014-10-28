@@ -3,10 +3,10 @@ class window.World
 		# Root container
 		@world = new createjs.Container()
 		@world.x = 0
-		@world.y = 100
+		@world.y = 150
 		@hud = new createjs.Container()
 		@width = @canvas.width
-		@height = @canvas.height - 100
+		@height = @canvas.height - 150  #minus hud height
 		@objects   #all non-character sprites
 		@players   #player characters and robots
 		@init()
@@ -25,17 +25,17 @@ class window.World
 
 
 	build: (world) ->
-		#should build world from server data
+		#build world by server data, download background image and add world items
 		@background = new createjs.Bitmap(world.backgroundURL)
 		@background.name = "background"
 		@world.addChild(@background)
 		for object in world.objects
-			spriteSheet = new createjs.SpriteSheet object.spriteSheetInfo
-			AnimatedObject = new createjs.BitmapAnimation spriteSheet
-			AnimatedObject.x = object.x
-			AnimatedObject.y = object.y
-			@world.addChild AnimatedObject
+			item = new window.object object.id, object.name, "item", object.x, object.y, @
+			item.build(object.spriteSheetInfo)
+
 		@stage.addChild @world
+
+
 
 	moveCamera:(x,y) ->
 		Xdiff = x - @background.x

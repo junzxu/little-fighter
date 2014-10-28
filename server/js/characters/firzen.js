@@ -5,7 +5,9 @@ player_schema = {
         attackRange: 70,
         width: 80,
         height: 80,
-        originSpeed: 2
+        originSpeed: 2,
+        collisionHeight: 30,
+        collisionWidth: 20
     },
     spriteSheetInfo: {
         animations: {

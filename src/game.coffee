@@ -43,6 +43,7 @@ class window.Game
         @socket.on "update", @onUpdate.bind this
         @socket.on "remove", @onRemove.bind this
         @socket.on "new player", @onNewPlayer.bind this
+        @socket.on "new object", @onNewObject.bind this
         @socket.on "player disconnect", @onPlayerDisconnect.bind this
         createjs.Ticker.addEventListener "tick", @onTick.bind this
         # createjs.Ticker.addEventListener "tick", @world.detectCollision.bind @world
@@ -64,6 +65,11 @@ class window.Game
                 else
                     magic.get().x = object.x
                     magic.get().y = object.y
+            if object.type == "item"
+                item = @world.getObject(object.id)
+                if item != null
+                    item.update(object)
+
         #change render order
             @world.get().sortChildren(@renderOrder)
 
@@ -123,6 +129,7 @@ class window.Game
             @player_count += 1
             console.log(character.name + ' has joined game')
 
+
         createjs.Ticker.addEventListener "tick", ((evt) ->
         ).bind this
 
@@ -173,6 +180,12 @@ class window.Game
             @world.addPlayer player,@player_count
             @addPlayerUI(player, @player_count)
             @player_count += 1
+
+
+    onNewObject: (data) ->
+        object = data.object
+        item = new window.object object.id, object.name, "item", object.x, object.y, @world
+        item.build(object.spriteSheetInfo)
 
 
     onPlayerDisconnect: (data) ->
@@ -243,6 +256,7 @@ class window.Game
         character = new Character object.id, object.name, object.type, object.x, object.y , @world
         character.faceDirection = object.faceDirection
         character.maxhp = object.maxhp
+        character.cd = object.cd
         character.build(object.spriteSheetInfo, object.magicSheetInfo)
         # build magic book
         magicSheetInfo = object.magicSheetInfo

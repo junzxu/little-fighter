@@ -3,11 +3,11 @@ robot_schema = require("./characters/julian.js")
 magic_schema = require("./magics/death.js")
 
 class Robot extends object
-    constructor: (@id, @name, @type, @x, @y, @world) ->
-        super(@name, @type, @x, @y, @world)
+    constructor: (@id, @name, @type, @x, @y, @bound) ->
+        super(@name, @type, @x, @y, @bound)
         @setupInfo(robot_schema.info)
         @hp = @maxhp
-        @cd = 400
+        @score = 0
         @number
         @username = "robot"
         @faceDirection = "left"
@@ -22,6 +22,7 @@ class Robot extends object
         @spriteSheetInfo = robot_schema.spriteSheetInfo
         @magicSheetInfo = magic_schema.magicSheetInfo
         @magicInfo = magic_schema.info
+        @cd = @magicInfo.cd
 
 
     move: (direction) ->
@@ -69,9 +70,8 @@ class Robot extends object
         if @state != "die"
             return
         @idle()
-        bound = @world.getBound()
-        @x = Math.floor(Math.random() * bound.x2)
-        @y = Math.floor(Math.random() * bound.y2)
+        @x = @bound.x1 + Math.floor(Math.random() * (@bound.x2 - @bound.x1 - @width))
+        @y = @bound.y1 + Math.floor(Math.random() * (@bound.y2 - @bound.y1 - @height))
         @hp = @maxhp
 
 
@@ -87,6 +87,7 @@ class Robot extends object
         @hp -= damage
         if @hp <= 0
             @setState 'die'
+            @score -= 30
         else
             @setState 'hurt'
             @faceDirection = direction
@@ -141,6 +142,13 @@ class Robot extends object
             else
                 return null
 
+    collisionHandler: (object, direction) ->
+        #inherited from default method
+        if object.name != "coin"
+            @collide direction
+        if object.state != "collided"
+            object.collisionHandler @, @counterDirection(direction)
+
     getStatus: ->
         @info.x = @x
         @info.y = @y
@@ -149,6 +157,8 @@ class Robot extends object
         @info.direction = @direction
         @info.faceDirection = @faceDirection
         @info.hp = @hp
+        @info.cd = @cd
+        @info.score = @score
         return @info
 
 ################### ai component ###################################
@@ -164,10 +174,6 @@ class Robot extends object
         if @y > dest[1]
             count += 8
         switch count
-            # when 0
-            #     @direction = 'no'
-            #     @idle()
-            #     return
             when 1
                 @direction = 'right'
             when 2
@@ -202,9 +208,8 @@ class Robot extends object
         if not (Math.abs(@x - @currentDestination[0]) <= @originSpeed and Math.abs(@y - @currentDestination[1]) <= @originSpeed)
             @moveTo(@currentDestination)
         else
-            bound = @world.getBound()
-            x = Math.floor(Math.random() * (bound.x2 - @width/2))
-            y = Math.floor(Math.random() * (bound.y2 - @height/2))
+            x = @bound.x1 + Math.floor(Math.random() * (@bound.x2 - @bound.x1 - @width))
+            y = @bound.y1 + Math.floor(Math.random() * (@bound.y2 - @bound.y1 - @height))
             @currentDestination = [x,y]
             @wait(2000)
 

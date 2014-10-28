@@ -4,12 +4,12 @@
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   object = (function() {
-    function object(name, type, x, y, world) {
+    function object(name, type, x, y, bound) {
       this.name = name;
       this.type = type;
       this.x = x;
       this.y = y;
-      this.world = world;
+      this.bound = bound;
       this.moveStep = __bind(this.moveStep, this);
       this.id;
       this.type;
@@ -24,13 +24,9 @@
       this.direction = "No";
       this.width;
       this.height;
-      this.maxhp = 100;
-      this.hp = this.maxhp;
       this.mass = 1;
       this.speed = 0;
-      this.originSpeed = 0;
-      this.collisionHeight = 20;
-      return this.collisionWidth = 30;
+      return this.originSpeed = 0;
     };
 
     object.prototype.setupInfo = function(info) {
@@ -87,14 +83,12 @@
     };
 
     object.prototype.moveStep = function(direction, speed) {
-      var bound;
       if (direction == null) {
         direction = null;
       }
       if (speed == null) {
         speed = null;
       }
-      bound = this.world.getBound();
       if (direction === null) {
         direction = this.direction;
       }
@@ -106,7 +100,7 @@
           break;
         case "left":
           this.direction = "left";
-          if (this.x - speed > bound['x1']) {
+          if (this.x - speed > this.bound['x1']) {
             return this.x -= speed;
           } else {
             return this.x += speed;
@@ -114,7 +108,7 @@
           break;
         case "right":
           this.direction = "right";
-          if (this.x + speed < bound['x2']) {
+          if (this.x + speed < this.bound['x2']) {
             return this.x += speed;
           } else {
             return this.x -= speed;
@@ -122,7 +116,7 @@
           break;
         case "down":
           this.direction = "down";
-          if (this.y + speed < bound['y2']) {
+          if (this.y + this.height / 2 + speed < this.bound['y2']) {
             return this.y += speed;
           } else {
             return this.y -= speed;
@@ -130,7 +124,7 @@
           break;
         case "up":
           this.direction = "up";
-          if (this.y - speed > bound['y1']) {
+          if (this.y - speed > this.bound['y1']) {
             return this.y -= speed;
           } else {
             return this.y += speed;
@@ -138,46 +132,44 @@
           break;
         case "ur":
           this.direction = "ur";
-          if (this.y - speed > bound['y1']) {
+          if (this.y - speed > this.bound['y1']) {
             this.y -= speed;
           }
-          if (this.x + speed < bound['x2']) {
+          if (this.x + speed < this.bound['x2']) {
             return this.x += speed;
           }
           break;
         case "ul":
           this.direction = "ul";
-          if (this.y - speed > bound['y1']) {
+          if (this.y - speed > this.bound['y1']) {
             this.y -= speed;
           }
-          if (this.x - speed > bound['x1']) {
+          if (this.x - speed > this.bound['x1']) {
             return this.x -= speed;
           }
           break;
         case "dr":
           this.direction = "dr";
-          if (this.y + speed < bound['y2']) {
+          if (this.y + this.height / 2 + speed < this.bound['y2']) {
             this.y += speed;
           }
-          if (this.x + speed < bound['x2']) {
+          if (this.x + speed < this.bound['x2']) {
             return this.x += speed;
           }
           break;
         case "dl":
           this.direction = "dl";
-          if (this.y + speed < bound['y2']) {
+          if (this.y + this.height / 2 + speed < this.bound['y2']) {
             this.y += speed;
           }
-          if (this.x - speed > bound['x1']) {
+          if (this.x - speed > this.bound['x1']) {
             return this.x -= speed;
           }
       }
     };
 
     object.prototype.moveTo = function(x, y) {
-      var bound;
-      bound = this.world.getBound();
-      if (x > bound['x1'] && x < bound['x2'] && y > bound['y1'] && y < bound['y2']) {
+      if (x > this.bound['x1'] && x < this.bound['x2'] && y > this.bound['y1'] && y < this.bound['y2']) {
         this.x = x;
         return this.y = y;
       } else {

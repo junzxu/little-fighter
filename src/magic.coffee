@@ -1,9 +1,6 @@
 class window.Magic extends object
     constructor: (@id, @name, @x, @y, @world, @characterID, @direction, @spriteSheetInfo) ->
         super(@id, @name, "magic" , @x, @y, @world)
-        @magic
-        @damage = 10
-        @init()
 
     init:() ->
         @SpriteSheet = new createjs.SpriteSheet @spriteSheetInfo

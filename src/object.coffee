@@ -1,25 +1,35 @@
 class window.object
     constructor: (@id, @name, @type, @x, @y, @world) ->
-        @id
-        @type
         @hp
+        @maxhp
+        @spriteSheetInfo
+        @SpriteSheet
+        @sprite
+        @init()
+
+    init: ->
+        #load spriteSheet, do extra init in child class
         @mass = 1
         @speed = 0  #current speed
         @originSpeed = 2
         @collisionHeight = 20
         @collisionWidth = 30
-        @spriteSheetInfo
-        @SpriteSheet
-        @sprite = null
-        @objectSpriteSheet
-        @direction
-        @world
         @magicState = "ready"
+        @direction = "No"
+        @state = "idle"
 
-    init: ->
-    	#load spriteSheet, do extra init in child class
-    	if @spriteSheetInfo
-    		@SpriteSheet = new createjs.SpriteSheet @spriteSheetInfo
+
+    build: (spriteSheetInfo)->
+        if not @spriteSheetInfo
+            @spriteSheetInfo = spriteSheetInfo
+        @SpriteSheet = new createjs.SpriteSheet @spriteSheetInfo
+        @sprite = new createjs.BitmapAnimation @SpriteSheet
+        @sprite.x = @x
+        @sprite.y = @y
+        if @direction == "left"
+            @get().scaleX = -@get().scaleX
+        @world.addObject @
+        @sprite.gotoAndPlay "idle"
 
     get: ->
     	#override in child class
@@ -101,7 +111,50 @@ class window.object
         y2 = @get().getBounds().y + @get().y + @get().getBounds().height - @collisionHeight
         return {"x1":x1, "x2":x2, "y1":y1, "y2":y2}
 
+
     gotHit: (direction) ->
-        console.log("got hit")
+        if @sprite.currentAnimation != "hurt"
+            @sprite.gotoAndPlay "hurt"
+        @state = "hurt"
+
+
+    run: (direction) ->
+        if (@sprite.currentAnimation != "run")
+            @sprite.gotoAndPlay "run"
+        @direction = direction
+        @state = "run"
+
+    die: ->
+        if @state != "die"
+            if @sprite.currentAnimation != "die"
+                @sprite.gotoAndPlay "die"
+                @state = "die"
+                
+
+    idle: () ->
+        @speed = 0
+        @direction = "No"
+        @state = "idle"
+        if (@sprite.currentAnimation != "idle")
+            @sprite.gotoAndPlay "idle"
 
 ################################################################
+
+    update: (object) ->
+        switch object.state
+            #update player animation
+            when 'die'
+                @die()
+            when 'hurt'
+                @gotHit(object.faceDirection)
+                @hp = object.hp
+            when 'run'
+                @changeFaceDirection(object.faceDirection)
+                @run(object.direction)
+                @get().x = object.x
+                @get().y = object.y
+            when 'collided'
+                @get().x = object.x
+                @get().y = object.y
+            when 'idle'
+                @idle()
